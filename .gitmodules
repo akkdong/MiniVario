@@ -1,0 +1,6 @@
+[submodule "ref/esp-idf"]
+	path = ref/esp-idf
+	url = https://github.com/espressif/esp-idf.git
+[submodule "ref/arduino-esp32"]
+	path = ref/arduino-esp32
+	url = https://github.com/espressif/arduino-esp32.git
