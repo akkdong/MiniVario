@@ -4,3 +4,9 @@
 [submodule "ref/arduino-esp32"]
 	path = ref/arduino-esp32
 	url = https://github.com/espressif/arduino-esp32.git
+[submodule "ref/esp32-bt-serial"]
+	path = ref/esp32-bt-serial
+	url = https://github.com/olegv142/esp32-bt-serial.git
+[submodule "ref/ESP32-Deep-Sleep"]
+	path = ref/ESP32-Deep-Sleep
+	url = https://github.com/SensorsIot/ESP32-Deep-Sleep.git
