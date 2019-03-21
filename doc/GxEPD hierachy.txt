@@ -1,0 +1,43 @@
+
+
+GFXglyph - bitmapOffset, width, height, xAdvance, xOffset, yOffset
+
+GFXfont - bitmap(buffer pointer), glypy[], first, last, yAdvance
+
+
+GxIO
+  GxIO_SPI  --> GxIO_Class
+
+
+Print
+  Adafruit_GFX -- GFXfont
+    Adafruit_GX_Button
+    GFXcanvas1
+    GFXcanvas8
+    GFXcanvas16
+
+Adafruit_GFX
+  GxFont_GFX
+    GxEPD
+      GxGDEW027W3 --> GxEPD_Class
+
+
+
+? U8g2_for_Adafruit_GFX_h
+? _ADAFRUIT_TF_GFX_H_
+? _GxFont_GFX_TFT_eSPI_H_
+
+
+
+
+
+
+GxEPD2 -- enum Panel
+
+GxEPD2_EPD -- WIDTH, HEIGHT, GxEPD2::panel, ...
+  GxEPD2_270
+  
+  
+Adafruit_GFX
+  GxEPD2_GFX(GxEPD2_EPD, w, h) -- GxEPD2_EPD
+    template<GxEPD2_EPD, page_height> GxEPD2_BW -- GxEPD2_EPD, buffer, mode, ...  <-- coule be inheritted from Adafruit_GFX(default)
