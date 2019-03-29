@@ -35,9 +35,10 @@ Adafruit_GFX
 GxEPD2 -- enum Panel
 
 GxEPD2_EPD -- WIDTH, HEIGHT, GxEPD2::panel, ...
-  GxEPD2_270
-  
+  GxEPD2_XXX (XXX: 152, 270, 420, ...)
   
 Adafruit_GFX
-  GxEPD2_GFX(GxEPD2_EPD, w, h) -- GxEPD2_EPD
-    template<GxEPD2_EPD, page_height> GxEPD2_BW -- GxEPD2_EPD, buffer, mode, ...  <-- coule be inheritted from Adafruit_GFX(default)
+  GxEPD2_GFX
+
+Adafruit_GFX(w, h) or GxEPD2_GFX(GxEPD2_EPD, w, h)
+  template<GxEPD2_EPD, page_height> GxEPD2_BW -- GxEPD2_EPD, buffer, mode, ...
