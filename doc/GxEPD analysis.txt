@@ -1,0 +1,183 @@
+E-Ink Driver: GxGDEWxxx
+  properties: io, _initial, _using_partial_mode, buffer, static lut_xxxx
+
+  init: initialize io, fillScreen(_WHITE), _initial = true, _using_partial_mode = false;
+
+
+  fillScreen: fill _buffer with color
+
+  drawPixel: rotate & set/reset pixel to _buffer
+
+  update
+     _using_partial_mode = false
+     _wakeUp()
+     _writeCommandTransaction(0x13) // DATA_START_TRANSMISSION_2
+     for each pixel :  _writeDataTransaction()
+     _writeCommandTransaction(0x12) // DISPLAY_REFRESH
+     _waitWhileBusy()
+     if _initial
+        _initial = false
+        _init_PartialUpdate()
+        _writeCommandTransaction(0x91); // partial in
+        _setPartialRamArea(FULL_AREA)
+        _writeCommandTransaction(0x13) // DATA_START_TRANSMISSION_2
+        for each partial-pixel :  _writeDataTransaction()
+        _writeCommandTransaction(0x12) // DISPLAY_REFRESH
+        _waitWhileBusy()
+        _writeCommandTransaction(0x92); // partial out
+     _sleep()
+
+
+  drawBitmap(bitmap, size, mode)
+     if (mode & bm_partial_update)
+        _using_partial_update = true
+        _wakeUp()
+        _init_PartialUpdate()
+        _writeCommandTransaction(0x91); // partial in
+        _setPartialRamArea(FULL_AREA)
+        _writeCommandTransaction(0x13) // DATA_START_TRANSMISSION_2
+        for each partial-pixel :  _writeDataTransaction()
+        _writeCommandTransaction(0x92); // partial out
+        _writeCommandTransaction(0x12) // DISPLAY_REFRESH
+        _waitWhileBusy()
+
+        // draw again with no display refresh
+        _writeCommandTransaction(0x91); // partial in
+        _setPartialRamArea(FULL_AREA)
+        _writeCommandTransaction(0x13) // DATA_START_TRANSMISSION_2
+        for each partial-pixel :  _writeDataTransaction()
+        _writeCommandTransaction(0x92); // partial out
+        _waitWhileBusy()
+     else
+        _using_partial_update = false;
+        _wakeUp();
+        _writeCommandTransaction(0x13) // DATA_START_TRANSMISSION_2
+        for each partial-pixel :  _writeDataTransaction()
+        _writeCommandTransaction(0x12) // DISPLAY_REFRESH
+        _waitWhileBusy()
+        if _initial
+           _initial = false;
+           _writeCommandTransaction(0x13) // DATA_START_TRANSMISSION_2
+           for each partial-pixel :  _writeDataTransaction()
+           _writeCommandTransaction(0x12) // DISPLAY_REFRESH
+           _waitWhileBusy()
+     _sleep
+
+
+  drawBitmap(bitmap, x, y, w, h, color, mode) <--- draw to buffer
+
+
+  eraseDisplay(draw_partial)
+     if draw_partial
+        _using_partial_mode = true;
+        _wakeUp();
+        _init_PartialUpdate();
+        _writeCommandTransaction(0x91); // partial in
+        _setPartialRamArea()
+        _writeCommandTransaction(0x13) // DATA_START_TRANSMISSION_2
+        for all buffer data : _writeDataTransaction(0xFF)
+        _writeCommandTransaction(0x10); // DATA_START_TRANSMISSION_1
+        for all buffer data : _writeDataTransaction(0xFF)
+        _writeCommandTransaction(0x92); // partial out
+        _writeCommandTransaction(0x12) // DISPLAY_REFRESH
+        _waitWhileBusy()
+     else
+        _using_partial_update = false;
+        _wakeUp();
+        _writeCommandTransaction(0x13) // DATA_START_TRANSMISSION_2
+        for all buffer data : _writeDataTransaction(0xFF)
+        _writeCommandTransaction(0x12) // DISPLAY_REFRESH
+        _waitWhileBusy()
+     _sleep
+
+
+  updateWindow(x, y, w, h, rot)
+     rotate if needs
+     if ( ! _using_partial_mode)
+        _wakeUp()
+     _using_partial_mode = true
+     _Init_PartialUpdate()
+     _writeCommandTransaction(0x91); // partial in
+     _setPartialRamArea()
+     _writeCommandTransaction(0x13) // DATA_START_TRANSMISSION_2
+     for each partial-pixel :  _writeDataTransaction()
+     _writeCommandTransaction(0x92); // partial out
+     _writeCommandTransaction(0x12) // DISPLAY_REFRESH
+     _waitWhileBusy()
+   
+     // update again
+     _writeCommandTransaction(0x91); // partial in
+     _setPartialRamArea()
+     _writeCommandTransaction(0x13) // DATA_START_TRANSMISSION_2
+     for each partial-pixel :  _writeDataTransaction()
+     _writeCommandTransaction(0x92); // partial out
+
+
+  updateToWindow(xs, ys, xd, yd, w, h, rot)
+     ...
+
+
+  powerDown
+     _sleep
+
+
+  _setPartialRamArea(xs, ys, xe, ye)
+     _writeCommandTransaction(0x90)  // PARTIAL_WINDOW
+     _writeDataTranscation(xs_h)
+     _writeDataTranscation(xs_l)
+     _writeDataTranscation(xe_h)
+     _writeDataTranscation(xe_l)
+     _writeDataTranscation(ys_h)
+     _writeDataTranscation(ys_l)
+     _writeDataTranscation(ye_h)
+     _writeDataTranscation(ye_l)
+     _writeDataTranscation(0x01) // don't see any difference
+
+
+  _waitWhileBusy
+     while( _busy == 0)  <--- BUSY active LOW
+        check timeout
+
+
+  wakeUp
+     reset: LOW -> HIGH
+     _writeCommandTransaction(0x06) // BOOSTER_SOFT_START
+     _writeDataTransaction(0x17)
+     _writeDataTransaction(0x17)
+     _writeDataTransaction(0x17)
+     _writeCommandTransaction(0x04) // POWER_ON
+     _waitWhileBusy()
+     _init_FullUpdate()
+
+
+
+  _sleep
+     _writeCommandTransaction(0x50) // VCOM_AND_DATA_INTERVAL_SETTING(border floating?)
+     _writeDataTransaction(0x17)
+     _writeCommandTransaction(0x02) // POWER_OFF
+     _waitWhileBusy()
+
+     _writeCommandTransaction(0x07) // DEEP_SLEEP
+     _writeDataTransaction(0x17)
+
+
+  rotate(ref x, ref y, ref w, ref h)
+
+
+  _Init_FullUpdate()
+     _writeCommandTransaction(0x00)  // PANEL_SETTING
+     _writeCommandTransaction(XX) // ex: 0x3F -> 300x400 B/W node
+     _writeCommandTransaction(0x20)  // LUT_FOR_VCOM
+     total 42 data: _writeDataTransaction() 
+     _writeCommandTransaction(0x21)  // LUT_WHITE_TO_WHITE
+     total 42 data: _writeDataTransaction() 
+     _writeCommandTransaction(0x22)  // LUT_BLACK_TO_WHITE
+     total 42 data: _writeDataTransaction() 
+     _writeCommandTransaction(0x23)  // LUT_WHITE_TO_BLACK
+     total 42 data: _writeDataTransaction() 
+     _writeCommandTransaction(0x24)  // LUT_BLACK_TO_BLACK
+     total 42 data: _writeDataTransaction() 
+
+  _Init_PartialUpdate()
+     same as_Init_FullUpdate except lut_data
+
