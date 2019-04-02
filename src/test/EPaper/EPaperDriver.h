@@ -5,7 +5,13 @@
 #define __EPAPERDRIVER_H__
 
 #include <Arduino.h>
-#include <SPI.h>
+#include <SPIVariant.h>
+
+#if defined(ESP8266) || defined(ESP32)
+#include <pgmspace.h>
+#else
+#include <avr/pgmspace.h>
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +79,7 @@ protected:
 	void					_writeData(const uint8_t * data, uint16_t n);
 	void					_writeDataP(const uint8_t * data, uint16_t n);
 	
-	void					_waitBusy(uint16_t timeout);
+	void					_waitWhileBusy(uint16_t timeout);
 	
 public:
 	enum _State
@@ -88,7 +94,7 @@ public:
 
 // protected properties
 protected:
-	SPISettings		_spi_settings;
+	SPIVariantSettings _spi_settings;
 	PinSetting *		_pin_settings;
 	
 	uint8_t				_state;

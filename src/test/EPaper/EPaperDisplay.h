@@ -3,9 +3,8 @@
 
 #include <Adafruit_GFX.h>
 
-//#include "EPaper_Waveshare270.h"
+#include "EPaper_Waveshare270.h"
 #include "EPaper_Waveshare420.h"
-
 
 #define COLOR_BLACK		0xFF
 #define COLOR_WHITE		0x00

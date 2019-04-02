@@ -8,27 +8,33 @@ void setup()
 {
 //	WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
 
+	//
+	digitalWrite(19, HIGH);
+	pinMode(19, OUTPUT);	
+	delay(10);
 
+	//
 	Serial.begin(115200);
+	
+	Serial2.begin(9600);
 
 	if(!SerialBT.begin("Abrakatabra"))
 	{
-		
 		Serial.println("An error occurred initializing Bluetooth");
+		while(1);
 	}
 }
  
 void loop() 
 {
-	while(SerialBT.available()) 
-	{
-		Serial.write(SerialBT.read());
-	}
-
 	while(Serial.available()) 
-	{
 		SerialBT.write(Serial.read());
-	}
 
-	delay(50);
+	while(SerialBT.available()) 
+		Serial2.write(SerialBT.read());
+
+	while(Serial2.available()) 
+		SerialBT.write(Serial2.read());
+
+	delay(1);
 }

@@ -3,8 +3,6 @@
 
 #include "EPaper_Waveshare420.h"
 
-
-
 // COMMAND
 #define PANEL_SETTING                               		0x00
 #define POWER_SETTING                               	0x01
@@ -223,7 +221,7 @@ void EPaper_Waveshare420::refresh(bool fast_mode)
 	delay(1);
 	
 	_writeCommand(0x12);
-	_waitBusy(fast_mode ? partial_refresh_time : full_refresh_time);	
+	_waitWhileBusy(fast_mode ? partial_refresh_time : full_refresh_time);	
 	//_powerOff();
 	
 	//_transfer(DATA_START_TRANSMISSION_1, buffer);	
@@ -253,13 +251,9 @@ void EPaper_Waveshare420::transfer()
 	//delay(1);
 }
 
-void EPaper_Waveshare420::_transfer(uint8_t command, const uint8_t * buffer)
-{
-	_writeCommand(command);
-	
-	for (int i = 0; i < WAVESHARE_420_WIDTH / 8 * WAVESHARE_420_HEIGHT; i++)
-		_writeData(buffer[i]);
-}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
 
 void EPaper_Waveshare420::_initDisplay()
 {
@@ -306,7 +300,7 @@ void EPaper_Waveshare420::_powerOn()
 	if (! (_state & _POWER_ON))
 	{
 		_writeCommand(POWER_ON); // 0x04
-		_waitBusy(power_on_time);
+		_waitWhileBusy(power_on_time);
 		
 		_state |= _POWER_ON;
 	}
@@ -317,7 +311,7 @@ void EPaper_Waveshare420::_powerOff()
 	if (_state & _POWER_ON)
 	{
 		_writeCommand(POWER_OFF); // 0x02
-		_waitBusy(power_off_time);
+		_waitWhileBusy(power_off_time);
 		
 		_state &= ~_POWER_ON;
 	}
@@ -401,7 +395,7 @@ void  EPaper_Waveshare420::_updatePartialWindow(const uint8_t * buffer, uint16_t
 	
 #if 0
 	_writeCommand(0x12);
-	_waitBusy(partial_refresh_time);
+	_waitWhileBusy(partial_refresh_time);
 	
 	
 	_writeCommand(PARTIAL_IN); // 0x91	
@@ -426,4 +420,12 @@ void  EPaper_Waveshare420::_updateFullWindow(const uint8_t * buffer)
 	for (int i = 0; i < WAVESHARE_420_WIDTH / 8 * WAVESHARE_420_HEIGHT; i++)
 		_writeData(buffer[i]);
 	delay(1);
+}
+
+void EPaper_Waveshare420::_transfer(uint8_t command, const uint8_t * buffer)
+{
+	_writeCommand(command);
+	
+	for (int i = 0; i < WAVESHARE_420_WIDTH / 8 * WAVESHARE_420_HEIGHT; i++)
+		_writeData(buffer[i]);
 }

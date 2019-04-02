@@ -1,0 +1,272 @@
+epd2
+
+display.init()
+	epd2.init
+		init GPIO
+		_reset()
+		init SPI
+	_using_partial_mode = false
+	this.setFullWindow()
+		_using_partial_mode = false
+		_partial_window = 0, 0, W, H
+		
+display.setRotation()
+display.setFont()
+display.setTextColor()
+display.getTextBounds()
+display.setFullWindow()
+
+display.firstPage
+display.fillScreen()
+display.setCursor()
+display.print()
+
+display.nextPage() <-- case of _using_partial_mode == false
+	epd2.writeImage(_full_window)
+		_writeImage(0x15)
+			delay(1)
+			_Init_Part() <-- if _using_partial_mode is false
+				_InitDisplay()
+					_reset() <-- if it's hiberating
+					_writeCommand(0x01);
+					_writeCommand(0x06);
+					_writeCommand(0x16);
+					_writeCommand(0x00);
+					_writeCommand(0x30);
+					_writeCommand(0x61);
+					_writeCommand(0x82);
+				_writeCommand(0x50); <-- with _writeData(0x97)
+				_writeCommand(0x20);
+				_writeCommand(0x21);
+				_writeCommand(0x22);
+				_writeCommand(0x23);
+				_writeCommand(0x24);
+				_PowerOn()
+					_writeCommand(0x04);
+					_waitBusy(power_on_time)
+				_using_partial_mode = false
+			_setPartialRamArea(0x15)
+				_writeCommand(0x15)
+				_writeData(XH, XL, YH, YL, WH, WL, HH, HL)
+			for each data of buffer
+				_writeData(data)
+			delay(1)
+	epd2.refresh(false)
+		_InitFull() <-- if _using_partial_mode is false
+			_InitDisplay()
+			_writeCommand(0x50); <-- with _writeData(0x97)
+			_writeCommand(0x20);
+			_writeCommand(0x21);
+			_writeCommand(0x22);
+			_writeCommand(0x23);
+			_writeCommand(0x24);
+			_PowerOn()
+			_using_partial_mode = false
+		_Update_Full()
+			_writeCommand(0x12)
+			_waitBusy(full_refresh_time)
+	epd2.writeImageAgain(_full_window)
+		_writeImage(0x14)
+			... save as _writeImage(0x15) except for command
+	epd2.powerOff()
+	
+display.nextPage() <-- case of _using_partial_mode == true
+	epd2.writeImage(_partial_window)
+		_writeImage(0x15)
+			delay(1)
+			_setPartialRamArea(0x15)
+				_writeCommand(0x15)
+				_writeData(pXH, pXL, pYH, pYL, pWH, pWL, pHH, pHL)
+			for each data of partial-window-buffer
+				_writeData(data)
+			delay(1)	
+	epd2.refresh(_partial_window)
+		_refreshWindow()
+			_writeCommand(x016)
+			_writeData(pXH, pXL, pYH, pYL, pWH, pWL, pHH, pHL)
+		_waitBusy(partial_refresh_time)
+	epd2.writeImageAgain(_partial_window)
+		... save as _writeImage(0x15) except for command
+
+
+
+
+    writeImage()
+		_writeImage()
+			_Init_Part() <-- be called when _uing_partial_mode is false (first call of writeImage)
+				_InitDisplay
+					_reset <-- if it is on hiberation
+					_writeCommand(POWER_SETTING);
+					_writeCommand(boost);
+					_writeCommand(0x16);
+					_writeCommand(panel setting);
+					_writeCommand(pll setting);
+					_writeCommand(resolution setting);
+					_writeCommand(vcom_dc setting);
+				_writeCommand(0x50);
+				_writeCommand(0x20);
+				_writeCommand(0x21);
+				_writeCommand(0x22);
+				_writeCommand(0x23);
+				_writeCommand(0x24);
+				_PowerOn()
+			    // now _using_partial_mode is true
+			_setPartialRamArea()
+				_writeCommand(0x15);			
+		for each buffer 
+			_writeData()
+			
+	
+	refresh(false)
+	
+	
+	
+epd
+
+display.init()
+	init SPI & GPIO 
+display.setFont()
+	--> display buffer
+display.setTextColor()
+	--> display buffer
+display.setRotation()
+	--> display buffer
+display.drawExampleBitmap()
+	--> display buffer
+display.update()
+	_using_partial_mode = false
+	_wakeUp()
+		_reset()
+		_writeCommnad(POWER_SETTING)
+		_writeCommnad(boost)
+		_writeCommnad(0x16)
+		_writeCommnad(0x04) : power on
+		_writeCommnad(0x00) : panel setting
+		_writeCommnad(0x30) : pll setting
+		_writeCommnad(0x61) : resolution setting
+		_writeCommnad(0x82) : vcom_dc setting
+		//_writeCommnad(0x50) : vcom & data interval setting
+		_Init_FullUpdate()
+			//_writeCommnad(0x82) : vcom_dc setting
+			_writeCommnad(0x50) : vcom & data interval setting  <-- _writeData(0x97)
+			_writeCommnad(0x20) : set lut with lut_xxx_full table
+			_writeCommnad(0x21) : ...
+			_writeCommnad(0x22) : ...
+			_writeCommnad(0x23) : ...
+			_writeCommnad(0x24) : ...
+	_writeCommand(0x10) : <-- _initial only
+	for each data of buffer
+		_writeData(data)
+	_writeCommand(0x13)
+	for each data of buffer
+		_writeData(data)
+	_writeCommand(0x12) : refresh
+	_waitBusy()
+	_writeCommand(0x10) : update old data
+	for each data of buffer
+		_writeData(data)
+	_sleep()
+		_powerOff() <-- 0x02
+		_waitBusy()
+		_deepSleep() <-- 0x07
+
+		
+display.updateWindow(false <- using_rotate)
+	_rotate() <-- what is this ??
+	_wakUp() <-- if not _using_partial_mode
+	_using_partial_mode = true
+	_Init_PartialUpdate()
+		//_writeCommnad(0x82) : vcom_dc setting
+		_writeCommnad(0x50) : vcom & data interval setting  <-- _writeData(0x17)
+		_writeCommnad(0x20) : set lut with lut_xxx_partial table
+		_writeCommnad(0x21) : ...
+		_writeCommnad(0x22) : ...
+		_writeCommnad(0x23) : ...
+		_writeCommnad(0x24) : ...
+	_writeToWindow(0x15)
+		//_writeCommand(0x91) : partial in
+		_setPartialRamArea(0x15)
+			_writeCommand(0x15)
+			_writeData(xh, xl, yh, yl, wh, wl, hh, hl)
+		for each data of buffer
+			_writeData(data)
+	_refeshWindow()
+		_writeCommand(0x16)
+		_writeData(xh, xl, yh, yl, wh, wl, hh, hl)
+	_waitBusy()
+	_writeToWindow(0x14)
+		... same as 0x15 except command
+	
+	
+
+display.updateWindow(true)
+
+
+
+
+mine
+
+display.init
+	init GPIO & SPI
+	_reset() with delay
+	_initDisplay
+		_writeCommnad(POWER_SETTING)
+		_writeCommnad(boost)
+		_writeCommnad(0x16)
+		_writeCommnad(0x00) : panel setting
+		_writeCommnad(0x30) : pll setting
+		_writeCommnad(0x61) : resolution setting
+		_writeCommnad(0x82) : vcom_dc setting
+		_setLUT() <-- full
+			_writeCommand(0x50) <-- with data 0x97
+			_writeCommand(0x20)
+			_writeCommand(0x21)
+			_writeCommand(0x22)
+			_writeCommand(0x23)
+			_writeCommand(0x24)
+		_powerOn() <-- _writeCommand(0x04)
+	_writeCommand(0x10)	
+	for size of buffer
+		_writeData(0xFF)
+	
+	
+	
+display.xxxx <-- draw to buffer
+
+display.refresh(false <-- fast_update)
+	_edp.transfer() <-- NOP
+	_edp.refresh(false)
+		_setLUTFull <-- if is not _FULL_MODE
+		
+		_writeCommand(0x13)
+		for each data of buffer
+			_writeData(data)
+				
+		_writeCommand(x012)
+		_waitBusy()
+		
+		_writeCommand(0x10)
+		for each data of buffer
+			_writeData(data)
+
+
+display.refresh(true <-- fast_update)
+	_edp.transfer() <-- NOP
+	_edp.refresh(true)
+		_setLUTPartial <-- if is _FULL_MODE
+		
+		_transfer(0x15)
+			_setPartialWindow(0x15)
+				_writeCommand(0x15)
+				_writeData(XH, XL, YH, YL, WH, WL, HH, HL)
+			for each data of buffer
+				_writeData(data)
+				
+		_writeCommand(0x16)
+		_writeData(XH, XL, YH, YL, WH, WL, HH, HL)
+		_waitBusy()
+		
+		_transfer(0x14)
+			... save as _transfer(0x15) except for command
+			
+		
