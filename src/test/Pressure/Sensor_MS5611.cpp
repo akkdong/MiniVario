@@ -98,10 +98,10 @@ uint16_t Sensor_MS5611::getPROMValue(int address, uint32_t timeout)
 	uint8_t data[2];
 	
 	Wire.beginTransmission(MS5611_ADDRESS);
-	Wire.write(MS5611_CMD_READ_PROM+(address*2));
+	Wire.write(MS5611_CMD_READ_PROM + (address * 2));
 	Wire.endTransmission();
 	
-	Wire.beginTransmission(MS5611_ADDRESS);
+//	Wire.beginTransmission(MS5611_ADDRESS);
 	Wire.requestFrom(MS5611_ADDRESS, sizeof(data));
 	
 	uint32_t tstart = millis();
@@ -121,7 +121,7 @@ uint32_t Sensor_MS5611::getDigitalValue(uint32_t timeout)
 	Wire.write(MS5611_CMD_ADC_READ);
 	Wire.endTransmission();
 	
-	Wire.beginTransmission(MS5611_ADDRESS);
+//	Wire.beginTransmission(MS5611_ADDRESS);
 	Wire.requestFrom(MS5611_ADDRESS, sizeof(data));
 
 	uint32_t tstart = millis();
@@ -242,7 +242,7 @@ void Sensor_MS5611::updateBaro()
 		{
 			int64_t dtemp = temp + 1500;
 			dtemp *= dtemp;
-			off2 += 7*dtemp;
+			off2 += 7 * dtemp;
 			dtemp *= 11;
 			dtemp >>= 1;
 			sens2 += dtemp;

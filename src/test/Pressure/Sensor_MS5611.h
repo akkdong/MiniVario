@@ -10,22 +10,22 @@
 
 
 /* the pressure normalized sea level pressure */  
-#define MS5611_BASE_SEA_PRESSURE 	(1013.25)
+#define MS5611_BASE_SEA_PRESSURE 		(1013.25)
 
-#define MS5611_ADDRESS 				(0x77)
+#define MS5611_ADDRESS 						(0x77)
 
-#define MS5611_CMD_RESET 			(0x1E)
-#define MS5611_CMD_READ_PROM 		(0xA2)
-#define MS5611_CMD_CONV_D1 			(0x46)
-#define MS5611_CMD_CONV_D2 			(0x58)
-#define MS5611_CMD_ADC_READ 		(0x00)
+#define MS5611_CMD_RESET 					(0x1E)
+#define MS5611_CMD_READ_PROM 			(0xA2)
+#define MS5611_CMD_CONV_D1 				(0x44)
+#define MS5611_CMD_CONV_D2 				(0x54)
+#define MS5611_CMD_ADC_READ 				(0x00)
 
-#define MS5611_RESET_DELAY 			(3)
-#define MS5611_CONV_DELAY 			(9)
+#define MS5611_RESET_DELAY 					(3)
+#define MS5611_CONV_DELAY 					(10)
 
-#define MS5611_STEP_READY			(0)
-#define MS5611_STEP_READ_TEMP 		(1)
-#define MS5611_STEP_READ_PRESSURE 	(2)
+#define MS5611_STEP_READY						(0)
+#define MS5611_STEP_READ_TEMP 			(1)
+#define MS5611_STEP_READ_PRESSURE 		(2)
 
 /* the measure period need to be greater than 8.22 ms */
 /* the library use a 1024 prescale so the time unit is 1024/F_CPU */
@@ -34,11 +34,11 @@
 /* the final period is 1024/F_CPU * INTERRUPT_COMPARE */
 /* in seconds */
 
-#define MS5611_INTERRUPT_COMPARE	(600) // F_CPU : 72MHz --> 600 ~= 8.5ms, 590 ~= 8.39ms
+#define MS5611_INTERRUPT_COMPARE		(600) // F_CPU : 72MHz --> 600 ~= 8.5ms, 590 ~= 8.39ms
 
-#define MS5611_TIMER_PRESCALER		(1024)
-#define MS5611_TIMER_CHANNEL		(1)
-#define MS5611_TIMER_ID				(2)
+#define MS5611_TIMER_PRESCALER			(1024)
+#define MS5611_TIMER_CHANNEL				(1)
+#define MS5611_TIMER_ID							(2)
 
 #define MS5611_INTERRUPT_START_DELAY (1000)
 

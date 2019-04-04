@@ -35,7 +35,7 @@ public:
 	
 	void								calibrateAltitude(float altitudeRef);
 	
-public:
+protected:
 	static void IRAM_ATTR 	TimerProc();
 	static void 					TaskProc(void * param);
 	
