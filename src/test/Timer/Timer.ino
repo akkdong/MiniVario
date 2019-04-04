@@ -39,9 +39,6 @@ TimerExample::TimerExample()
 void TimerExample::begin()
 {
 	//
-	mActive = this;
-	
-	//
 	digitalWrite(19, HIGH);
 	digitalWrite(23, LOW);
 	pinMode(19, OUTPUT);
@@ -52,12 +49,13 @@ void TimerExample::begin()
 		TaskProc,  
 		"TaskBaro",     // A name just for humans
 		1024,   // This stack size can be checked & adjusted by reading the Stack Highwater
-		NULL,  
+		this,  // Parameter
 		2,    // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
 		NULL ,  
 		ARDUINO_RUNNING_CORE);
 	
 	//
+	mActive = this;
 	mTimer = timerBegin(0, 80, true); // ESP32 Counter: 80 MHz, Prescaler: 80 --> 1MHz timer
 	timerAttachInterrupt(mTimer, TimerProc, true);
 	timerAlarmWrite(mTimer, 1000000 / 100, true); // 118Hz -> alarm every 8.4746 milliseconds  :  the measure period need to be greater than 8.22 ms
@@ -77,12 +75,10 @@ void IRAM_ATTR TimerExample::TimerProc()
 
 void TimerExample::TaskProc(void * param) 
 {
-	if (! TimerExample::mActive)
-	{
-		vTaskDelete(NULL);
-		return;
-	}
+	//
+	TimerExample * pThis = (TimerExample *)param;
 	
+	//
 	int toggle = 1;
 	
 	digitalWrite(19, toggle);
@@ -91,7 +87,7 @@ void TimerExample::TaskProc(void * param)
 	while (1)
 	{
 		//
-		xSemaphoreTake(TimerExample::mActive->mSemaphore, portMAX_DELAY);
+		xSemaphoreTake(pThis->mSemaphore, portMAX_DELAY);
 		
 		//
 		toggle = 1 -  toggle;
