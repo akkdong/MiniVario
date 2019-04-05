@@ -3,7 +3,7 @@
 
 #include "KalmanVario.h"
 
-CriticalSeciton mCriticalSection;
+CriticalSection mCriticalSection;
 Sensor_MS5611  Baro(mCriticalSection, Wire);
 KalmanVario Vario(Baro);
 uint32_t _tick;

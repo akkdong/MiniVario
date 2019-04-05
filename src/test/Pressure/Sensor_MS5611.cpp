@@ -7,7 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // class Sensor_MS5611
 
-Sensor_MS5611::Sensor_MS5611(CriticalSeciton & _cs, TwoWire & _i2c) 
+Sensor_MS5611::Sensor_MS5611(CriticalSection & _cs, TwoWire & _i2c) 
 	: mCriticalSection(_cs)
 	, mWire(_i2c)
 	, baroState(MS5611_STEP_READY)
@@ -88,27 +88,27 @@ float Sensor_MS5611::getAltitude(float p, float seaLevel)
 
 void Sensor_MS5611::resetBaro()
 {
-	Wire.beginTransmission(MS5611_ADDRESS);
-	Wire.write(MS5611_CMD_RESET);
-	Wire.endTransmission();
+	mWire.beginTransmission(MS5611_ADDRESS);
+	mWire.write(MS5611_CMD_RESET);
+	mWire.endTransmission();
 }
 
 uint16_t Sensor_MS5611::getPROMValue(int address, uint32_t timeout)
 {
 	uint8_t data[2];
 	
-	Wire.beginTransmission(MS5611_ADDRESS);
-	Wire.write(MS5611_CMD_READ_PROM + (address * 2));
-	Wire.endTransmission();
+	mWire.beginTransmission(MS5611_ADDRESS);
+	mWire.write(MS5611_CMD_READ_PROM + (address * 2));
+	mWire.endTransmission();
 	
-//	Wire.beginTransmission(MS5611_ADDRESS);
-	Wire.requestFrom(MS5611_ADDRESS, sizeof(data));
+//	mWire.beginTransmission(MS5611_ADDRESS);
+	mWire.requestFrom(MS5611_ADDRESS, sizeof(data));
 	
 	uint32_t tstart = millis();
-	while (! Wire.available() && (timeout == 0 || (millis() - tstart) < timeout)) {}
+	while (! mWire.available() && (timeout == 0 || (millis() - tstart) < timeout)) {}
 	
 	for (int i = 0; i < sizeof(data); i++)
-		data[i] = Wire.read();	
+		data[i] = mWire.read();	
 
 	return ((uint16_t)data[0] << 8) + (uint16_t)data[1];
 }
@@ -117,18 +117,18 @@ uint32_t Sensor_MS5611::getDigitalValue(uint32_t timeout)
 {
 	uint8_t data[3];
 	
-	Wire.beginTransmission(MS5611_ADDRESS);
-	Wire.write(MS5611_CMD_ADC_READ);
-	Wire.endTransmission();
+	mWire.beginTransmission(MS5611_ADDRESS);
+	mWire.write(MS5611_CMD_ADC_READ);
+	mWire.endTransmission();
 	
-//	Wire.beginTransmission(MS5611_ADDRESS);
-	Wire.requestFrom(MS5611_ADDRESS, sizeof(data));
+//	mWire.beginTransmission(MS5611_ADDRESS);
+	mWire.requestFrom(MS5611_ADDRESS, sizeof(data));
 
 	uint32_t tstart = millis();
-	while (! Wire.available() && (timeout == 0 || (millis() - tstart) < timeout)) {}
+	while (! mWire.available() && (timeout == 0 || (millis() - tstart) < timeout)) {}
 	
 	for (int i = 0; i < sizeof(data); i++)
-		data[i] = Wire.read();	
+		data[i] = mWire.read();	
 	
 	uint32_t value = data[0];
 	value <<= 8;

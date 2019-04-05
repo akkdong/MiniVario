@@ -60,7 +60,7 @@ class Sensor_MS5611
 	friend void IRAM_ATTR _BaroUpdateTimer();
 	
 public:
-	Sensor_MS5611(CriticalSeciton & _cs, TwoWire & _i2c);
+	Sensor_MS5611(CriticalSection & _cs, TwoWire & _i2c);
 	
 public:
 	void						begin();
@@ -108,7 +108,7 @@ private:
 	float 					compensatedPressure;
 
 	//
-	CriticalSeciton &	mCriticalSection;
+	CriticalSection &	mCriticalSection;
 	TwoWire &			mWire;
 };
 

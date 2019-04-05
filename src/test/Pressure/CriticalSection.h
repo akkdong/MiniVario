@@ -1,13 +1,16 @@
 // CriticalSection.h
 //
 
+#ifndef __CRITICALSECTION_H__
+#define __CRITICALSECTION_H__
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //
 
-class CriticalSeciton
+class CriticalSection
 {
 public:
-	CriticalSeciton() : mMux(portMUX_INITIALIZER_UNLOCKED) {
+	CriticalSection() : mMux(portMUX_INITIALIZER_UNLOCKED) {
 	}
 	
 	void EnterISR() { 
@@ -27,3 +30,5 @@ public:
 protected:
 	portMUX_TYPE mMux;
 };
+
+#endif // __CRITICALSECTION_H__
