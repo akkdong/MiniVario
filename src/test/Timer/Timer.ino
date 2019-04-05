@@ -1,6 +1,8 @@
 // Timer.ino
 //
 
+#include "HardwareTimer.h"
+
 #if CONFIG_FREERTOS_UNICORE
 #define ARDUINO_RUNNING_CORE 0
 #else
@@ -40,9 +42,7 @@ void TimerExample::begin()
 {
 	//
 	digitalWrite(19, HIGH);
-	digitalWrite(23, LOW);
 	pinMode(19, OUTPUT);
-	pinMode(23, OUTPUT);
 	
 	//
 	xTaskCreatePinnedToCore(
@@ -80,9 +80,7 @@ void TimerExample::TaskProc(void * param)
 	
 	//
 	int toggle = 1;
-	
 	digitalWrite(19, toggle);
-	digitalWrite(23, ! toggle);
 	
 	while (1)
 	{
@@ -91,17 +89,55 @@ void TimerExample::TaskProc(void * param)
 		
 		//
 		toggle = 1 -  toggle;
-		
 		digitalWrite(19, toggle);
-		digitalWrite(23, ! toggle);		
 	}
 }
 
+class MyTimer : public HardwareTimer
+{
+public:
+	MyTimer() : HardwareTimer(TIMER_2) {		
+		digitalWrite(19, LOW);
+		pinMode(19, OUTPUT);
+	}
+	
+	virtual void timerCallback() {
+		static int toggle = 1;
+		digitalWrite(19, toggle);
+		toggle = 1 - toggle;
+	}
+};
+
 TimerExample _TimerExample;
+HardwareTimer hwTimer(TIMER_3);
+MyTimer myTimer;
+
+
+void _TestProc(void * param)
+{
+	static int toggle = 1;
+	digitalWrite(23, toggle);
+	toggle = 1 - toggle;
+}
 
 void setup()
 {
-	_TimerExample.begin();
+	digitalWrite(23, HIGH);
+	pinMode(23, OUTPUT);
+	
+//	_TimerExample.begin();
+
+	#if 0
+	myTimer.begin(80, true);
+	myTimer.attachInterrupt(true);
+	myTimer.alarmWrite(1000000 / 100, true); // 100Hz
+	myTimer.alarmEnable();	
+	#endif
+	
+	hwTimer.begin(80, true);
+	hwTimer.attachInterrupt(_TestProc, true);
+	hwTimer.alarmWrite(1000000 / 200, true); // 200Hz
+	hwTimer.alarmEnable();	
 }
 
 void loop()
