@@ -16,8 +16,8 @@
 
 #define MS5611_CMD_RESET 					(0x1E)
 #define MS5611_CMD_READ_PROM 			(0xA2)
-#define MS5611_CMD_CONV_D1 				(0x44)
-#define MS5611_CMD_CONV_D2 				(0x54)
+#define MS5611_CMD_CONV_D1 				(0x48)
+#define MS5611_CMD_CONV_D2 				(0x58)
 #define MS5611_CMD_ADC_READ 				(0x00)
 
 #define MS5611_RESET_DELAY 					(3)
