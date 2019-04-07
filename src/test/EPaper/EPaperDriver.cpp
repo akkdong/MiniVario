@@ -8,7 +8,7 @@
 //
 
 EPaperDriver::EPaperDriver(PinSetting * pins)
-	: _spi_settings(2000000, MSBFIRST, SPI_MODE0)
+	: _spi_settings(4000000, MSBFIRST, SPI_MODE0)
 	, _pin_settings(pins)
 	, _state(_UNDEFINED)
 {
@@ -40,9 +40,9 @@ void EPaperDriver::_reset()
 {
 	// 
 	digitalWrite(_pin_settings[_PIN_RST].no, _pin_settings[_PIN_RST].active == PIN_ACTIVE_LOW ? LOW : HIGH);
-	delay(20);
+	_delay(10);
 	digitalWrite(_pin_settings[_PIN_RST].no, _pin_settings[_PIN_RST].active == PIN_ACTIVE_LOW ? HIGH : LOW);
-	delay(20);
+	_delay(10);
 	
 	//
 	_state &= ~_DEEP_SLEEP;
@@ -94,7 +94,7 @@ void EPaperDriver::_waitWhileBusy(uint16_t timeout)
 	
 	while (1)
 	{
-		delay(1);
+		_delay(1);
 		
 		if (digitalRead(_pin_settings[_PIN_BUSY].no) != _pin_settings[_PIN_BUSY].active)
 		{

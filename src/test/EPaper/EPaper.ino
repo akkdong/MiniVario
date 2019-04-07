@@ -88,8 +88,8 @@ void setup()
 	display.fillScreen(COLOR_WHITE);
 	display.setFont(&FreeMonoBold9pt7b);
 	display.setTextColor(COLOR_BLACK, COLOR_WHITE);
-	display.drawBitmapBM(Bitmap_Paragliding, 0, 10, 176, 178, COLOR_WHITE, bm_invert);
-	display.setCursor(0, 216);
+	display.drawBitmapBM(Bitmap_Paragliding, 6, 24, 164, 166, COLOR_WHITE, bm_invert);
+	display.setCursor(0, 246);
 	display.print("Flight computer");
 	
 	display.flush(false);

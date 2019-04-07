@@ -81,6 +81,8 @@ protected:
 	
 	void					_waitWhileBusy(uint16_t timeout);
 	
+	virtual void			_delay(int msec) { delay(msec); }
+	
 public:
 	enum _State
 	{

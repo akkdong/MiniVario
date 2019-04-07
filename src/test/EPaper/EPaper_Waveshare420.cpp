@@ -217,7 +217,7 @@ void EPaper_Waveshare420::refresh(bool fast_mode)
 	{
 		_writeCommand(PARTIAL_OUT); // 0x92
 	}
-	delay(1);
+	_delay(1);
 	
 	_writeCommand(0x12);
 	_waitWhileBusy(fast_mode ? partial_refresh_time : full_refresh_time);	
@@ -247,7 +247,7 @@ void EPaper_Waveshare420::transfer()
 {
 	//_transfer(DATA_START_TRANSMISSION_1, buffer);
 	//_transfer(DATA_START_TRANSMISSION_2, buffer);
-	//delay(1);
+	//_delay(1);
 }
 
 
@@ -389,7 +389,7 @@ void  EPaper_Waveshare420::_updatePartialWindow(const uint8_t * buffer, uint16_t
 		}
 	}
 	_writeCommand(PARTIAL_OUT); // 0x92
-	delay(1);
+	_delay(1);
 	
 	
 #if 0
@@ -409,7 +409,7 @@ void  EPaper_Waveshare420::_updatePartialWindow(const uint8_t * buffer, uint16_t
 		}
 	}
 	_writeCommand(PARTIAL_OUT); // 0x92
-	delay(1);
+	_delay(1);
 #endif
 }
 
@@ -418,7 +418,7 @@ void  EPaper_Waveshare420::_updateFullWindow(const uint8_t * buffer)
 	_writeCommand(DATA_START_TRANSMISSION_2); // 0x13
 	for (int i = 0; i < WAVESHARE_420_WIDTH / 8 * WAVESHARE_420_HEIGHT; i++)
 		_writeData(buffer[i]);
-	delay(1);
+	_delay(1);
 }
 
 void EPaper_Waveshare420::_transfer(uint8_t command, const uint8_t * buffer)
