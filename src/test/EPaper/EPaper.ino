@@ -5,6 +5,7 @@
 
 
 #include "EPaperDisplay.h"
+#include "Bitmap_Paragliding.h"
 
 #include <Fonts/FreeMonoBold24pt7b.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
@@ -52,44 +53,47 @@ void setup()
 	
 	display.init();
 	
+	//
+	display.setRotation(0);
+	display.fillScreen(COLOR_WHITE);
+	display.setFont(&FreeMonoBold9pt7b);
+	
+	display.flush(false);
+	Serial.println("clear Screen");
+	delay(1000);
+	
+	//
+	display.fillTriangle(80, 20, 20, 150, 150, 150, COLOR_BLACK);
+	display.drawFastHLine(10, 240, 160, COLOR_BLACK);
+	
+	display.flush(true);
+	Serial.println("draw triangle");
+	
+	int Number = 3500;
+	while( ++Number <= 3520)
+	{
+		display.drawFastHLine(10, 240, 160, COLOR_BLACK);
+		display.fillRect(10, 240-20, 160, 40, COLOR_WHITE);
+		display.setTextColor(COLOR_BLACK, COLOR_WHITE);
+		display.setCursor(10, 240);
+		display.print("> ");
+		display.print(Number);
+		
+		display.flush(true);
+		Serial.print("draw Number "); Serial.println(Number);
+	}
+	
+	//
 	display.setRotation(0);
 	display.fillScreen(COLOR_WHITE);
 	display.setFont(&FreeMonoBold9pt7b);
 	display.setTextColor(COLOR_BLACK, COLOR_WHITE);
-	display.setCursor(10, 10);
-	display.print("Hello~");
+	display.drawBitmapBM(Bitmap_Paragliding, 0, 10, 176, 178, COLOR_WHITE, bm_invert);
+	display.setCursor(0, 216);
+	display.print("Flight computer");
 	
 	display.flush(false);
-	Serial.println("flush Hello~");
-	delay(1000);
-	
-	display.fillTriangle(80, 20, 20, 150, 150, 150, COLOR_BLACK);
-	display.flush(true);
-	Serial.println("flush Triangle");
-	
-	int Number = 3500;
-	while( Number <= 3510)
-	{
-		//display.fillScreen(1);
-		display.drawFastHLine(10, 180, 160, COLOR_BLACK);
-		display.fillRect(10, 180-20, 160, 40, COLOR_WHITE);
-		display.setCursor(10, 180);
-		display.print("> ");
-		display.print(Number++);
-		display.flush(true);
-		Serial.println("flush Number");
-	}
-	
-	display.fillScreen(COLOR_WHITE);
-	display.setFont(&FreeMonoBold9pt7b);
-	display.setTextColor(COLOR_BLACK, COLOR_WHITE);
-	display.setCursor(10, 100);
-	display.print("Bye~");
-	display.flush(false);
-	Serial.println("flush Bye!!");
-	
-	display.sleep();
-	Serial.println("go Sleep");
+	Serial.println("draw sleep display!!");
 }
 
 void loop()

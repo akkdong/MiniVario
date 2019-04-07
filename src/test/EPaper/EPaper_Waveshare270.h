@@ -42,6 +42,7 @@ private:
 	void							_setLUTPartial();
 	
 	void							_setPartialWindow(uint8_t command, uint16_t x, uint16_t y, uint16_t w, uint16_t h);	
+	void							_refreshPartialWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 	
 	void							_transfer(uint8_t command, const uint8_t * buffer);
 	

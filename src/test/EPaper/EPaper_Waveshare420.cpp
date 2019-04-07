@@ -187,7 +187,6 @@ void EPaper_Waveshare420::init()
 	EPaperDriver::init();
 	
 	_reset();
-	delay(1);
 	
 	_initDisplay();
 }

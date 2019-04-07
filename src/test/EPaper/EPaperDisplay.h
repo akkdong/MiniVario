@@ -6,9 +6,24 @@
 #include "EPaper_Waveshare270.h"
 #include "EPaper_Waveshare420.h"
 
-#define COLOR_BLACK		0xFF
-#define COLOR_WHITE		0x00
+#define COLOR_BLACK		0x00
+#define COLOR_WHITE		0xFF
 
+enum bm_mode //BM_ModeSet
+{
+	bm_normal = 0,
+	bm_default = 1, // for use for BitmapExamples
+	// these potentially can be combined
+	bm_invert = (1 << 1),
+	bm_flip_x = (1 << 2),
+	bm_flip_y = (1 << 3),
+	bm_r90 = (1 << 4),
+	bm_r180 = (1 << 5),
+	bm_r270 = bm_r90 | bm_r180,
+	bm_partial_update = (1 << 6),
+	bm_invert_red = (1 << 7),
+	bm_transparent = (1 << 8)
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -37,6 +52,9 @@ public:
 	void							flush(bool fast_update = false);
 	
 	void							sleep();
+	
+	//
+	void							drawBitmapBM(const uint8_t * bmtpa, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color, int16_t mode);
 	
 private:
 	template <typename T> static inline void _swap_(T & a, T & b) { T t = a; a = b; b = t;  }

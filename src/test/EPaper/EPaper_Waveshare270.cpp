@@ -200,22 +200,29 @@ void EPaper_Waveshare270::refresh(bool fast_mode)
 {	
 	if (fast_mode)
 	{
-		if (_state & _FULL_MODE)
+		if (_state & _DEEP_SLEEP || _state & _FULL_MODE)
 		{
 			// wakeUp...
 			_reset();
 			_initDisplay();
-			_setLUTFull();
+			//_setLUTFull();
 		}
 		_setLUTPartial();
 
 		// writeWindow
+		#if 0
 		Serial.println("_setPartialWindow(0x15)");
+		//_writeCommand(0x91);
 		_setPartialWindow(0x15, 0, 0, WAVESHARE_270_WIDTH, WAVESHARE_270_HEIGHT);
 		for (int i = 0; i < WAVESHARE_270_WIDTH / 8 * WAVESHARE_270_HEIGHT; i++)
 			_writeData(buffer[i]);
+		delay(2);
+		#else
+		_transfer(0x15, buffer);
+		#endif;
 		
 		// refreshWindow
+		#if 0
 		Serial.println("_refreshWindow(0x16)");
 		_writeCommand(0x16);
 		_writeData(0);
@@ -227,12 +234,21 @@ void EPaper_Waveshare270::refresh(bool fast_mode)
 		_writeData(WAVESHARE_270_HEIGHT >> 8);
 		_writeData(WAVESHARE_270_HEIGHT & 0xFF);	
 		_waitWhileBusy(partial_refresh_time+1000);
+		#else
+		_refreshPartialWindow(0, 0, WAVESHARE_270_WIDTH, WAVESHARE_270_HEIGHT);
+		#endif 
 	
 		// writeWindow
+		#if 0
 		Serial.println("_setPartialWindow(0x14)");
+		//_writeCommand(0x91);
 		_setPartialWindow(0x14, 0, 0, WAVESHARE_270_WIDTH, WAVESHARE_270_HEIGHT);
 		for (int i = 0; i < WAVESHARE_270_WIDTH / 8 * WAVESHARE_270_HEIGHT; i++)
 			_writeData(buffer[i]);
+		delay(2);
+		#else
+		_transfer(0x14, buffer);
+		#endif
 	}
 	else
 	{
@@ -428,19 +444,24 @@ void EPaper_Waveshare270::_setLUTFull()
 	_writeData(0x97); 
 
 	_writeCommand(LUT_FOR_VCOM); // 0x20
-	_writeData(lut_20_vcom_dc_full, sizeof(lut_20_vcom_dc_full));
+	for (int i = 0; i < sizeof(lut_20_vcom_dc_full); i++)
+		_writeData(lut_20_vcom_dc_full[i]);
 		
 	_writeCommand(LUT_WHITE_TO_WHITE); // 0x21
-	_writeData(lut_21_ww_full, sizeof(lut_21_ww_full));
+	for (int i = 0; i < sizeof(lut_21_ww_full); i++)
+		_writeData(lut_21_ww_full[i]);
 	
 	_writeCommand(LUT_BLACK_TO_WHITE); // 0x22
-	_writeData(lut_22_bw_full, sizeof(lut_22_bw_full));
+	for (int i = 0; i < sizeof(lut_22_bw_full); i++)
+		_writeData(lut_22_bw_full[i]);
 	
 	_writeCommand(LUT_WHITE_TO_BLACK); // 0x23
-	_writeData(lut_23_wb_full, sizeof(lut_23_wb_full));
+	for (int i = 0; i < sizeof(lut_23_wb_full); i++)
+		_writeData(lut_23_wb_full[i]);
 	
 	_writeCommand(LUT_BLACK_TO_BLACK); // 0x24
-	_writeData(lut_24_bb_full, sizeof(lut_24_bb_full));
+	for (int i = 0; i < sizeof(lut_24_bb_full); i++)
+		_writeData(lut_24_bb_full[i]);
 	
 	_state |= _FULL_MODE;
 }
@@ -454,19 +475,24 @@ void EPaper_Waveshare270::_setLUTPartial()
 	_writeData(0x17); 
 
 	_writeCommand(LUT_FOR_VCOM); // 0x20
-	_writeData(lut_20_vcom_dc_partial, sizeof(lut_20_vcom_dc_partial));
+	for (int i = 0; i < sizeof(lut_20_vcom_dc_partial); i++)
+		_writeData(lut_20_vcom_dc_partial[i]);
 		
 	_writeCommand(LUT_WHITE_TO_WHITE); // 0x21
-	_writeData(lut_21_ww_partial, sizeof(lut_21_ww_partial));
+	for (int i = 0; i < sizeof(lut_21_ww_partial); i++)
+		_writeData(lut_21_ww_partial[i]);
 	
 	_writeCommand(LUT_BLACK_TO_WHITE); // 0x22
-	_writeData(lut_22_bw_partial, sizeof(lut_22_bw_partial));
+	for (int i = 0; i < sizeof(lut_22_bw_partial); i++)
+		_writeData(lut_22_bw_partial[i]);
 	
 	_writeCommand(LUT_WHITE_TO_BLACK); // 0x23
-	_writeData(lut_23_wb_partial, sizeof(lut_23_wb_partial));
+	for (int i = 0; i < sizeof(lut_23_wb_partial); i++)
+		_writeData(lut_23_wb_partial[i]);
 	
 	_writeCommand(LUT_BLACK_TO_BLACK); // 0x24
-	_writeData(lut_24_bb_partial, sizeof(lut_24_bb_partial));
+	for (int i = 0; i < sizeof(lut_24_bb_partial); i++)
+		_writeData(lut_24_bb_partial[i]);
 	
 	_state &= ~_FULL_MODE;
 }
@@ -474,6 +500,7 @@ void EPaper_Waveshare270::_setLUTPartial()
 void  EPaper_Waveshare270::_setPartialWindow(uint8_t command, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 {
 	_writeCommand(command);
+	
 	_writeData(x >> 8);
 	_writeData(x & 0xF8);
 	_writeData(y >> 8);
@@ -482,6 +509,22 @@ void  EPaper_Waveshare270::_setPartialWindow(uint8_t command, uint16_t x, uint16
 	_writeData(w & 0xF8);
 	_writeData(h >> 8);
 	_writeData(h & 0xFF);
+}
+
+void  EPaper_Waveshare270::_refreshPartialWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
+{
+	_writeCommand(0x16);
+	
+	_writeData(x >> 8);
+	_writeData(x & 0xF8);
+	_writeData(y >> 8);
+	_writeData(y & 0xFF);
+	_writeData(w >> 8);
+	_writeData(w & 0xF8);
+	_writeData(h >> 8);
+	_writeData(h & 0xFF);
+	
+	_waitWhileBusy(partial_refresh_time+1000);
 }
 
 void EPaper_Waveshare270::_transfer(uint8_t command, const uint8_t * buffer)
