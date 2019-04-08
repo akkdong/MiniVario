@@ -205,9 +205,7 @@ void EPaper_Waveshare270::refresh(bool fast_mode)
 	}
 	else
 	{
-		Serial.println("_initDisplay()");
 		_initDisplay();
-		Serial.println("_initFullMode()");
 		_initFullMode();
 		
 		if (_initial)
@@ -223,7 +221,6 @@ void EPaper_Waveshare270::refresh(bool fast_mode)
 		for (int i = 0; i < WAVESHARE_270_WIDTH * WAVESHARE_270_HEIGHT / 8; i++)
 			_writeData(buffer[i]);
 		
-		Serial.println("refresh display");
 		_writeCommand(0x12);
 		_waitWhileBusy(full_refresh_time);
 		
@@ -231,7 +228,6 @@ void EPaper_Waveshare270::refresh(bool fast_mode)
 		for (int i = 0; i < WAVESHARE_270_WIDTH * WAVESHARE_270_HEIGHT / 8; i++)
 			_writeData(buffer[i]);
 		
-		Serial.println("powerOff()");
 		powerOff();
 	}
 }
