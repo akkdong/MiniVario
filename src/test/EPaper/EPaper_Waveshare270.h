@@ -24,7 +24,6 @@ public:
 	
 	uint8_t *					getBuffer() { return &buffer[0];  }
 	
-	void							transfer();
 	void							refresh(bool fast_mode = true);
 	
 	void							powerOn();
@@ -38,8 +37,8 @@ private:
 	void							_powerOff();
 	void							_deepSleep();
 	
-	void							_setLUTFull();
-	void							_setLUTPartial();
+	void							_initFullMode();
+	void							_initFastMode();
 	
 	void							_setPartialWindow(uint8_t command, uint16_t x, uint16_t y, uint16_t w, uint16_t h);	
 	void							_refreshPartialWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
@@ -47,10 +46,10 @@ private:
 	void							_transfer(uint8_t command, const uint8_t * buffer);
 	
 public:	
-    static const uint16_t 	power_on_time = 1000; // ms, e.g. 98877us
-    static const uint16_t 	power_off_time = 300; // ms, e.g. 28405us
-    static const uint16_t 	full_refresh_time = 4000; // ms, e.g. 1979027us
-    static const uint16_t 	partial_refresh_time = 1400; // ms, e.g. 363637us
+    static const uint16_t 	power_on_time = 120; // ms, e.g. 98877us
+    static const uint16_t 	power_off_time = 40; // ms, e.g. 28405us
+    static const uint16_t 	full_refresh_time = 2200; // ms, e.g. 1979027us
+    static const uint16_t 	partial_refresh_time = 400; // ms, e.g. 363637us
 	
 private:
 	static const uint8_t		lut_20_vcom_dc_full[];

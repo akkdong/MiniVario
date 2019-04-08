@@ -1,8 +1,6 @@
 // EPaper.ino
 //
-
 // Waveshare E-Paper  2.7, 4.2 Test
-
 
 #include "EPaperDisplay.h"
 #include "Bitmap_Paragliding.h"
@@ -11,6 +9,7 @@
 #include <Fonts/FreeMonoBold9pt7b.h>
 
 
+//
 PinSetting ePaperPins[] = 
 {
 	#if TEST_420
@@ -39,6 +38,7 @@ EPaper_Waveshare420 driver(ePaperPins);
 #else // 270
 EPaper_Waveshare270 driver(ePaperPins);
 #endif
+
 EPaperDisplay display(driver);
 
 
@@ -57,17 +57,18 @@ void setup()
 	display.setRotation(0);
 	display.fillScreen(COLOR_WHITE);
 	display.setFont(&FreeMonoBold9pt7b);
+	display.drawBitmapBM(Bitmap_Paragliding, 6, 24, 164, 166, COLOR_WHITE, bm_invert);
 	
-	display.flush(false);
-	Serial.println("clear Screen");
-	delay(1000);
+	display.refresh(false);
+	delay(2000);
 	
 	//
+	display.fillScreen(COLOR_WHITE);
 	display.fillTriangle(80, 20, 20, 150, 150, 150, COLOR_BLACK);
 	display.drawFastHLine(10, 240, 160, COLOR_BLACK);
 	
-	display.flush(true);
-	Serial.println("draw triangle");
+	display.refresh(true);
+	delay(1000);
 	
 	int Number = 3500;
 	while( ++Number <= 3520)
@@ -79,8 +80,7 @@ void setup()
 		display.print("> ");
 		display.print(Number);
 		
-		display.flush(true);
-		Serial.print("draw Number "); Serial.println(Number);
+		display.refresh(true);
 	}
 	
 	//
@@ -89,11 +89,13 @@ void setup()
 	display.setFont(&FreeMonoBold9pt7b);
 	display.setTextColor(COLOR_BLACK, COLOR_WHITE);
 	display.drawBitmapBM(Bitmap_Paragliding, 6, 24, 164, 166, COLOR_WHITE, bm_invert);
-	display.setCursor(0, 246);
-	display.print("Flight computer");
+	display.setCursor(0, 242);
+	display.print("Fly high~");
+	display.setCursor(0, 256);
+	display.print("Fly away!");
 	
-	display.flush(false);
-	Serial.println("draw sleep display!!");
+	display.refresh(false);
+	display.sleep();
 }
 
 void loop()

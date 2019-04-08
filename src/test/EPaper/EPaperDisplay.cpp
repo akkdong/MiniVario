@@ -95,9 +95,8 @@ void EPaperDisplay::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_
 	Adafruit_GFX::fillRect(x, y, w, h, color);
 }
 
-void EPaperDisplay::flush(bool fast_update)
+void EPaperDisplay::refresh(bool fast_update)
 {
-	_epd.transfer();
 	_epd.refresh(fast_update);
 }
 

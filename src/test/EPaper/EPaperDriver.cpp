@@ -45,7 +45,7 @@ void EPaperDriver::_reset()
 	_delay(10);
 	
 	//
-	_state &= ~_DEEP_SLEEP;
+	_state &= ~(_DEEP_SLEEP | _POWER_ON | _FAST_MODE);
 }
 
 void EPaperDriver::_writeCommand(uint8_t command)
@@ -94,20 +94,18 @@ void EPaperDriver::_waitWhileBusy(uint16_t timeout)
 	
 	while (1)
 	{
-		_delay(1);
+		_delay(2);
 		
 		if (digitalRead(_pin_settings[_PIN_BUSY].no) != _pin_settings[_PIN_BUSY].active)
 		{
-			Serial.print("NOT busy!! : "); Serial.println(millis() - start);
+			//Serial.print("NOT BUSY!! : "); Serial.println(millis() - start);
 			break;
 		}
 		
-		#if 1
 		if ((millis() - start) > timeout)
 		{
-			Serial.println("TIMEOUT~~");
+			//Serial.println("TIMEOUT~~");
 			break;
 		}
-		#endif
 	}
 }

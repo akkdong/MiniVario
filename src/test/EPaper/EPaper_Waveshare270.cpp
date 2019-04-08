@@ -167,151 +167,85 @@ const uint8_t EPaper_Waveshare270::lut_24_bb_partial[] PROGMEM =
 EPaper_Waveshare270::EPaper_Waveshare270(PinSetting * pins)
 	: EPaperDriver(pins), _initial(true)
 {
-	
 }
 
 void EPaper_Waveshare270::init()
 {
 	EPaperDriver::init();
 	
-	#if 0
 	_reset();
-	_initDisplay();	
-	_setLUTFull();
-	_powerOn();
-	#endif
-	
-	#if 0
-	_writeCommand(DATA_START_TRANSMISSION_1);
-	_delay(2);
-	for (int i = 0; i < WAVESHARE_270_WIDTH / 8 * WAVESHARE_270_HEIGHT; i++)
-		_writeData(0xFF);
-	_delay(2);
-	
-	_writeCommand(DATA_START_TRANSMISSION_2);
-	_delay(2);
-	for (int i = 0; i < WAVESHARE_270_WIDTH / 8 * WAVESHARE_270_HEIGHT; i++)
-		_writeData(0xFF);
-	_delay(2);	
-	#endif
 }
 
 void EPaper_Waveshare270::refresh(bool fast_mode)
 {	
 	if (fast_mode)
 	{
-		if (_state & _DEEP_SLEEP || _state & _FULL_MODE)
+//		if (_state & _DEEP_SLEEP || ! (_state & _FAST_MODE))
+		if (! (_state & _FAST_MODE))
 		{
 			// wakeUp...
-			_reset();
-			//_setLUTFull();
+			_initDisplay();
+			_initFullMode();
+			
+			//_setPartialWindow(0x14, 0, 0, WAVESHARE_270_WIDTH, WAVESHARE_270_HEIGHT);
+			//for (int i = 0; i < WAVESHARE_270_WIDTH * WAVESHARE_270_HEIGHT / 8; i++)
+			//	_writeData(0xFF);
 		}
-		_initDisplay();
-		_setLUTPartial();
+		_initFastMode();
 
 		// writeWindow
-		#if 0
-		Serial.println("_setPartialWindow(0x15)");
-		//_writeCommand(0x91);
-		_setPartialWindow(0x15, 0, 0, WAVESHARE_270_WIDTH, WAVESHARE_270_HEIGHT);
-		for (int i = 0; i < WAVESHARE_270_WIDTH / 8 * WAVESHARE_270_HEIGHT; i++)
-			_writeData(buffer[i]);
-		_delay(2);
-		#else
 		_transfer(0x15, buffer);
-		#endif;
 		
 		// refreshWindow
-		#if 0
-		Serial.println("_refreshWindow(0x16)");
-		_writeCommand(0x16);
-		_writeData(0);
-		_writeData(0);
-		_writeData(0);
-		_writeData(0);
-		_writeData(WAVESHARE_270_WIDTH >> 8);
-		_writeData(WAVESHARE_270_WIDTH & 0xF8);
-		_writeData(WAVESHARE_270_HEIGHT >> 8);
-		_writeData(WAVESHARE_270_HEIGHT & 0xFF);	
-		_waitWhileBusy(partial_refresh_time+1000);
-		#else
 		_refreshPartialWindow(0, 0, WAVESHARE_270_WIDTH, WAVESHARE_270_HEIGHT);	
-		_waitWhileBusy(partial_refresh_time+1000);
-		#endif 
+		_waitWhileBusy(partial_refresh_time);
 	
 		// writeWindow
-		#if 0
-		Serial.println("_setPartialWindow(0x14)");
-		//_writeCommand(0x91);
-		_setPartialWindow(0x14, 0, 0, WAVESHARE_270_WIDTH, WAVESHARE_270_HEIGHT);
-		for (int i = 0; i < WAVESHARE_270_WIDTH / 8 * WAVESHARE_270_HEIGHT; i++)
-			_writeData(buffer[i]);
-		_delay(2);
-		#else
 		_transfer(0x14, buffer);
-		#endif
 	}
 	else
 	{
-		_reset();
+		Serial.println("_initDisplay()");
 		_initDisplay();
-		_setLUTFull();
+		Serial.println("_initFullMode()");
+		_initFullMode();
 		
 		if (_initial)
 		{
-			Serial.println("_writeCommand(0x10)");
 			_writeCommand(0x10);
-			//_delay(2);
-			for (int i = 0; i < WAVESHARE_270_WIDTH / 8 * WAVESHARE_270_HEIGHT; i++)
+			for (int i = 0; i < WAVESHARE_270_WIDTH * WAVESHARE_270_HEIGHT / 8; i++)
 				_writeData(0xFF);
-			//_delay(2);
 			
 			_initial = false;
 		}
 		
-		Serial.println("_writeCommand(0x13)");
 		_writeCommand(0x13);
-		//_delay(2);
-		for (int i = 0; i < WAVESHARE_270_WIDTH / 8 * WAVESHARE_270_HEIGHT; i++)
+		for (int i = 0; i < WAVESHARE_270_WIDTH * WAVESHARE_270_HEIGHT / 8; i++)
 			_writeData(buffer[i]);
-		//_delay(2);
 		
-		Serial.println("_writeCommand(0x12)");
+		Serial.println("refresh display");
 		_writeCommand(0x12);
-		_waitWhileBusy(full_refresh_time+1000);
+		_waitWhileBusy(full_refresh_time);
 		
-		Serial.println("_writeCommand(0x10)");
 		_writeCommand(0x10);
-		//_delay(2);
-		for (int i = 0; i < WAVESHARE_270_WIDTH / 8 * WAVESHARE_270_HEIGHT; i++)
+		for (int i = 0; i < WAVESHARE_270_WIDTH * WAVESHARE_270_HEIGHT / 8; i++)
 			_writeData(buffer[i]);
-		//_delay(2);
 		
-		Serial.println("_deepSleep()");
-		deepSleep();
+		Serial.println("powerOff()");
+		powerOff();
 	}
 }
 
 void EPaper_Waveshare270::powerOn()
 {
 	if (! (_state & _POWER_ON))
-	{
-		Serial.println("powerOn()");
-		
 		_powerOn();	
-		_state |= _POWER_ON;
-	}
 }
 
 void EPaper_Waveshare270::powerOff()
 {
 	if (_state & _POWER_ON)
-	{
-		Serial.println("powerOff()");
-		
 		_powerOff();	
-		_state &= ~_POWER_ON;
-	}
 }
 
 void EPaper_Waveshare270::deepSleep()
@@ -320,19 +254,10 @@ void EPaper_Waveshare270::deepSleep()
 	{
 		//
 		powerOff();
-	
+
 		//
 		_deepSleep();
-	
-		_state = _DEEP_SLEEP;
 	}
-}
-
-void EPaper_Waveshare270::transfer()
-{
-	//_transfer(DATA_START_TRANSMISSION_1, buffer);
-	//_transfer(DATA_START_TRANSMISSION_2, buffer);
-	//_delay(1);
 }
 
 
@@ -341,13 +266,16 @@ void EPaper_Waveshare270::transfer()
 
 void EPaper_Waveshare270::_initDisplay()
 {
-	Serial.println("_initDisplay()");
+	//
+	if (_state & _DEEP_SLEEP)
+		_reset();
+	
+	//
 	_writeCommand(POWER_SETTING); // 0x01
 	_writeData(0x03);
 	_writeData(0x00);
 	_writeData(0x2B);
 	_writeData(0x2B);
-//	_writeData(0x09);
 	
 	_writeCommand(BOOSTER_SOFT_START); // 0x06
 	_writeData(0x07);
@@ -388,11 +316,8 @@ void EPaper_Waveshare270::_initDisplay()
 	_writeCommand(0x16); // RESET DFV_EN
 	_writeData(0x00);
 	
-	_powerOn();
-	
 	_writeCommand(PANEL_SETTING); // 0x00
 	_writeData(0xBF); // KW-BF   KWR-AF  BWROTP 0f
-//	_writeData(0xAF);
 	
 	_writeCommand(PLL_CONTROL); // 0x30
 	_writeData(0x3A); // 90 50HZ  3A 100HZ   29 150Hz 39 200HZ 31 171HZ
@@ -407,40 +332,41 @@ void EPaper_Waveshare270::_initDisplay()
 	
 	_writeCommand(VCM_DC_SETTING);  // 0x82
 	_writeData(0x08); // 0x28:-2.0V, 0x12:-0.9V
-//	_writeData(0x12);	
 	
 	_delay(2);
 	
-	_writeCommand(VCOM_AND_DATA_INTERVAL_SETTING); // 0x50
-	_writeData(0x97);
-	
-//	_setLUTFull();
-//	_powerOn();	
+//	_writeCommand(VCOM_AND_DATA_INTERVAL_SETTING); // 0x50
+//	_writeData(0x97);
 }
 	
 void EPaper_Waveshare270::_powerOn()
 {
 	_writeCommand(POWER_ON); // 0x04
-	_waitWhileBusy(power_on_time+1000);
+	_waitWhileBusy(power_on_time);
+	
+	_state |= _POWER_ON;
 }
 
 void EPaper_Waveshare270::_powerOff()
 {
 	_writeCommand(POWER_OFF); // 0x02
-	_waitWhileBusy(power_off_time+1000);
+	_waitWhileBusy(power_off_time);
+	
+	_state &= ~(_POWER_ON | _FAST_MODE);
 }
 
 void EPaper_Waveshare270::_deepSleep()
 {
 	_writeCommand(DEEP_SLEEP); // 0x07
 	_writeData(0xA5);
+	
+	_state |= _DEEP_SLEEP;
 }
 
-void EPaper_Waveshare270::_setLUTFull()
+void EPaper_Waveshare270::_initFullMode()
 {
-	Serial.println("_setLUTFull()");
-	_writeCommand(VCM_DC_SETTING);  // 0x82
-	_writeData(0x08); 
+//	_writeCommand(VCM_DC_SETTING);  // 0x82
+//	_writeData(0x08); 
 	_writeCommand(VCOM_AND_DATA_INTERVAL_SETTING);  // 0x50
 	_writeData(0x97); 
 
@@ -464,14 +390,16 @@ void EPaper_Waveshare270::_setLUTFull()
 	for (int i = 0; i < sizeof(lut_24_bb_full); i++)
 		_writeData(pgm_read_byte(&lut_24_bb_full[i]));
 	
-	_state |= _FULL_MODE;
+	_state &= ~_FAST_MODE;
+	
+	//
+	_powerOn();
 }
 
-void EPaper_Waveshare270::_setLUTPartial()
+void EPaper_Waveshare270::_initFastMode()
 {
-	Serial.println("_setLUTPartial()");
-	_writeCommand(VCM_DC_SETTING);  // 0x82
-	_writeData(0x08); 
+//	_writeCommand(VCM_DC_SETTING);  // 0x82
+//	_writeData(0x08); 
 	_writeCommand(VCOM_AND_DATA_INTERVAL_SETTING);  // 0x50
 	_writeData(0x17); 
 
@@ -495,7 +423,10 @@ void EPaper_Waveshare270::_setLUTPartial()
 	for (int i = 0; i < sizeof(lut_24_bb_partial); i++)
 		_writeData(pgm_read_byte(&lut_24_bb_partial[i]));
 	
-	_state &= ~_FULL_MODE;
+	_state |= _FAST_MODE;
+	
+	//
+	_powerOn();
 }
 
 void  EPaper_Waveshare270::_setPartialWindow(uint8_t command, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
@@ -514,6 +445,10 @@ void  EPaper_Waveshare270::_setPartialWindow(uint8_t command, uint16_t x, uint16
 
 void  EPaper_Waveshare270::_refreshPartialWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 {
+	// what the xxx	: h should not exceed 256 --> any way it refresh all
+	h = __min(h, 256); 
+	
+	//
 	_writeCommand(0x16);
 	
 	_writeData(x >> 8);
@@ -528,14 +463,10 @@ void  EPaper_Waveshare270::_refreshPartialWindow(uint16_t x, uint16_t y, uint16_
 
 void EPaper_Waveshare270::_transfer(uint8_t command, const uint8_t * buffer)
 {
-	Serial.println("_transfer()");
-	
-//	_writeCommand(command);
 	_setPartialWindow(command, 0, 0, WAVESHARE_270_WIDTH, WAVESHARE_270_HEIGHT);
-	_delay(1);
 	
-	for (int i = 0; i < WAVESHARE_270_WIDTH / 8 * WAVESHARE_270_HEIGHT; i++)
+	for (int i = 0; i < WAVESHARE_270_WIDTH * WAVESHARE_270_HEIGHT / 8; i++)
 		_writeData(buffer[i]);
-	
-	_delay(1);
+
+	_delay(2);
 }

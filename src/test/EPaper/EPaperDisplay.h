@@ -49,7 +49,7 @@ public:
 	void							fillScreen(uint16_t color); // 0x00: black, > 0x00 : white
 	void							fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 	
-	void							flush(bool fast_update = false);
+	void							refresh(bool fast_update = false);
 	
 	void							sleep();
 	

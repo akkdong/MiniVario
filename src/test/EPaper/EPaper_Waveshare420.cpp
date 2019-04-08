@@ -193,7 +193,7 @@ void EPaper_Waveshare420::init()
 
 void EPaper_Waveshare420::refresh(bool fast_mode)
 {
-	if (_state & _FULL_MODE)
+	if (! (_state & _FAST_MODE))
 	{
 		if (fast_mode)
 			_setLUTPartial();
@@ -333,7 +333,7 @@ void EPaper_Waveshare420::_setLUTFull()
 	_writeCommand(LUT_BLACK_TO_BLACK); // 0x24
 	_writeDataP(lut_24_bb_full, sizeof(lut_24_bb_full));
 	
-	_state |= _FULL_MODE;
+	_state &= ~_FAST_MODE;
 }
 
 void EPaper_Waveshare420::_setLUTPartial()
@@ -353,7 +353,7 @@ void EPaper_Waveshare420::_setLUTPartial()
 	_writeCommand(LUT_BLACK_TO_BLACK); // 0x24
 	_writeDataP(lut_24_bb_partial, sizeof(lut_24_bb_partial));
 	
-	_state &= ~_FULL_MODE;
+	_state |= _FAST_MODE;
 }
 
 void  EPaper_Waveshare420::_setPartialWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
