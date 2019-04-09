@@ -38,10 +38,10 @@ public:
 	//   @param x X coordinate.  
 	//   @param y Y coordinate. 
 	//   @param color 16-bit pixel color. 
-	void 							drawPixel(int16_t x, int16_t y, uint16_t color);
+	virtual void 					drawPixel(int16_t x, int16_t y, uint16_t color);
 
 	//
-	void							init();
+	virtual void					init();
 	
 	void							setRotation(uint8_t r);
 	void							invertDisplay(boolean i);
