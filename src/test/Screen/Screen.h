@@ -44,6 +44,7 @@ typedef enum _WidgetStyle
 	Widget_Empty,
 	
 	Widget_TextBox,
+	Widget_SimpleText,
 	Widget_Icon,
 	Widget_StatusBar,
 	Widget_VarioBar,
@@ -213,6 +214,7 @@ protected:
 	
 	void 			drawEmptyArea(Widget * widget);
 	void 			drawTextBox(Widget * widget);
+	void			drawSimpleText(Widget * widget);
 	void 			drawIcon(Widget * widget);
 	void 			drawStatusBar(Widget * widget);
 	void 			drawVarioHistory(Widget * widget);

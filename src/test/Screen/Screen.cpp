@@ -3,12 +3,23 @@
 
 #include "Screen.h"
 
-#include <Fonts/FreeMono8pt7b.h>
-#include <Fonts/FreeMonoBold8pt7b.h>
+#include <Fonts/FreeSans6pt7b.h>
+#include <Fonts/FreeSans8pt7b.h>
+#include <Fonts/FreeSans9pt7b.h>
+#include <Fonts/FreeSansBold6pt7b.h>
+#include <Fonts/FreeSansBold8pt7b.h>
+#include <Fonts/FreeSansBold9pt7b.h>
 
-#include <Fonts/FreeMonoBold12pt7b.h>
-#include <Fonts/FreeMonoBold18pt7b.h>
-#include <Fonts/FreeMonoBold24pt7b.h>
+#include <Fonts/FreeSansBold12pt7b.h>
+#include <Fonts/FreeSansBold16pt7b.h>
+#include <Fonts/FreeSansBold18pt7b.h>
+#include <Fonts/FreeSansBold24pt7b.h>
+#include <Fonts/FreeSansBold26pt7b.h>
+
+#define FONT_LABEL			&FreeSansBold8pt7b
+#define FONT_UNIT			&FreeSans6pt7b
+#define FONT_TEXT_BIG		&FreeSansBold24pt7b
+#define FONT_TEXT_SMALL		&FreeSansBold16pt7b
 
 
 
@@ -28,7 +39,7 @@ const char * WidgetContentProvider::getLabel(WidgetContentType type)
 	case WidgetContent_Speed_Air :
 		return "A.Spd";
 	case WidgetContent_Heading :
-		return "Heading";
+		return "Track";
 //	case WidgetContent_Heading_GPS :
 //		return "Heading";
 //	case WidgetContent_Heading_Compass :
@@ -62,7 +73,7 @@ const char * WidgetContentProvider::getLabel(WidgetContentType type)
 	case WidgetContent_Time_Current :
 		return "Time";
 	case WidgetContent_Time_Flight :
-		return "Fly";
+		return "FTime";
 	case WidgetContent_Pressure :
 		return "Prs";
 	case WidgetContent_Temperature :
@@ -119,7 +130,7 @@ const char * WidgetContentProvider::getUnit(WidgetContentType type)
 	case WidgetContent_Time_Current :
 		return "";
 	case WidgetContent_Time_Flight :
-		return "";
+		return "hPa";
 	case WidgetContent_Pressure :
 		return "hPa";
 	case WidgetContent_Temperature :
@@ -142,7 +153,7 @@ const char * WidgetContentProvider::getString(WidgetContentType type)
 	case WidgetContent_Speed_Air :
 		return "";
 	case WidgetContent_Heading :
-		return "";
+		return "270";
 //	case WidgetContent_Heading_GPS :
 //		return "";
 //	case WidgetContent_Heading_Compass :
@@ -172,13 +183,13 @@ const char * WidgetContentProvider::getString(WidgetContentType type)
 	case WidgetContent_Vario_Lazy :		// 1s average
 		return "";
 	case WidgetContent_DateTime :
-		return "";
+		return "16:34";
 	case WidgetContent_Time_Current :
-		return "";
+		return "16:34";
 	case WidgetContent_Time_Flight :
-		return "";
+		return "2:54";
 	case WidgetContent_Pressure :
-		return "";
+		return "1013.34";
 	case WidgetContent_Temperature :
 		return "";
 //	case WidgetContent_Thermal_Time :
@@ -213,15 +224,26 @@ void VarioScreen::init()
 	//
 	// below is just a test
 	pages[0][0].setStyle(Widget_TextBox, WS_SMALL_FONT, WidgetContent_Speed_Ground);
-	pages[0][0].setPosition(0, 16, 176, 64);
+	pages[0][0].setPosition(0, 24, 88, 52);
 
-	pages[0][1].setStyle(Widget_TextBox, WS_MID_FONT, WidgetContent_Altitude_GPS);
-	pages[0][1].setPosition(0, 80, 176, 64);
+	pages[0][1].setStyle(Widget_TextBox, WS_SMALL_FONT, WidgetContent_Altitude_GPS);
+	pages[0][1].setPosition(88, 24, 88, 52);
 
 	pages[0][2].setStyle(Widget_TextBox, WS_BIG_FONT, WidgetContent_Vario_Active);
-	pages[0][2].setPosition(0, 144, 176, 64);
-}
+	pages[0][2].setPosition(0, 76, 88, 64);
 
+	pages[0][5].setStyle(Widget_TextBox, WS_BIG_FONT, WidgetContent_Heading);
+	pages[0][5].setPosition(88, 76, 88, 64);
+	
+	pages[0][3].setStyle(Widget_TextBox, WS_BIG_FONT, WidgetContent_Time_Flight);
+	pages[0][3].setPosition(0, 140, 176, 64);
+
+	pages[0][4].setStyle(Widget_TextBox, WS_BIG_FONT, WidgetContent_Pressure);
+	pages[0][4].setPosition(0, 204, 176, 64);
+
+	pages[0][6].setStyle(Widget_SimpleText, 0, WidgetContent_Time_Current);
+	pages[0][6].setPosition(176-40, 0, 40, 24);
+}
 
 void VarioScreen::update()
 {
@@ -254,6 +276,10 @@ void VarioScreen::draw(Widget * widget)
 
 	case Widget_TextBox :
 		drawTextBox(widget);
+		break;
+		
+	case Widget_SimpleText :
+		drawSimpleText(widget);
 		break;
 		
 	case Widget_Icon :
@@ -302,6 +328,22 @@ void VarioScreen::drawTextBox(Widget * widget)
 	drawText(widget, string);
 }
 
+void VarioScreen::drawSimpleText(Widget * widget)
+{
+	const char * str = provider.getString(widget->getContentType());
+	if (str && str[0])
+	{
+		int16_t x, y;
+		uint16_t w, h;
+		
+		setFont(FONT_UNIT);
+		getTextBounds(str, 0, 0, &x, &y, &w, &h);
+		setCursor(widget->x + (widget->w - w) / 2, widget->y + (widget->h + h) / 2);
+		setTextColor(COLOR_BLACK);
+		print(str);
+	}	
+}
+
 void VarioScreen::drawIcon(Widget * widget)
 {
 }
@@ -325,11 +367,11 @@ void VarioScreen::drawCompass(Widget * widget)
 
 void VarioScreen::drawBorder(Widget * widget)
 {
-	#if 0
+	#if 1
 	drawFastHLine(widget->x, widget->y, widget->w, COLOR_BLACK);
-	drawFastHLine(widget->x, widget->y + widget->h, widget->w, COLOR_BLACK);
+//	drawFastHLine(widget->x, widget->y + widget->h, widget->w, COLOR_BLACK);
 	drawFastVLine(widget->x, widget->y, widget->h, COLOR_BLACK);
-	drawFastVLine(widget->x + widget->w - 1, widget->y, widget->h, COLOR_BLACK);
+//	drawFastVLine(widget->x + widget->w - 1, widget->y, widget->h, COLOR_BLACK);
 	#else
 	drawRect(widget->x, widget->y, widget->w, widget->h, COLOR_BLACK);
 	#endif
@@ -342,10 +384,9 @@ void VarioScreen::drawLabel(Widget * widget, const char * str)
 		int16_t x, y;
 		uint16_t w, h;
 		
-		setFont(&FreeMonoBold8pt7b);
+		setFont(FONT_LABEL);
 		getTextBounds(str, 0, 0, &x, &y, &w, &h);
-		drawRect(widget->x + 2, widget->y + 2, w, h, COLOR_BLACK);
-		setCursor(widget->x + 2, widget->y + h + 2);
+		setCursor(widget->x + 2, widget->y + 14);
 		setTextColor(COLOR_BLACK);
 		print(str);
 	}
@@ -358,10 +399,9 @@ void VarioScreen::drawUnit(Widget * widget, const char * str)
 		int16_t x, y;
 		uint16_t w, h;
 		
-		setFont(&FreeMono8pt7b);
+		setFont(FONT_UNIT);
 		getTextBounds(str, 0, 0, &x, &y, &w, &h);
-		drawRect(widget->x + widget->w - w - 4, widget->y + 2, w, h, COLOR_BLACK);
-		setCursor(widget->x + widget->w - w - 4, widget->y + h + 2);
+		setCursor(widget->x + widget->w - w - 4, widget->y + 14);
 		setTextColor(COLOR_BLACK);
 		print(str);
 	}
@@ -375,14 +415,11 @@ void VarioScreen::drawText(Widget * widget, const char * str)
 		uint16_t w, h;
 		
 		if (widget->extra & WS_BIG_FONT)
-			setFont(&FreeMonoBold24pt7b);
-		else if (widget->extra & WS_MID_FONT)
-			setFont(&FreeMonoBold18pt7b);
+			setFont(FONT_TEXT_BIG);
 		else
-			setFont(&FreeMonoBold12pt7b);			
+			setFont(FONT_TEXT_SMALL);
 		getTextBounds(str, 0, 0, &x, &y, &w, &h);
-		drawRect(widget->x + widget->w - w - 8, widget->y + widget->h - h - 4, w, h, COLOR_BLACK);
-		setCursor(widget->x + widget->w - w - 8, widget->y + widget->h - 4);
+		setCursor(widget->x + widget->w - w - 8, widget->y + widget->h - 6);
 		setTextColor(COLOR_BLACK);
 		print(str);
 	}
