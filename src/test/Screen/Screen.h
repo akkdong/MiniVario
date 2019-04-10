@@ -5,7 +5,8 @@
 #define __SCREEN_H__
 
 #include <Arduino.h>
-#include <EPaperDisplay.h>
+#include "EPaperDisplay.h"
+#include "DeviceContext.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -16,23 +17,42 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-// Widget_TextBox extra data
+// Widget_TextBox extraStyle
+//
+// extraStyle -> unsigned 32 bits : 0x00000000
+//  box-style : 0xF0000000
+//		0x80000000 -> draw left line
+//		0x40000000 -> draw top line
+//		0x20000000 -> draw right line
+//		0x10000000 -> draw bottom line
+//	font : 0x0000000F
 
-#define WS_TA_LEFT			0x0000 // WidgetStyle_TextAlign: default LEFT, MIDDLE
-#define WS_TA_RIGHT			0x0001
-#define WS_TA_CENTER		0x0002
-#define WS_TA_MIDDLE		0x0000
-#define WS_TA_TOP			0x0004
-#define WS_TA_BOTTOM		0x0008
-#define WS_LA_LEFT			0x0000 // WidgetStyle_LabelAlign: default LEFT
-#define WS_LA_RIGHT			0x0010
-#define WS_LA_CENTER		0x0020
-#define WS_HAS_LABEL		0x0100
-#define WS_HAS_BOARDER		0x0200
-#define WS_SMALL_FONT		0x0000
-#define WS_MID_FONT			0x1000
-#define WS_BIG_FONT			0x2000
-#define WS_OWNERDRAW		0x8000 // WidgetStyle_OwnerDraw
+#define WS_BOX_MASK			0xF0000000
+#define WS_BORDER_LEFT		0x80000000	// box-style: has left line
+#define WS_BORDER_TOP		0x40000000	// box-style: has top line
+#define WS_BORDER_RIGHT		0x20000000	// box-style: has right line
+#define WS_BORDER_BOTTOM	0x10000000	// box-style: has bottom line
+
+#define WS_HAS_LABEL		0x01000000
+#define WS_HAS_UNIT			0x02000000
+
+#define WS_TA_LEFT			0x00000000 // WidgetStyle_TextAlign: default LEFT, BOTTOM
+#define WS_TA_RIGHT			0x00010000
+#define WS_TA_CENTER		0x00020000
+#define WS_TA_TOP			0x00040000
+#define WS_TA_MIDDLE		0x00080000
+#define WS_TA_BOTTOM		0x00000000
+
+#define WS_FONT_MASK		0x0000000F
+#define WS_FONT_DEFAULT		0x00000001
+#define WS_FONT_NORMAL_1	0x00000000	// MonoSerif 6pt
+#define WS_FONT_NORMAL_2	0x00000001	// MonoSerif 8pt
+#define WS_FONT_NORMAL_3	0x00000002	// MonoSerif 16pt
+#define WS_FONT_NORMAL_4	0x00000003	// MonoSerif 24pt
+#define WS_FONT_BOLD_1		0x00000004	// MonoSerifBold 6pt
+#define WS_FONT_BOLD_2		0x00000005	// MonoSerifBold 8pt
+#define WS_FONT_BOLD_3		0x00000006	// MonoSerifBold 16pt
+#define WS_FONT_BOLD_4		0x00000007	// MonoSerifBold 24pt
 
 
 
@@ -92,6 +112,10 @@ typedef enum _WidgetContentType
 	
 //	WidgetContent_Thermal_Time
 //	WidgetContent_Thermal_Gain
+
+	// Simple Text
+	WidgetContent_Title,
+	WidgetContent_Battery,
 	
 	// Icon
 	WidgetContent_Status_GPS,
@@ -117,7 +141,6 @@ typedef enum _WidgetContentType
 //
 
 class Widget;
-class WidgetContentProvider;
 class VarioScreen;
 
 
@@ -126,19 +149,18 @@ class VarioScreen;
 
 class Widget
 {
-	friend class WidgetContentProvider;
 	friend class VarioScreen;
 	
 public:
 	Widget() : style(Widget_Empty) {}
 	
 public:
-	void				setStyle(WidgetStyle _style, uint32_t _extra, WidgetContentType _type);
+	void				setStyle(WidgetStyle _style, uint32_t _extraStyle, WidgetContentType _type);
 	void				setPosition(uint16_t _x, uint16_t _y, uint16_t _w, uint16_t _h);
 
 	WidgetStyle			getStyle();
+	uint32_t			getExtraStyle();
 	WidgetContentType	getContentType();
-	uint32_t			getExtraData();
 
 	uint16_t			getX();
 	uint16_t			getY();
@@ -147,14 +169,14 @@ public:
 	
 protected:
 	WidgetStyle			style;
+	uint32_t			extraStyle;
 	WidgetContentType	type;
-	uint32_t			extra; 	// style specific extra data
 	
 	uint16_t			x, y, w, h;
 };
 
-inline void Widget::setStyle(WidgetStyle _style, uint32_t _extra, WidgetContentType _type)
-	{ style = _style; extra = _extra; type = _type; }
+inline void Widget::setStyle(WidgetStyle _style, uint32_t _extraStyle, WidgetContentType _type)
+	{ style = _style; extraStyle = _extraStyle; type = _type; }
 	
 inline void Widget::setPosition(uint16_t _x, uint16_t _y, uint16_t _w, uint16_t _h)
 	{ x = _x; y = _y; w = _w; h = _h; }
@@ -162,12 +184,12 @@ inline void Widget::setPosition(uint16_t _x, uint16_t _y, uint16_t _w, uint16_t 
 inline WidgetStyle Widget::getStyle()
 	{ return style; }
 
+inline uint32_t Widget::getExtraStyle()
+	{ return extraStyle; }
+
 inline WidgetContentType Widget::getContentType()
 	{ return type; }
 	
-inline uint32_t Widget::getExtraData()
-	{ return extra; }
-
 inline uint16_t Widget::getX()
 	{ return x; }
 	
@@ -181,20 +203,6 @@ inline uint16_t Widget::getHeight()
 	{ return h; }
 	
 
-////////////////////////////////////////////////////////////////////////////////////////////////
-// class WidgetContentProvider
-
-class WidgetContentProvider
-{
-public:
-	WidgetContentProvider(/*VarioData * data*/);
-	
-public:
-	const char *	getLabel(WidgetContentType type);
-	const char *	getUnit(WidgetContentType type);
-	const char *	getString(WidgetContentType type);	
-};
-	
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class VarioScreen
@@ -202,7 +210,7 @@ public:
 class VarioScreen : public EPaperDisplay
 {
 public:
-	VarioScreen(EPaperDriver & _driver, WidgetContentProvider & _provider);
+	VarioScreen(EPaperDriver & _driver, DeviceContext & _context);
 
 public:
 	void			init();
@@ -227,10 +235,20 @@ protected:
 	void			drawText(Widget * widget, const char * str);
 	
 protected:
+	const char *	getLabel(WidgetContentType type);
+	const char *	getUnit(WidgetContentType type);
+	const char *	getString(WidgetContentType type);
+	
+	void			drawText(const char * str, int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t style, uint16_t color);
+	
+protected:
 	Widget			pages[MAX_PAGES][MAX_WIDGETS];
 	int				activePage;
 	
-	WidgetContentProvider & provider;
+	DeviceContext &	context;
+	
+private:
+	char			tempString[16];
 };
 
 

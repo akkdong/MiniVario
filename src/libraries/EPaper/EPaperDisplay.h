@@ -54,7 +54,7 @@ public:
 	void							sleep();
 	
 	//
-	void							drawBitmapBM(const uint8_t * bmtpa, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color, int16_t mode);
+	void							drawBitmapBM(const uint8_t * bitmap, uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color, int16_t mode);
 	
 private:
 	template <typename T> static inline void _swap_(T & a, T & b) { T t = a; a = b; b = t;  }
@@ -64,8 +64,8 @@ private:
 	void							_rotate(uint16_t & x, uint16_t & y, uint16_t & w, uint16_t & h);
 	
 protected:
-	EPaperDriver &			_epd;
+	EPaperDriver &					_epd;
 	
-	uint8_t *					_buffer;
+	uint8_t *						_buffer;
 };
 

@@ -2,216 +2,49 @@
 //
 
 #include "Screen.h"
-
-#include <Fonts/FreeSans6pt7b.h>
-#include <Fonts/FreeSans8pt7b.h>
-#include <Fonts/FreeSans9pt7b.h>
-#include <Fonts/FreeSansBold6pt7b.h>
-#include <Fonts/FreeSansBold8pt7b.h>
-#include <Fonts/FreeSansBold9pt7b.h>
-
-#include <Fonts/FreeSansBold12pt7b.h>
-#include <Fonts/FreeSansBold16pt7b.h>
-#include <Fonts/FreeSansBold18pt7b.h>
-#include <Fonts/FreeSansBold24pt7b.h>
-#include <Fonts/FreeSansBold26pt7b.h>
-
-#define FONT_LABEL			&FreeSansBold8pt7b
-#define FONT_UNIT			&FreeSans6pt7b
-#define FONT_TEXT_BIG		&FreeSansBold24pt7b
-#define FONT_TEXT_SMALL		&FreeSansBold16pt7b
-
+#include "Bitmap_StatusBar.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-// class WidgetContentProvider
+//
 
-WidgetContentProvider::WidgetContentProvider(/*VarioData * data*/)
+#include <Fonts/FreeSans6pt7b.h>
+#include <Fonts/FreeSans7pt7b.h>
+#include <Fonts/FreeSans8pt7b.h>
+#include <Fonts/FreeSans9pt7b.h>
+#include <Fonts/FreeSans16pt7b.h>
+#include <Fonts/FreeSans18pt7b.h>
+#include <Fonts/FreeSans24pt7b.h>
+
+#include <Fonts/FreeSansBold6pt7b.h>
+#include <Fonts/FreeSansBold7pt7b.h>
+#include <Fonts/FreeSansBold8pt7b.h>
+#include <Fonts/FreeSansBold9pt7b.h>
+#include <Fonts/FreeSansBold16pt7b.h>
+#include <Fonts/FreeSansBold18pt7b.h>
+#include <Fonts/FreeSansBold24pt7b.h>
+
+const GFXfont * __FontStack[] = 
 {
-}
-
-const char * WidgetContentProvider::getLabel(WidgetContentType type)
-{
-	switch (type)
-	{
-	case WidgetContent_Speed_Ground :
-		return "G.Spd";
-	case WidgetContent_Speed_Air :
-		return "A.Spd";
-	case WidgetContent_Heading :
-		return "Track";
-//	case WidgetContent_Heading_GPS :
-//		return "Heading";
-//	case WidgetContent_Heading_Compass :
-//		return "Heading";
-//	case WidgetContent_Bearing :
-//		return "Heading";
-	case WidgetContent_Longitude :
-		return "Long";
-	case WidgetContent_Latitude :
-		return "Lat";
-	case WidgetContent_Altitude_GPS :		// QNH
-		return "Alt.G";
-	case WidgetContent_Altitude_Baro :	// QNE
-		return "Alt.B";
-	case WidgetContent_Altitude_AGL :		// QFE
-		return "AGL";
-	case WidgetContent_Altitude_Ref1 :	// QFE
-		return "Alt1";
-	case WidgetContent_Altitude_Ref2 :	// QFE
-		return "Alt2";
-	case WidgetContent_Altitude_Ref3 :	// QFE
-		return "Alt3";
-	case WidgetContent_Glide_Ratio :
-		return "LD";
-	case WidgetContent_Vario_Active :
-		return "Vario";
-	case WidgetContent_Vario_Lazy :		// 1s average
-		return "Vario";
-	case WidgetContent_DateTime :
-		return "Date";
-	case WidgetContent_Time_Current :
-		return "Time";
-	case WidgetContent_Time_Flight :
-		return "FTime";
-	case WidgetContent_Pressure :
-		return "Prs";
-	case WidgetContent_Temperature :
-		return "Temp";
-//	case WidgetContent_Thermal_Time :
-//		return "";
-//	case WidgetContent_Thermal_Gain :
-//		return "";
-	}
-	
-	return "";
-}
-
-const char * WidgetContentProvider::getUnit(WidgetContentType type)
-{
-	switch (type)
-	{
-	case WidgetContent_Speed_Ground :
-		return "Km/h";
-	case WidgetContent_Speed_Air :
-		return "Km/h";
-	case WidgetContent_Heading :
-		return "Deg";
-//	case WidgetContent_Heading_GPS :
-//		return "Deg";
-//	case WidgetContent_Heading_Compass :
-//		return "Deg";
-//	case WidgetContent_Bearing :
-//		return "Deg";
-	case WidgetContent_Longitude :
-		return "";
-	case WidgetContent_Latitude :
-		return "";
-	case WidgetContent_Altitude_GPS :		// QNH
-		return "m";
-	case WidgetContent_Altitude_Baro :	// QNE
-		return "m";
-	case WidgetContent_Altitude_AGL :		// QFE
-		return "m";
-	case WidgetContent_Altitude_Ref1 :	// QFE
-		return "m";
-	case WidgetContent_Altitude_Ref2 :	// QFE
-		return "m";
-	case WidgetContent_Altitude_Ref3 :	// QFE
-		return "m";
-	case WidgetContent_Glide_Ratio :
-		return "";
-	case WidgetContent_Vario_Active :
-		return "m/s";
-	case WidgetContent_Vario_Lazy :		// 1s average
-		return "m/s";
-	case WidgetContent_DateTime :
-		return "";
-	case WidgetContent_Time_Current :
-		return "";
-	case WidgetContent_Time_Flight :
-		return "hPa";
-	case WidgetContent_Pressure :
-		return "hPa";
-	case WidgetContent_Temperature :
-		return "C";
-//	case WidgetContent_Thermal_Time :
-//		return "";
-//	case WidgetContent_Thermal_Gain :
-//		return "";
-	}
-	
-	return "";
-}
-
-const char * WidgetContentProvider::getString(WidgetContentType type)
-{
-	switch (type)
-	{
-	case WidgetContent_Speed_Ground :
-		return "54";
-	case WidgetContent_Speed_Air :
-		return "";
-	case WidgetContent_Heading :
-		return "270";
-//	case WidgetContent_Heading_GPS :
-//		return "";
-//	case WidgetContent_Heading_Compass :
-//		return "";
-//	case WidgetContent_Bearing :
-//		return "";
-	case WidgetContent_Longitude :
-		return "";
-	case WidgetContent_Latitude :
-		return "";
-	case WidgetContent_Altitude_GPS :		// QNH
-		return "1520";
-	case WidgetContent_Altitude_Baro :	// QNE
-		return "";
-	case WidgetContent_Altitude_AGL :		// QFE
-		return "";
-	case WidgetContent_Altitude_Ref1 :	// QFE
-		return "";
-	case WidgetContent_Altitude_Ref2 :	// QFE
-		return "";
-	case WidgetContent_Altitude_Ref3 :	// QFE
-		return "";
-	case WidgetContent_Glide_Ratio :
-		return "";
-	case WidgetContent_Vario_Active :
-		return "4.2";
-	case WidgetContent_Vario_Lazy :		// 1s average
-		return "";
-	case WidgetContent_DateTime :
-		return "16:34";
-	case WidgetContent_Time_Current :
-		return "16:34";
-	case WidgetContent_Time_Flight :
-		return "2:54";
-	case WidgetContent_Pressure :
-		return "1013.34";
-	case WidgetContent_Temperature :
-		return "";
-//	case WidgetContent_Thermal_Time :
-//		return "";
-//	case WidgetContent_Thermal_Gain :
-//		return "";
-	}
-	
-	return "";
-}
+	&FreeSans6pt7b,
+	&FreeSans7pt7b,
+	&FreeSans16pt7b,
+	&FreeSans24pt7b,
+	&FreeSansBold6pt7b,
+	&FreeSansBold8pt7b,
+	&FreeSansBold16pt7b,
+	&FreeSansBold24pt7b
+};
 
 
-	
-	
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class VarioScreen
 
-VarioScreen::VarioScreen(EPaperDriver & _driver, WidgetContentProvider & _provider) 
+VarioScreen::VarioScreen(EPaperDriver & _driver, DeviceContext & _context) 
 	: EPaperDisplay(_driver)
 	, activePage(0)
-	, provider(_provider)
+	, context(_context)
 {
 
 }
@@ -223,26 +56,73 @@ void VarioScreen::init()
 	// config pages <-- load page information from somewhere....
 	//
 	// below is just a test
-	pages[0][0].setStyle(Widget_TextBox, WS_SMALL_FONT, WidgetContent_Speed_Ground);
-	pages[0][0].setPosition(0, 24, 88, 52);
-
-	pages[0][1].setStyle(Widget_TextBox, WS_SMALL_FONT, WidgetContent_Altitude_GPS);
-	pages[0][1].setPosition(88, 24, 88, 52);
-
-	pages[0][2].setStyle(Widget_TextBox, WS_BIG_FONT, WidgetContent_Vario_Active);
-	pages[0][2].setPosition(0, 76, 88, 64);
-
-	pages[0][5].setStyle(Widget_TextBox, WS_BIG_FONT, WidgetContent_Heading);
-	pages[0][5].setPosition(88, 76, 88, 64);
+	int widget = 0;
 	
-	pages[0][3].setStyle(Widget_TextBox, WS_BIG_FONT, WidgetContent_Time_Flight);
-	pages[0][3].setPosition(0, 140, 176, 64);
+	// Screen: 176 x 264
+	//
+	// StatusBar: 176 x 24
+	// Text-Box small: 88 x 52
+	// Text-Box normal: 176 x 64
+	//
+	// 240 / 4 = 60, 240 / 5 = 48
+	//
+	int x = 0, y = 0;
+	
+#define STATUS_TIME_HEIGHT	24
+#define STATUS_TIME_WIDTH	40
+#define TEXTBOX_S_HEIGHT	56
+#define TEXTBOX_S_WIDTH		88
 
-	pages[0][4].setStyle(Widget_TextBox, WS_BIG_FONT, WidgetContent_Pressure);
-	pages[0][4].setPosition(0, 204, 176, 64);
+#define NORMAL_STATUS		(WS_FONT_NORMAL_2 | WS_TA_CENTER | WS_TA_MIDDLE)
+#define NORMAL_TEXT			(WS_FONT_BOLD_3 | WS_TA_RIGHT | WS_TA_BOTTOM)
+#define NORMAL_BOX			(WS_BORDER_LEFT | WS_BORDER_TOP)
 
-	pages[0][6].setStyle(Widget_SimpleText, 0, WidgetContent_Time_Current);
-	pages[0][6].setPosition(176-40, 0, 40, 24);
+	
+	pages[0][widget].setStyle(Widget_StatusBar, 0, WidgetContent_Status_Bar);
+	pages[0][widget].setPosition(x, y, _width, STATUS_TIME_HEIGHT);
+	widget++;
+	
+	pages[0][widget].setStyle(Widget_SimpleText, NORMAL_STATUS, WidgetContent_Battery);
+	pages[0][widget].setPosition(x + _width - STATUS_TIME_WIDTH - STATUS_TIME_WIDTH, y, STATUS_TIME_WIDTH, STATUS_TIME_HEIGHT);
+	widget++;
+	
+	pages[0][widget].setStyle(Widget_SimpleText, NORMAL_STATUS, WidgetContent_Time_Current);
+	pages[0][widget].setPosition(x + _width - STATUS_TIME_WIDTH, y, STATUS_TIME_WIDTH, STATUS_TIME_HEIGHT);
+	widget++;
+	y += STATUS_TIME_HEIGHT;
+	
+	pages[0][widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Altitude_GPS);
+	pages[0][widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[0][widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Speed_Ground);
+	pages[0][widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
+	widget++;
+	x = 0;
+	y += TEXTBOX_S_HEIGHT;
+
+	pages[0][widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Heading);
+	pages[0][widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[0][widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Vario_Lazy);
+	pages[0][widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
+	widget++;
+	x = 0;
+	y += TEXTBOX_S_HEIGHT;
+	
+	pages[0][widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Time_Flight);
+	pages[0][widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[0][widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Glide_Ratio);
+	pages[0][widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
+	widget++;
+	x = 0;
+	y += TEXTBOX_S_HEIGHT;
 }
 
 void VarioScreen::update()
@@ -258,7 +138,6 @@ void VarioScreen::update()
 		if (widget->style == Widget_Empty)
 			break;
 		
-		Serial.print("draw widget: "); Serial.println(widget->style);
 		draw(widget);
 	}
 	
@@ -314,34 +193,30 @@ void VarioScreen::drawEmptyArea(Widget * widget)
 
 void VarioScreen::drawTextBox(Widget * widget)
 {
-	const char * label = provider.getLabel(widget->getContentType());
-	const char * unit = provider.getUnit(widget->getContentType());
-	const char * string = provider.getString(widget->getContentType());
-	
-	Serial.println("drawBorder");
 	drawBorder(widget);
-	Serial.print("drawLabel: "); Serial.println(label);
-	drawLabel(widget, label);
-	Serial.print("drawUnit: "); Serial.println(unit);
-	drawUnit(widget, unit);
-	Serial.print("drawText: "); Serial.println(string);
-	drawText(widget, string);
+	
+	drawText(getLabel(widget->getContentType()), 
+		widget->x + 2, widget->y + 2, widget->w - 6, 14, 
+		WS_FONT_NORMAL_2 | WS_TA_LEFT |  WS_TA_BOTTOM, 
+		COLOR_BLACK);
+		
+	drawText(getUnit(widget->getContentType()), 
+		widget->x + 2, widget->y + 2, widget->w - 6, 14, 
+		WS_FONT_NORMAL_1 | WS_TA_RIGHT |  WS_TA_BOTTOM, 
+		COLOR_BLACK);
+		
+	drawText(getString(widget->getContentType()), 
+		widget->x + 2, widget->y + 14, widget->w - 6, widget->h - 18, 
+		widget->extraStyle, 
+		COLOR_BLACK);
 }
 
 void VarioScreen::drawSimpleText(Widget * widget)
 {
-	const char * str = provider.getString(widget->getContentType());
-	if (str && str[0])
-	{
-		int16_t x, y;
-		uint16_t w, h;
-		
-		setFont(FONT_UNIT);
-		getTextBounds(str, 0, 0, &x, &y, &w, &h);
-		setCursor(widget->x + (widget->w - w) / 2, widget->y + (widget->h + h) / 2);
-		setTextColor(COLOR_BLACK);
-		print(str);
-	}	
+	drawText(getString(widget->getContentType()), 
+		widget->x + 2, widget->y + 2, widget->w - 4, widget->h - 4, 
+		widget->extraStyle, 
+		COLOR_BLACK);
 }
 
 void VarioScreen::drawIcon(Widget * widget)
@@ -350,6 +225,26 @@ void VarioScreen::drawIcon(Widget * widget)
 
 void VarioScreen::drawStatusBar(Widget * widget)
 {
+	int x = widget->x + 2;
+	int y = widget->y + (widget->h - SB_BITMAP_HEIGHT) / 2;
+	
+	drawBitmapBM(Bitmap_StatusBar_hanglider, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
+	x += SB_BITMAP_WIDTH;
+	
+	drawBitmapBM(context.stateGPS ? Bitmap_StatusBar_gps_valid : Bitmap_StatusBar_gps_invalid, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
+	x += SB_BITMAP_WIDTH;
+	
+	if (context.stateBT)
+	{
+		drawBitmapBM(Bitmap_StatusBar_bluetooth, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
+		x += SB_BITMAP_WIDTH;
+	}
+		
+	if (context.stateStorage)
+	{
+		drawBitmapBM(Bitmap_StatusBar_sdcard, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
+		x += SB_BITMAP_WIDTH;
+	}
 }
 
 void VarioScreen::drawVarioHistory(Widget * widget)
@@ -364,17 +259,16 @@ void VarioScreen::drawCompass(Widget * widget)
 {
 }
 
-
 void VarioScreen::drawBorder(Widget * widget)
 {
-	#if 1
-	drawFastHLine(widget->x, widget->y, widget->w, COLOR_BLACK);
-//	drawFastHLine(widget->x, widget->y + widget->h, widget->w, COLOR_BLACK);
-	drawFastVLine(widget->x, widget->y, widget->h, COLOR_BLACK);
-//	drawFastVLine(widget->x + widget->w - 1, widget->y, widget->h, COLOR_BLACK);
-	#else
-	drawRect(widget->x, widget->y, widget->w, widget->h, COLOR_BLACK);
-	#endif
+	if (widget->extraStyle & WS_BORDER_TOP)
+		drawFastHLine(widget->x, widget->y, widget->w, COLOR_BLACK);
+	if (widget->extraStyle & WS_BORDER_BOTTOM)
+		drawFastHLine(widget->x, widget->y + widget->h - 1, widget->w, COLOR_BLACK);
+	if (widget->extraStyle & WS_BORDER_LEFT)
+		drawFastVLine(widget->x, widget->y, widget->h, COLOR_BLACK);
+	if (widget->extraStyle & WS_BORDER_RIGHT)
+		drawFastVLine(widget->x + widget->w - 1, widget->y, widget->h, COLOR_BLACK);
 }
 
 void VarioScreen::drawLabel(Widget * widget, const char * str)
@@ -384,7 +278,7 @@ void VarioScreen::drawLabel(Widget * widget, const char * str)
 		int16_t x, y;
 		uint16_t w, h;
 		
-		setFont(FONT_LABEL);
+		setFont(__FontStack[WS_FONT_NORMAL_2]);
 		getTextBounds(str, 0, 0, &x, &y, &w, &h);
 		setCursor(widget->x + 2, widget->y + 14);
 		setTextColor(COLOR_BLACK);
@@ -399,7 +293,7 @@ void VarioScreen::drawUnit(Widget * widget, const char * str)
 		int16_t x, y;
 		uint16_t w, h;
 		
-		setFont(FONT_UNIT);
+		setFont(__FontStack[WS_FONT_NORMAL_1]);
 		getTextBounds(str, 0, 0, &x, &y, &w, &h);
 		setCursor(widget->x + widget->w - w - 4, widget->y + 14);
 		setTextColor(COLOR_BLACK);
@@ -414,13 +308,228 @@ void VarioScreen::drawText(Widget * widget, const char * str)
 		int16_t x, y;
 		uint16_t w, h;
 		
-		if (widget->extra & WS_BIG_FONT)
-			setFont(FONT_TEXT_BIG);
-		else
-			setFont(FONT_TEXT_SMALL);
+		setFont(__FontStack[widget->extraStyle & WS_FONT_MASK]);
 		getTextBounds(str, 0, 0, &x, &y, &w, &h);
 		setCursor(widget->x + widget->w - w - 8, widget->y + widget->h - 6);
 		setTextColor(COLOR_BLACK);
 		print(str);
 	}
 }
+
+void VarioScreen::drawText(const char * str, int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t style, uint16_t color)
+{
+	int16_t tx, ty;
+	uint16_t tw, th;
+	
+	setFont(__FontStack[style & WS_FONT_MASK]);
+	getTextBounds(str, 0, 0, &tx, &ty, &tw, &th);
+	
+	if (style & WS_TA_RIGHT)
+		x = x + w - tw;
+	else if (style & WS_TA_CENTER)
+		x = x + (w - tw) / 2;
+	if (style & WS_TA_TOP)
+		y = y + th;
+	else if (style & WS_TA_MIDDLE)
+		y = y + (h + th) / 2;
+	else
+		y = y + h;
+	
+	setCursor(x, y);
+	setTextColor(color);
+	print(str);
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+//
+
+const char * VarioScreen::getLabel(WidgetContentType type)
+{
+	switch (type)
+	{
+	case WidgetContent_Speed_Ground :
+		return "G.Spd";
+	case WidgetContent_Speed_Air :
+		return "A.Spd";
+	case WidgetContent_Heading :
+		return "Track";
+//	case WidgetContent_Heading_GPS :
+//		return "Heading";
+//	case WidgetContent_Heading_Compass :
+//		return "Heading";
+//	case WidgetContent_Bearing :
+//		return "Heading";
+	case WidgetContent_Longitude :
+		return "Lon";
+	case WidgetContent_Latitude :
+		return "Lat";
+	case WidgetContent_Altitude_GPS :	// QNH
+		return "Alt.G";
+	case WidgetContent_Altitude_Baro :	// QNE
+		return "Alt.P";
+	case WidgetContent_Altitude_AGL :	// QFE
+		return "AGL";
+	case WidgetContent_Altitude_Ref1 :	// QFE
+		return "Alt1";
+	case WidgetContent_Altitude_Ref2 :	// QFE
+		return "Alt2";
+	case WidgetContent_Altitude_Ref3 :	// QFE
+		return "Alt3";
+	case WidgetContent_Glide_Ratio :
+		return "L/D";
+	case WidgetContent_Vario_Active :
+		return "Vario";
+	case WidgetContent_Vario_Lazy :		// 1s average
+		return "V.Spd";
+	case WidgetContent_DateTime :
+		return "Date";
+	case WidgetContent_Time_Current :
+		return "Time";
+	case WidgetContent_Time_Flight :
+		return "FTime";
+	case WidgetContent_Pressure :
+		return "Prs";
+	case WidgetContent_Temperature :
+		return "Temp";
+//	case WidgetContent_Thermal_Time :
+//		return "";
+//	case WidgetContent_Thermal_Gain :
+//		return "";
+	}
+	
+	return "";
+}
+
+const char * VarioScreen::getUnit(WidgetContentType type)
+{
+	switch (type)
+	{
+	case WidgetContent_Speed_Ground :
+		return "Km/h";
+	case WidgetContent_Speed_Air :
+		return "Km/h";
+	case WidgetContent_Heading :
+		return "Deg";
+//	case WidgetContent_Heading_GPS :
+//		return "Deg";
+//	case WidgetContent_Heading_Compass :
+//		return "Deg";
+//	case WidgetContent_Bearing :
+//		return "Deg";
+	case WidgetContent_Longitude :
+		return "";
+	case WidgetContent_Latitude :
+		return "";
+	case WidgetContent_Altitude_GPS :		// QNH
+		return "m";
+	case WidgetContent_Altitude_Baro :	// QNE
+		return "m";
+	case WidgetContent_Altitude_AGL :		// QFE
+		return "m";
+	case WidgetContent_Altitude_Ref1 :	// QFE
+		return "m";
+	case WidgetContent_Altitude_Ref2 :	// QFE
+		return "m";
+	case WidgetContent_Altitude_Ref3 :	// QFE
+		return "m";
+	case WidgetContent_Glide_Ratio :
+		return "";
+	case WidgetContent_Vario_Active :
+		return "m/s";
+	case WidgetContent_Vario_Lazy :		// 1s average
+		return "m/s";
+	case WidgetContent_DateTime :
+		return "";
+	case WidgetContent_Time_Current :
+		return "";
+	case WidgetContent_Time_Flight :
+		return (context.timeFly < 3600) ? "mm/ss" : "hh/mm";
+	case WidgetContent_Pressure :
+		return "hPa";
+	case WidgetContent_Temperature :
+		return "C";
+//	case WidgetContent_Thermal_Time :
+//		return "";
+//	case WidgetContent_Thermal_Gain :
+//		return "";
+	}
+	
+	return "";
+}
+
+const char * VarioScreen::getString(WidgetContentType type)
+{
+	switch (type)
+	{
+	case WidgetContent_Speed_Ground :
+		return itoa(context.vario.speedGround + 0.5, tempString, 10);
+	case WidgetContent_Speed_Air :
+		return itoa(context.vario.speedAir + 0.5, tempString, 10);
+	case WidgetContent_Heading :
+		return itoa(context.vario.heading + 0.5, tempString, 10);
+//	case WidgetContent_Heading_GPS :
+//		return "";
+//	case WidgetContent_Heading_Compass :
+//		return "";
+//	case WidgetContent_Bearing :
+//		return "";
+	case WidgetContent_Longitude :
+		return "";
+	case WidgetContent_Latitude :
+		return "";
+	case WidgetContent_Altitude_GPS :	// QNH
+		return itoa(context.vario.altitudeGPS + 0.5, tempString, 10);
+	case WidgetContent_Altitude_Baro :	// QNE
+		return itoa(context.vario.altitudeBaro + 0.5, tempString, 10);
+	case WidgetContent_Altitude_AGL :	// QFE
+		return itoa(context.vario.altitudeAGL + 0.5, tempString, 10);
+	case WidgetContent_Altitude_Ref1 :	// QFE
+		return itoa(context.vario.altitudeRef1 + 0.5, tempString, 10);
+	case WidgetContent_Altitude_Ref2 :	// QFE
+		return itoa(context.vario.altitudeRef2 + 0.5, tempString, 10);
+	case WidgetContent_Altitude_Ref3 :	// QFE
+		return itoa(context.vario.altitudeRef3 + 0.5, tempString, 10);
+	case WidgetContent_Glide_Ratio :
+		if (context.vario.glideRatio == 0.0)
+			return "--";
+		sprintf(tempString, "%.1f", context.vario.glideRatio + 0.05);
+		return tempString;
+	case WidgetContent_Vario_Active :
+		sprintf(tempString, "%.1f", context.vario.speedVertActive);
+		return tempString;
+	case WidgetContent_Vario_Lazy :		// 1s average
+		sprintf(tempString, "%.1f", context.vario.speedVertLazy);
+		return tempString;
+	case WidgetContent_DateTime :
+		return "16:34";
+	case WidgetContent_Time_Current :
+		sprintf(tempString, "%02d:%02d", (context.timeCurrent / 3600) % 24, (context.timeCurrent / 60) % 60);
+		return tempString;
+	case WidgetContent_Time_Flight :
+		if (context.timeFly < 3600)
+			sprintf(tempString, "%02d:%02d", context.timeFly / 60, context.timeFly % 60);
+		else 
+			sprintf(tempString, "%02d:%02d", context.timeFly / 3600, (context.timeFly / 60) % 60);
+		return tempString;
+	case WidgetContent_Pressure :
+		sprintf(tempString, "%.1f", context.vario.pressure);
+		return tempString;
+	case WidgetContent_Temperature :
+		sprintf(tempString, "%.1f", context.vario.temperature);
+		return tempString;
+//	case WidgetContent_Thermal_Time :
+//		return "";
+//	case WidgetContent_Thermal_Gain :
+//		return "";
+	case WidgetContent_Battery :
+		sprintf(tempString, "%.1fV", context.batteryPower);
+		return tempString;
+	case WidgetContent_Title :
+		return "Rascal";
+	}
+	
+	return "";
+}
+

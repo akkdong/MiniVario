@@ -17,10 +17,10 @@ PinSetting ePaperPins[] =
 };
 
 
-WidgetContentProvider provider;
+DeviceContext context;
 
 EPaper_Waveshare270 driver(ePaperPins);
-VarioScreen display(driver, provider);
+VarioScreen display(driver, context);
 
 
 void setup()
