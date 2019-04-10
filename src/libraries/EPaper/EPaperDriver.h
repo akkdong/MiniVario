@@ -18,10 +18,10 @@
 //
 
 #define PIN_MODE_INPUT				0
-#define PIN_MODE_OUTPUT			1
+#define PIN_MODE_OUTPUT				1
 
 #define PIN_ACTIVE_LOW				0
-#define PIN_ACTIVE_HIGHT			1
+#define PIN_ACTIVE_HIGH				1
 
 #define PIN_STATE_LOW				0
 #define PIN_STATE_HIGH				1
@@ -56,8 +56,8 @@ public:
 	//
 	virtual void 			init();
 	
-	virtual int16_t		getWidth() = 0;
-	virtual int16_t		getHeight() = 0;
+	virtual int16_t			getWidth() = 0;
+	virtual int16_t			getHeight() = 0;
 	
 	virtual uint8_t *		getBuffer() = 0;
 	
@@ -71,14 +71,14 @@ public:
 	static inline uint16_t __max(uint16_t a, uint16_t b) { return (a > b ? a : b); }
 	
 protected:
-	void						_reset();
+	void					_reset();
 	
-	void						_writeCommand(uint8_t command);
-	void						_writeData(uint8_t data);
-	void						_writeData(const uint8_t * data, uint16_t n);
-	void						_writeDataP(const uint8_t * data, uint16_t n);
+	void					_writeCommand(uint8_t command);
+	void					_writeData(uint8_t data);
+	void					_writeData(const uint8_t * data, uint16_t n);
+	void					_writeDataP(const uint8_t * data, uint16_t n);
 	
-	void						_waitWhileBusy(uint16_t timeout);
+	void					_waitWhileBusy(uint16_t timeout);
 	
 	virtual void			_delay(int msec) { delay(msec); }
 	
