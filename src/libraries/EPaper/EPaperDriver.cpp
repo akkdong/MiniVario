@@ -17,18 +17,7 @@ EPaperDriver::EPaperDriver(PinSetting * pins)
 void EPaperDriver::init()
 {
 	//
-	for (int i = 0; i < _PIN_Count; i++)
-	{
-		if (_pin_settings[i].mode == PIN_MODE_OUTPUT)
-		{
-			digitalWrite(_pin_settings[i].no, _pin_settings[i].active == PIN_ACTIVE_LOW ? HIGH : LOW);
-			pinMode(_pin_settings[i].no, OUTPUT);
-		}
-		else
-		{
-			pinMode(_pin_settings[i].no, INPUT);
-		}
-	}
+	initPins(_pin_settings, _PIN_Count);
 	
 	//
 	SPIv.begin();
@@ -38,10 +27,10 @@ void EPaperDriver::init()
 
 void EPaperDriver::_reset()
 {
-	// 
-	digitalWrite(_pin_settings[_PIN_RST].no, _pin_settings[_PIN_RST].active == PIN_ACTIVE_LOW ? LOW : HIGH);
+	//
+	setPinState(&_pin_settings[_PIN_RST], PIN_STATE_ACTIVE);
 	_delay(10);
-	digitalWrite(_pin_settings[_PIN_RST].no, _pin_settings[_PIN_RST].active == PIN_ACTIVE_LOW ? HIGH : LOW);
+	setPinState(&_pin_settings[_PIN_RST], PIN_STATE_INACTIVE);
 	_delay(10);
 	
 	//
@@ -51,40 +40,40 @@ void EPaperDriver::_reset()
 void EPaperDriver::_writeCommand(uint8_t command)
 {
 	SPIv.beginTransaction(_spi_settings);
-	digitalWrite(_pin_settings[_PIN_DC].no, LOW);
-	digitalWrite(_pin_settings[_PIN_CS].no, LOW);
+	setPinState(&_pin_settings[_PIN_DC], PIN_STATE_ACTIVE);
+	setPinState(&_pin_settings[_PIN_CS], PIN_STATE_ACTIVE);
 	SPIv.transfer(command);
-	digitalWrite(_pin_settings[_PIN_CS].no, HIGH);
-	digitalWrite(_pin_settings[_PIN_DC].no, HIGH);
+	setPinState(&_pin_settings[_PIN_CS], PIN_STATE_INACTIVE);
+	setPinState(&_pin_settings[_PIN_DC], PIN_STATE_INACTIVE);
 	SPIv.endTransaction();
 }
 
 void EPaperDriver::_writeData(uint8_t data)
 {
 	SPIv.beginTransaction(_spi_settings);
-	digitalWrite(_pin_settings[_PIN_CS].no, LOW);
+	setPinState(&_pin_settings[_PIN_CS], PIN_STATE_ACTIVE);
 	SPIv.transfer(data);
-	digitalWrite(_pin_settings[_PIN_CS].no, HIGH);
+	setPinState(&_pin_settings[_PIN_CS], PIN_STATE_INACTIVE);
 	SPIv.endTransaction();
 }
 
 void EPaperDriver::_writeData(const uint8_t * data, uint16_t n)
 {
 	SPIv.beginTransaction(_spi_settings);
-	digitalWrite(_pin_settings[_PIN_CS].no, LOW);
+	setPinState(&_pin_settings[_PIN_CS], PIN_STATE_ACTIVE);
 	while (n--)
 		SPIv.transfer(*data++);
-	digitalWrite(_pin_settings[_PIN_CS].no, HIGH);
+	setPinState(&_pin_settings[_PIN_CS], PIN_STATE_INACTIVE);
 	SPIv.endTransaction();
 }
 
 void EPaperDriver::_writeDataP(const uint8_t * data, uint16_t n)
 {
 	SPIv.beginTransaction(_spi_settings);
-	digitalWrite(_pin_settings[_PIN_CS].no, LOW);
+	setPinState(&_pin_settings[_PIN_CS], PIN_STATE_ACTIVE);
 	while (n--)
 		SPIv.transfer(pgm_read_byte(&*data++));
-	digitalWrite(_pin_settings[_PIN_CS].no, HIGH);
+	setPinState(&_pin_settings[_PIN_CS], PIN_STATE_INACTIVE);
 	SPIv.endTransaction();
 }
 
@@ -96,15 +85,15 @@ void EPaperDriver::_waitWhileBusy(uint16_t timeout)
 	{
 		_delay(2);
 		
-		if (digitalRead(_pin_settings[_PIN_BUSY].no) != _pin_settings[_PIN_BUSY].active)
+		if (getPinState(&_pin_settings[_PIN_BUSY]) != PIN_STATE_ACTIVE)
 		{
-			//Serial.print("NOT BUSY!! : "); Serial.println(millis() - start);
+//			Serial.print("NOT BUSY!! : "); Serial.println(millis() - start);
 			break;
 		}
 		
 		if ((millis() - start) > timeout)
 		{
-			//Serial.println("TIMEOUT~~");
+//			Serial.println("TIMEOUT~~");
 			break;
 		}
 	}

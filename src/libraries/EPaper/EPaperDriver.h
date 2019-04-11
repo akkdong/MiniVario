@@ -5,7 +5,8 @@
 #define __EPAPERDRIVER_H__
 
 #include <Arduino.h>
-#include <SPIVariant.h>
+#include "SPIVariant.h"
+#include "digitalIo.h"
 
 #if defined(ESP8266) || defined(ESP32)
 #include <pgmspace.h>
@@ -16,23 +17,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-
-#define PIN_MODE_INPUT				0
-#define PIN_MODE_OUTPUT				1
-
-#define PIN_ACTIVE_LOW				0
-#define PIN_ACTIVE_HIGH				1
-
-#define PIN_STATE_LOW				0
-#define PIN_STATE_HIGH				1
-
-
-struct PinSetting
-{
-	int8_t		no;
-	int8_t		mode;		// OUTPUT or INPUT
-	int8_t		active;		// active low or high
-};
 
 enum PinType
 {
