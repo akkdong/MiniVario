@@ -17,27 +17,27 @@
 PinSetting ePaperPins[] = 
 {
 	// CS
-	{ SS, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW },
+	{ SS, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
 	// DC
-	{ 33, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW },
+	{ 33, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
 	// RST
-	{ 32, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW },
+	{ 32, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
 	// BUSY
-	{ 39, PIN_MODE_INPUT, PIN_ACTIVE_LOW },
+	{ 39, PIN_MODE_INPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
 };
 
 PinSetting ioPins[] =
 {
 	// PWR_PERIPH
-	{ 19, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW },
+	{ 19, PIN_MODE_OUTPUT, PIN_ACTIVE_HIGH, PIN_STATE_ACTIVE },
 	// PWR_SOUND
-	{ 27, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW },
+	{ 27, PIN_MODE_OUTPUT, PIN_ACTIVE_HIGH, PIN_STATE_ACTIVE },
 	// KEY_UP
-	{ 35, PIN_MODE_INPUT, PIN_ACTIVE_HIGH },
+	{ 35, PIN_MODE_INPUT, PIN_ACTIVE_HIGH, PIN_STATE_ACTIVE },
 	// KEY_DOWN
-	{ 34, PIN_MODE_INPUT, PIN_ACTIVE_HIGH },
+	{ 34, PIN_MODE_INPUT, PIN_ACTIVE_HIGH, PIN_STATE_ACTIVE },
 	// KEY_SEL
-	{  0, PIN_MODE_INPUT, PIN_ACTIVE_LOW },
+	{  0, PIN_MODE_INPUT, PIN_ACTIVE_LOW, PIN_STATE_ACTIVE },
 };
 
 CriticalSection cs;
@@ -51,9 +51,6 @@ VarioScreen display(driver, context);
 
 BatteryVoltage battery;
 
-void initGpios(PinSetting * settings, int count);
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -61,7 +58,7 @@ void initGpios(PinSetting * settings, int count);
 void setup()
 {
 	//
-	initGpios(ioPins, sizeof(ioPins) / sizeof(ioPins[0]));
+	initPins(ioPins, sizeof(ioPins) / sizeof(ioPins[0]));
 	delay(100);
 	
 	//
@@ -96,26 +93,12 @@ void loop()
 	if (battery.update())
 		context.batteryPower = battery.getVoltage();
 	
-	if (! digitalRead(0))
+//	if (! digitalRead(0))
+	if (getPinState(&ioPins[4]) == PIN_STATE_ACTIVE)
 	{
 		display.deepSleep();
 		while(1);
 	}
 }
 
-void initGpios(PinSetting * settings, int count)
-{
-	for (int i = 0; i < count ; i++)
-	{
-		if (settings[i].mode == PIN_MODE_OUTPUT)
-		{
-			digitalWrite(settings[i].no, settings[i].active == PIN_ACTIVE_LOW ? HIGH : LOW);
-			pinMode(settings[i].no, OUTPUT);
-		}
-		else
-		{
-			pinMode(settings[i].no, INPUT);
-		}
-	}
-}
 

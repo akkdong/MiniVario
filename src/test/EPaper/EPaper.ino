@@ -12,33 +12,17 @@
 //
 PinSetting ePaperPins[] = 
 {
-	#if TEST_420
 	// CS
-	{ SS, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW },
+	{ SS, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
 	// DC
-	{ 17, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW },
+	{ 33, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
 	// RST
-	{ 16, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW },
+	{ 32, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
 	// BUSY
-	{ 4, PIN_MODE_INPUT, PIN_ACTIVE_LOW },
-	#else // 270
-	// CS
-	{ SS, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW },
-	// DC
-	{ 33, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW },
-	// RST
-	{ 32, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW },
-	// BUSY
-	{ 39, PIN_MODE_INPUT, PIN_ACTIVE_LOW },
-	#endif
+	{ 39, PIN_MODE_INPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
 };
 
-#if TEST_420
-EPaper_Waveshare420 driver(ePaperPins);
-#else // 270
 EPaper_Waveshare270 driver(ePaperPins);
-#endif
-
 EPaperDisplay display(driver);
 
 
