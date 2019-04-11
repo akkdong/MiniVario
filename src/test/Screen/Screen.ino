@@ -1,7 +1,7 @@
 // Screen.ino
 //
 
-#include "Screen.h"
+#include "VarioScreen.h"
 
 //
 PinSetting ePaperPins[] = 
@@ -37,7 +37,7 @@ void setup()
 	//
 	display.init();
 	
-	display.update();
+//	display.update();
 	display.refresh(false);
 	display.sleep();
 }
