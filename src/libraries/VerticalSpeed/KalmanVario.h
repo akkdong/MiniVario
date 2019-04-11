@@ -4,83 +4,84 @@
 #ifndef __KALMANVARIO_H__
 #define __KALMANVARIO_H__
 
+#include "Task.h"
 #include "Sensor_MS5611.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////
 // class KalmanVario
 
-class KalmanVario
+class KalmanVario : public Task
 {
 public:
 	KalmanVario(Sensor_MS5611 & baro);
 	
 public:
-	int								begin(float zVariance = 400.0, float zAccelVariance = 1000.0, float zAccelBiasVariance = 1.0);
-	void								end();
+	int						begin(float zVariance = 400.0, float zAccelVariance = 1000.0, float zAccelBiasVariance = 1.0);
+	void					end();
 	
-	int								available();
-	void								flush();
+	int						available();
+	void					flush();
 	
-	void								update();
+	void					update();
 	
-	float								getPressure();
-	float								getTemperature();
-	float								getAltitude2();
-	float								getAltitude();
-	float								getCalibratedAltitude();
-	float								getVelocity();
+	float					getPressure();
+	float					getTemperature();
+	float					getAltitude2();
+	float					getAltitude();
+	float					getCalibratedAltitude();
+	float					getVelocity();
 	
-	uint32_t							getTimestamp();
+	uint32_t				getTimestamp();
 	
-	void								calibrateAltitude(float altitudeRef);
+	void					calibrateAltitude(float altitudeRef);
 	
 protected:
 	static void IRAM_ATTR 	TimerProc();
-	static void 					TaskProc(void * param);
 	
-	static KalmanVario *		mActiveVario;
+	static KalmanVario *	mActiveVario;
+	
+	void					TaskProc();
 	
 	
 private:
 	// State being tracked
-	float								z_;  // position
-	float								v_;  // velocity
-	float								aBias_;  // acceleration
+	float					z_;  // position
+	float					v_;  // velocity
+	float					aBias_;  // acceleration
 
 	// 3x3 State Covariance matrix
-	float								Pzz_;
-	float								Pzv_;
-	float								Pza_;
-	float								Pvz_;
-	float								Pvv_;
-	float								Pva_;
-	float								Paz_;
-	float								Pav_;
-	float								Paa_;
-	float								zAccelBiasVariance_; // assumed fixed.
-	float								zAccelVariance_;  // dynamic acceleration variance
-	float								zVariance_; //  z measurement noise variance fixed
+	float					Pzz_;
+	float					Pzv_;
+	float					Pza_;
+	float					Pvz_;
+	float					Pvv_;
+	float					Pva_;
+	float					Paz_;
+	float					Pav_;
+	float					Paa_;
+	float					zAccelBiasVariance_; // assumed fixed.
+	float					zAccelVariance_;  // dynamic acceleration variance
+	float					zVariance_; //  z measurement noise variance fixed
 	
 	// timestamp
-	uint32_t							t_;
+	uint32_t				t_;
 	
 	// barometer altitude
-	float								baroAltitude;
+	float					baroAltitude;
 	// altitude calibration
-	float								altitudeDrift;
+	float					altitudeDrift;
 	
 	//
-	int								varioUpdated;
+	int						varioUpdated;
 	
 	//
 	Sensor_MS5611 &			baro;
 	
 protected:
-	TaskHandle_t					mTaskHandle;
-	hw_timer_t *					mTimer;
+	hw_timer_t *			mTimer;
 	SemaphoreHandle_t		mSemaphore;
-	portMUX_TYPE				mMux;
+	portMUX_TYPE			mMux;
 };
 
 

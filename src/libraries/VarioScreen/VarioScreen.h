@@ -8,6 +8,7 @@
 #include "Widget.h"
 #include "EPaperDisplay.h"
 #include "DeviceContext.h"
+#include "Task.h"
 
 #define MAX_PAGES			5
 #define MAX_WIDGETS			16
@@ -32,7 +33,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class VarioScreen
 
-class VarioScreen : public EPaperDisplay
+class VarioScreen : public EPaperDisplay, public Task
 {
 public:
 	VarioScreen(EPaperDriver & _driver, DeviceContext & _context);
@@ -42,6 +43,8 @@ public:
 	
 	int 			begin();
 	void			end();
+	
+	void			deepSleep() { assertSleep = true; }
 	
 protected:
 	void 			update();
@@ -63,8 +66,10 @@ protected:
 	const char *	getUnit(WidgetContentType type);
 	const char *	getString(WidgetContentType type);
 	
+	void			sleepDevice();
+	
 protected:
-	static void 	_TaskProc(void * param);
+	void 			TaskProc();
 
 	
 protected:
@@ -76,8 +81,8 @@ protected:
 	static const GFXfont * __FontStack[8];
 	
 private:
-	TaskHandle_t	taskHandle;
 	char			tempString[16];
+	volatile bool	assertSleep;
 };
 
 

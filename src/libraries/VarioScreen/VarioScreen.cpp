@@ -3,6 +3,7 @@
 
 #include "VarioScreen.h"
 #include "Bitmap_StatusBar.h"
+#include "Bitmap_Paragliding.h"
 
 #if CONFIG_FREERTOS_UNICORE
 #define ARDUINO_RUNNING_CORE 0
@@ -50,9 +51,9 @@ const GFXfont * VarioScreen::__FontStack[] =
 
 VarioScreen::VarioScreen(EPaperDriver & _driver, DeviceContext & _context) 
 	: EPaperDisplay(_driver)
+	, Task("Display", 2048, 1)
 	, activePage(0)
 	, context(_context)
-	, taskHandle(NULL)
 {
 
 }
@@ -121,7 +122,7 @@ void VarioScreen::init()
 	x = 0;
 	y += TEXTBOX_S_HEIGHT;
 	
-	pages[0][widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Time_Flight);
+	pages[0][widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Altitude_Baro);
 	pages[0][widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
 	widget++;
 	x += TEXTBOX_S_WIDTH;
@@ -132,57 +133,80 @@ void VarioScreen::init()
 	x = 0;
 	y += TEXTBOX_S_HEIGHT;
 
-	pages[0][widget].setStyle(Widget_TextBox, WS_FONT_BOLD_4 | WS_TA_RIGHT | WS_TA_BOTTOM | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Pressure);
+	pages[0][widget].setStyle(Widget_TextBox, WS_FONT_BOLD_4 | WS_TA_LEFT | WS_TA_BOTTOM | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Pressure);
 	pages[0][widget].setPosition(x, y, 176, 264 - y);
 }
 
 int VarioScreen::begin()
 {
-	xTaskCreatePinnedToCore(
-		_TaskProc,  
-		"Display",     // A name just for humans
-		2048,   // This stack size can be checked & adjusted by reading the Stack Highwater
-		this,  // Parameter
-		1,    // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
-		&taskHandle ,  
-		ARDUINO_RUNNING_CORE);
-
-	return 1;
+	// ...
+	assertSleep = false;
+	
+	return Task::begin();
 }
 
-void VarioScreen::_TaskProc(void * param)
+void VarioScreen::TaskProc()
 {
-	VarioScreen * pThis = (VarioScreen *)param;
 	bool fastUpdate = false;
 	
 	//
-	pThis->init();
+	init();
 	
 	//
 	while (1)
 	{
 		//
-		Serial.println("<< VarioScreen._TaskProc():  begin update");
-		pThis->update();
-		pThis->refresh(fastUpdate);
+		update();
+		refresh(fastUpdate);
 		fastUpdate = true;
-		Serial.println("<< VarioScreen._TaskProc():  end update");
 		
-		// if go sleep
-		//   draw sleep screen
-		//   deep sleep
+		//
+		if (assertSleep)
+		{
+			// display sleep screen & sleep e-ink
+			setRotation(0);
+			fillScreen(COLOR_WHITE);
+			setFont(__FontStack[WS_FONT_NORMAL_3]);
+			setTextColor(COLOR_BLACK, COLOR_WHITE);
+			drawBitmapBM(Bitmap_Paragliding, 6, 24, 164, 166, COLOR_WHITE, bm_invert);
+			setCursor(0, 240);
+			print("Fly high~");
+			setFont(__FontStack[WS_FONT_NORMAL_1]);
+			setCursor(0, 260);
+			print("Notorious Rascal 2019");
+			
+			refresh(false);
+			sleep(); // 
+			
+			// now sleep device
+			sleepDevice();
+		}
 		
 		//
 		const TickType_t xDelay = 50 / portTICK_PERIOD_MS;
 		vTaskDelay(xDelay);
 	}
-	
-	vTaskDelete(NULL);
 }
 
 void VarioScreen::end()
 {
-	vTaskDelete(taskHandle);
+	Task::end();
+}
+
+void VarioScreen::sleepDevice()
+{
+    const int ext_wakeup_pin_1 = 34;
+    const uint64_t ext_wakeup_pin_1_mask = 1ULL << ext_wakeup_pin_1;
+    const int ext_wakeup_pin_2 = 35;
+    const uint64_t ext_wakeup_pin_2_mask = 1ULL << ext_wakeup_pin_2;
+
+	// Enabling EXT1 wakeup on pins GPIO34, GPIO35
+    esp_sleep_enable_ext1_wakeup(ext_wakeup_pin_1_mask | ext_wakeup_pin_2_mask, ESP_EXT1_WAKEUP_ANY_HIGH  );
+	// Entering deep sleep
+	esp_deep_sleep_start();
+	
+	// never comes here
+	// ...
 }
 
 void VarioScreen::update()

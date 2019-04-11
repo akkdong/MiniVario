@@ -14,7 +14,8 @@
 // class KalmanVario
 
 KalmanVario::KalmanVario(Sensor_MS5611 & _baro) 
-	: baro(_baro)
+	: Task("Kalman", 1024, 2)
+	, baro(_baro)
 	, mTimer(NULL)
 	, mSemaphore(xSemaphoreCreateBinary())
 	, mMux(portMUX_INITIALIZER_UNLOCKED)
@@ -75,14 +76,7 @@ int KalmanVario::begin(float zVariance, float zAccelVariance, float zAccelBiasVa
 	t_ = millis();
 	
 	//
-	xTaskCreatePinnedToCore(
-		TaskProc,  
-		"Kalman",     // A name just for humans
-		1024,   // This stack size can be checked & adjusted by reading the Stack Highwater
-		this,  // Parameter
-		2,    // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
-		&mTaskHandle ,  
-		ARDUINO_RUNNING_CORE);
+	Task::begin();
 	
 	//
 	mActiveVario = this;
@@ -106,22 +100,20 @@ void IRAM_ATTR KalmanVario::TimerProc()
 	}
 }
 
-void KalmanVario::TaskProc(void * param) 
+void KalmanVario::TaskProc() 
 {
-	KalmanVario * pThis = (KalmanVario *)param;
-	
 	while (1)
 	{
 		//
-		xSemaphoreTake(pThis->mSemaphore, portMAX_DELAY);
+		xSemaphoreTake(mSemaphore, portMAX_DELAY);
 		
 		//
-		pThis->baro.convertNext();
+		baro.convertNext();
 		
-		if (pThis->baro.available())
+		if (baro.available())
 		{
 			// update vertical velocity
-			pThis->update();
+			update();
 		}
 	}
 }
@@ -140,7 +132,7 @@ void KalmanVario::end()
 	}
 	
 	//
-	vTaskDelete(mTaskHandle);
+	Task::end();
 	
 	//
 	baro.end();

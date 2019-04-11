@@ -3,6 +3,7 @@
 
 #include "KalmanVario.h"
 #include "VarioScreen.h"
+#include "BatteryVoltage.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -48,6 +49,7 @@ DeviceContext context;
 VarioEPaper driver(ePaperPins);
 VarioScreen display(driver, context);
 
+BatteryVoltage battery;
 
 void initGpios(PinSetting * settings, int count);
 
@@ -70,21 +72,34 @@ void setup()
 	Wire.begin();
 
 	vario.begin();
-	display.begin();	
+	display.begin();
+	
+	battery.begin();
+	context.batteryPower = battery.getVoltage();
 }
 
 
 void loop()
 {
 	if (vario.available())
-	{
+	{		
 		context.vario.speedVertActive = vario.getVelocity();
 		context.vario.speedVertLazy = context.vario.speedVertLazy * 0.8 + context.vario.speedVertActive * 0.2;
+		context.vario.altitudeBaro = vario.getAltitude();
 		context.vario.pressure = vario.getPressure();
 		context.vario.temperature = vario.getTemperature();
 		
 		vario.flush();
 //		Serial.print("vario = "); Serial.println(context.vario.speedVertActive);
+	}
+	
+	if (battery.update())
+		context.batteryPower = battery.getVoltage();
+	
+	if (! digitalRead(0))
+	{
+		display.deepSleep();
+		while(1);
 	}
 }
 
