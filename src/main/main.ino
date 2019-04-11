@@ -4,6 +4,7 @@
 #include "KalmanVario.h"
 #include "VarioScreen.h"
 #include "BatteryVoltage.h"
+#include "Keyboard.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -26,18 +27,33 @@ PinSetting ePaperPins[] =
 	{ 39, PIN_MODE_INPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
 };
 
-PinSetting ioPins[] =
+PinSetting powerPins[] =
 {
 	// PWR_PERIPH
 	{ 19, PIN_MODE_OUTPUT, PIN_ACTIVE_HIGH, PIN_STATE_ACTIVE },
 	// PWR_SOUND
 	{ 27, PIN_MODE_OUTPUT, PIN_ACTIVE_HIGH, PIN_STATE_ACTIVE },
+};
+
+PinSetting keybdPins[] =
+{
 	// KEY_UP
 	{ 35, PIN_MODE_INPUT, PIN_ACTIVE_HIGH, PIN_STATE_ACTIVE },
 	// KEY_DOWN
 	{ 34, PIN_MODE_INPUT, PIN_ACTIVE_HIGH, PIN_STATE_ACTIVE },
 	// KEY_SEL
 	{  0, PIN_MODE_INPUT, PIN_ACTIVE_LOW, PIN_STATE_ACTIVE },
+};
+
+enum _InputKey
+{
+	KEY_UP,
+	KEY_DOWN,
+	KEY_SEL,
+	KEY_UP_LONG,
+	KEY_DOWN_LONG,
+	KEY_SEL_LONG,
+	KEY_Count
 };
 
 CriticalSection cs;
@@ -50,6 +66,8 @@ VarioEPaper driver(ePaperPins);
 VarioScreen display(driver, context);
 
 BatteryVoltage battery;
+Keyboard keybd(keybdPins, sizeof(keybdPins) / sizeof(keybdPins[0]));
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +76,7 @@ BatteryVoltage battery;
 void setup()
 {
 	//
-	initPins(ioPins, sizeof(ioPins) / sizeof(ioPins[0]));
+	initPins(powerPins, sizeof(powerPins) / sizeof(powerPins[0]));
 	delay(100);
 	
 	//
@@ -90,12 +108,25 @@ void loop()
 //		Serial.print("vario = "); Serial.println(context.vario.speedVertActive);
 	}
 	
+	//
 	if (battery.update())
 		context.batteryPower = battery.getVoltage();
 	
-//	if (! digitalRead(0))
-	if (getPinState(&ioPins[4]) == PIN_STATE_ACTIVE)
+	//
+	keybd.update();
+	
+	switch (keybd.getch())
 	{
+	case KEY_UP :
+		// move to previous page
+		break;
+	case KEY_DOWN :
+		// move to next page
+		break;
+	case KEY_SEL_LONG :
+		// enter menu
+		
+		// temporary
 		display.deepSleep();
 		while(1);
 	}

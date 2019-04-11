@@ -3,8 +3,8 @@
 
 #include "Keyboard.h"
 
-#define DELAY_DEBOUNCE		100
-#define DELAY_LONG_KEY		1200
+#define DELAY_DEBOUNCE		200
+#define DELAY_LONG_KEY		1000
 
 enum _state_machine
 {
@@ -28,7 +28,7 @@ int Keyboard::begin()
 	
 	//
 	frontKey = rearKey = 0;
-	mode = _RELEASED;
+	inputMode = _RELEASED;
 	
 	return 0;
 }
@@ -36,53 +36,53 @@ int Keyboard::begin()
 void Keyboard::update()
 {
 	// abtain key state
-	uint8_t	keyState = 0;
+	uint8_t	keyState = getKeyState();
 	
-	for (int i = 0; i < pinCount; i++)
-	{
-		if (getPinState(&pinSettings[i]) == PIN_STATE_ACTIVE)
-			keyState |= (1 << i);
-	}
-	
-	// state-machine: RELEASED --> DEBOUNCE --> PRESSED ----------+-> RELEASED
-	//                                 |           |              |
-	//                                 +-----------+--> IGNORED --+	
-	switch (mode)
+	// state-machine: RELEASED --> DEBOUNCE --> PRESSED ---------+-> RELEASED
+	//                                 |           |             |
+	//                                 +-----------+--> IGNORE --+	
+	switch (inputMode)
 	{
 	case _RELEASED :
-		if (keyState != 0)
+		if (keyState != 0) // any key is pressed
 		{
-			lastState = keyState;
+			lastKeyState = keyState;
 			lastTick = millis();
-			mode = _DEBOUNCE;
+			inputMode = _DEBOUNCE;
 		}
 		break;
 		
 	case _DEBOUNCE :
 		if (millis() - lastTick > DELAY_DEBOUNCE)
 		{
-			if (lastState == keyState)
+			if (lastKeyState == keyState)
 			{
+				// key is unchanged until debounce period
 				lastTick = millis();
-				mode = _PRESSED;
+				inputMode = _PRESSED;
 			}
 			else
 			{
 				// key is changed...
-				mode = _IGNORE;
+				inputMode = _IGNORE;
 			}
+		}
+		else if (lastKeyState != keyState)
+		{
+			// key is changed...
+			inputMode = _IGNORE;
 		}
 		break;
 		
 	case _PRESSED :
-		if (keyState != 0 && keyState != lastState)
+		if (keyState != 0 && keyState != lastKeyState)
 		{
 			// key is changed...
-			mode = _IGNORE;
+			inputMode = _IGNORE;
 		}
 		else if (keyState == 0)
 		{
-			int key = findKey(lastState);
+			int key = findKey(lastKeyState);
 			
 			if (key >= 0)
 			{
@@ -91,16 +91,17 @@ void Keyboard::update()
 				
 				pushKey(key);
 			}
+			// else multiple key is pressed
 			
-			mode = _RELEASED;
+			inputMode = _RELEASED;
 		}
 		break;
 		
 	case _IGNORE :
 		if (keyState == 0)
 		{
-			//
-			mode = _RELEASED;
+			// wait next key-input
+			inputMode = _RELEASED;
 		}
 		break;
 	}
@@ -119,6 +120,19 @@ int Keyboard::getch()
 	rearKey = (rearKey + 1) % (sizeof(keyPressed) / sizeof(keyPressed[0]));
 	
 	return ch;
+}
+
+uint8_t Keyboard::getKeyState()
+{
+	uint8_t	keyState = 0;
+	
+	for (int i = 0; i < pinCount; i++)
+	{
+		if (getPinState(&pinSettings[i]) == PIN_STATE_ACTIVE)
+			keyState |= (1 << i);
+	}
+
+	return keyState;
 }
 
 void Keyboard::pushKey(uint8_t key)

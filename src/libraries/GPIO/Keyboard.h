@@ -8,18 +8,7 @@
 #include "digitalIo.h"
 
 #define MAX_KEYS		(8)
-
-enum _InputKey
-{
-	KEY_UP,
-	KEY_DOWN,
-	KEY_SEL,
-	KEY_UP_LONG,
-	KEY_DOWN_LONG,
-	KEY_SEL_LONG,
-	KEY_Count
-};
-
+#define MAX_KEYINPUT	(8)
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -29,13 +18,13 @@ class Keyboard
 {
 public:
 	Keyboard(PinSetting * pins, int count);
-	
+
 public:
 	int					begin();
 	
-	void				update(); // it should be called as often as possible
+	void				update(); // this should be called as often as possible
 	
-	int					getch(); // return key value which is being pressed
+	int					getch(); // returns key value which is being pressed
 	uint8_t				getKeyState(); // bitwised current key state
 	
 private:
@@ -47,10 +36,10 @@ private:
 	int					pinCount;
 	
 	uint32_t			lastTick;
-	uint8_t				lastState;
-	uint8_t				mode;
+	uint8_t				lastKeyState;
+	uint8_t				inputMode;
 	
-	uint8_t				keyPressed[8];
+	uint8_t				keyPressed[MAX_KEYINPUT];
 	int					rearKey, frontKey;
 };
 
