@@ -32,7 +32,7 @@
 #include <Fonts/FreeSansBold24pt7b.h>
 
 
-const GFXfont * VarioDisplay::__FontStack[] = 
+GFXfontPtr VarioDisplay::__FontStack[] = 
 {
 	&FreeSans6pt7b,
 	&FreeSans7pt7b,
@@ -52,89 +52,17 @@ const GFXfont * VarioDisplay::__FontStack[] =
 VarioDisplay::VarioDisplay(EPaperDriver & _driver, DeviceContext & _context) 
 	: EPaperDisplay(_driver)
 	, Task("Display", 2048, 1)
-	, activePage(0)
+	, activeScreen(NULL)
+	, activePref(NULL)
+	, activePopup(NULL)
 	, context(_context)
+	, assertSleep(false)
 {
-
 }
 
 void VarioDisplay::init()
 {
 	EPaperDisplay::init();
-	
-	// config pages <-- load page information from somewhere....
-	//
-	// below is just a test
-	int widget = 0;
-	
-	// Screen: 176 x 264
-	//
-	// StatusBar: 176 x 24
-	// Text-Box small: 88 x 52
-	// Text-Box normal: 176 x 64
-	//
-	// 240 / 4 = 60, 240 / 5 = 48
-	//
-	int x = 0, y = 0;
-	
-#define STATUS_TIME_HEIGHT	24
-#define STATUS_TIME_WIDTH	40
-#define TEXTBOX_S_HEIGHT	56
-#define TEXTBOX_S_WIDTH		88
-
-#define NORMAL_STATUS		(WS_FONT_NORMAL_2 | WS_TA_CENTER | WS_TA_MIDDLE)
-#define NORMAL_TEXT			(WS_FONT_BOLD_3 | WS_TA_RIGHT | WS_TA_BOTTOM)
-#define NORMAL_BOX			(WS_BORDER_LEFT | WS_BORDER_TOP)
-
-	
-	pages[0][widget].setStyle(Widget_StatusBar, 0, WidgetContent_Status_Bar);
-	pages[0][widget].setPosition(x, y, _width, STATUS_TIME_HEIGHT);
-	widget++;
-	
-	pages[0][widget].setStyle(Widget_SimpleText, NORMAL_STATUS, WidgetContent_Battery);
-	pages[0][widget].setPosition(x + _width - STATUS_TIME_WIDTH - STATUS_TIME_WIDTH, y, STATUS_TIME_WIDTH, STATUS_TIME_HEIGHT);
-	widget++;
-	
-	pages[0][widget].setStyle(Widget_SimpleText, NORMAL_STATUS, WidgetContent_Time_Current);
-	pages[0][widget].setPosition(x + _width - STATUS_TIME_WIDTH, y, STATUS_TIME_WIDTH, STATUS_TIME_HEIGHT);
-	widget++;
-	y += STATUS_TIME_HEIGHT;
-	
-	pages[0][widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Altitude_GPS);
-	pages[0][widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
-	widget++;
-	x += TEXTBOX_S_WIDTH;
-
-	pages[0][widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Speed_Ground);
-	pages[0][widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
-	widget++;
-	x = 0;
-	y += TEXTBOX_S_HEIGHT;
-
-	pages[0][widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Heading);
-	pages[0][widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
-	widget++;
-	x += TEXTBOX_S_WIDTH;
-
-	pages[0][widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Vario_Lazy);
-	pages[0][widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
-	widget++;
-	x = 0;
-	y += TEXTBOX_S_HEIGHT;
-	
-	pages[0][widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Altitude_Baro);
-	pages[0][widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
-	widget++;
-	x += TEXTBOX_S_WIDTH;
-
-	pages[0][widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Temperature);
-	pages[0][widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
-	widget++;
-	x = 0;
-	y += TEXTBOX_S_HEIGHT;
-
-	pages[0][widget].setStyle(Widget_TextBox, WS_FONT_BOLD_4 | WS_TA_LEFT | WS_TA_BOTTOM | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Pressure);
-	pages[0][widget].setPosition(x, y, 176, 264 - y);
 }
 
 int VarioDisplay::begin()
@@ -193,6 +121,19 @@ void VarioDisplay::end()
 	Task::end();
 }
 
+void VarioDisplay::attachScreen(VarioScreen * screen)
+{
+	activeScreen = screen;
+}
+
+void VarioDisplay::attachPreference(VarioPreference * pref)
+{
+}
+
+void VarioDisplay::showPopup(VarioPopup * popupPtr)
+{
+}
+
 void VarioDisplay::sleepDevice()
 {
     const int ext_wakeup_pin_1 = 34;
@@ -214,19 +155,45 @@ void VarioDisplay::update()
 	// erase screen
 	fillScreen(COLOR_WHITE);
 	
+	if (activePref)
+	{
+		// preference has high priority
+		draw(activePref);
+	}
+	else if (activeScreen)
+	{
+		//
+		draw(activeScreen);
+	}
+	
+	// draw activated popup
+	if (activePopup)
+	{
+		draw(activePopup);
+	}
+	
+}
+
+void VarioDisplay::draw(VarioScreen * screen)
+{
 	// draw active page --> draw each widget of active page
 	for (int i = 0; i < MAX_WIDGETS; i++)
 	{
-		Widget * widget = &pages[activePage][i];
+		Widget * widget = &screen->widget[i];
 		
 		if (widget->style == Widget_Empty)
 			break;
 		
 		draw(widget);
 	}
-	
-	// draw activated popup
-	// ...
+}
+
+void VarioDisplay::draw(VarioPreference * pref)
+{
+}
+
+void VarioDisplay::draw(VarioPopup * popup)
+{
 }
 
 void VarioDisplay::draw(Widget * widget)

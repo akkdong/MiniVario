@@ -41,7 +41,7 @@ enum _InputKey
 //
 DeviceContext context;
 
-VarioEPaper driver(ePaperPins);
+VarioDisplayDriver driver(ePaperPins);
 VarioDisplay display(driver, context);
 
 Keyboard keybd(keybdPins, sizeof(keybdPins) / sizeof(keybdPins[0]));
