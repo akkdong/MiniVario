@@ -39,15 +39,17 @@ public:
 	VarioScreen(EPaperDriver & _driver, DeviceContext & _context);
 
 public:
-	void			init();
-	
 	int 			begin();
 	void			end();
 	
 	void			deepSleep() { assertSleep = true; }
 	
 protected:
+	// 
+	void			init();	
 	void 			update();
+	
+	//
 	void 			draw(Widget * widget);
 	
 	void 			drawEmptyArea(Widget * widget);
@@ -62,10 +64,12 @@ protected:
 	void			drawBorder(Widget * widget);
 	void			drawText(const char * str, int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t style, uint16_t color);
 	
+	//
 	const char *	getLabel(WidgetContentType type);
 	const char *	getUnit(WidgetContentType type);
 	const char *	getString(WidgetContentType type);
 	
+	//
 	void			sleepDevice();
 	
 protected:

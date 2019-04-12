@@ -315,16 +315,16 @@ void VarioScreen::drawStatusBar(Widget * widget)
 	drawBitmapBM(Bitmap_StatusBar_hanglider, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 	x += SB_BITMAP_WIDTH;
 	
-	drawBitmapBM(context.stateGPS ? Bitmap_StatusBar_gps_valid : Bitmap_StatusBar_gps_invalid, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
+	drawBitmapBM(context.device.statusGPS ? Bitmap_StatusBar_gps_valid : Bitmap_StatusBar_gps_invalid, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 	x += SB_BITMAP_WIDTH;
 	
-	if (context.stateBT)
+	if (context.device.statusBT)
 	{
 		drawBitmapBM(Bitmap_StatusBar_bluetooth, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 		x += SB_BITMAP_WIDTH;
 	}
 		
-	if (context.stateStorage)
+	if (context.device.statusSDCard)
 	{
 		drawBitmapBM(Bitmap_StatusBar_sdcard, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 		x += SB_BITMAP_WIDTH;
@@ -484,7 +484,7 @@ const char * VarioScreen::getUnit(WidgetContentType type)
 	case WidgetContent_Time_Current :
 		return "";
 	case WidgetContent_Time_Flight :
-		return (context.timeFly < 3600) ? "mm/ss" : "hh/mm";
+		return ((context.varioState.timeCurrent - context.varioState.timeStart) < 3600) ? "mm/ss" : "hh/mm";
 	case WidgetContent_Pressure :
 		return "hPa";
 	case WidgetContent_Temperature :
@@ -503,11 +503,11 @@ const char * VarioScreen::getString(WidgetContentType type)
 	switch (type)
 	{
 	case WidgetContent_Speed_Ground :
-		return itoa(context.vario.speedGround + 0.5, tempString, 10);
+		return itoa(context.varioState.speedGround + 0.5, tempString, 10);
 	case WidgetContent_Speed_Air :
-		return itoa(context.vario.speedAir + 0.5, tempString, 10);
+		return itoa(context.varioState.speedAir + 0.5, tempString, 10);
 	case WidgetContent_Heading :
-		return itoa(context.vario.heading + 0.5, tempString, 10);
+		return itoa(context.varioState.heading + 0.5, tempString, 10);
 //	case WidgetContent_Heading_GPS :
 //		return "";
 //	case WidgetContent_Heading_Compass :
@@ -519,51 +519,58 @@ const char * VarioScreen::getString(WidgetContentType type)
 	case WidgetContent_Latitude :
 		return "";
 	case WidgetContent_Altitude_GPS :	// QNH
-		return itoa(context.vario.altitudeGPS + 0.5, tempString, 10);
+		return itoa(context.varioState.altitudeGPS + 0.5, tempString, 10);
 	case WidgetContent_Altitude_Baro :	// QNE
-		return itoa(context.vario.altitudeBaro + 0.5, tempString, 10);
+		return itoa(context.varioState.altitudeBaro + 0.5, tempString, 10);
 	case WidgetContent_Altitude_AGL :	// QFE
-		return itoa(context.vario.altitudeAGL + 0.5, tempString, 10);
+		return itoa(context.varioState.altitudeAGL + 0.5, tempString, 10);
 	case WidgetContent_Altitude_Ref1 :	// QFE
-		return itoa(context.vario.altitudeRef1 + 0.5, tempString, 10);
+		return itoa(context.varioState.altitudeRef1 + 0.5, tempString, 10);
 	case WidgetContent_Altitude_Ref2 :	// QFE
-		return itoa(context.vario.altitudeRef2 + 0.5, tempString, 10);
+		return itoa(context.varioState.altitudeRef2 + 0.5, tempString, 10);
 	case WidgetContent_Altitude_Ref3 :	// QFE
-		return itoa(context.vario.altitudeRef3 + 0.5, tempString, 10);
+		return itoa(context.varioState.altitudeRef3 + 0.5, tempString, 10);
 	case WidgetContent_Glide_Ratio :
-		if (context.vario.glideRatio == 0.0)
+		if (context.varioState.glideRatio == 0.0)
 			return "--";
-		sprintf(tempString, "%.1f", context.vario.glideRatio + 0.05);
+		sprintf(tempString, "%.1f", context.varioState.glideRatio + 0.05);
 		return tempString;
 	case WidgetContent_Vario_Active :
-		sprintf(tempString, "%.1f", context.vario.speedVertActive);
+		sprintf(tempString, "%.1f", context.varioState.speedVertActive);
 		return tempString;
 	case WidgetContent_Vario_Lazy :		// 1s average
-		sprintf(tempString, "%.1f", context.vario.speedVertLazy);
+		sprintf(tempString, "%.1f", context.varioState.speedVertLazy);
 		return tempString;
 	case WidgetContent_DateTime :
 		return "16:34";
 	case WidgetContent_Time_Current :
-		sprintf(tempString, "%02d:%02d", (context.timeCurrent / 3600) % 24, (context.timeCurrent / 60) % 60);
+		if (context.varioState.timeCurrent != 0)
+			sprintf(tempString, "%02d:%02d", (context.varioState.timeCurrent / 3600) % 24, (context.varioState.timeCurrent / 60) % 60);
+		else
+			strcpy(tempString, "--:--");
 		return tempString;
 	case WidgetContent_Time_Flight :
-		if (context.timeFly < 3600)
-			sprintf(tempString, "%02d:%02d", context.timeFly / 60, context.timeFly % 60);
-		else 
-			sprintf(tempString, "%02d:%02d", context.timeFly / 3600, (context.timeFly / 60) % 60);
+		{
+			time_t timeFly = (context.varioState.timeCurrent - context.varioState.timeStart);
+			
+			if (timeFly < 3600)
+				sprintf(tempString, "%02d:%02d", timeFly / 60, timeFly % 60);
+			else 
+				sprintf(tempString, "%02d:%02d", timeFly / 3600, (timeFly / 60) % 60);
+		}
 		return tempString;
 	case WidgetContent_Pressure :
-		sprintf(tempString, "%.2f", context.vario.pressure);
+		sprintf(tempString, "%.2f", context.varioState.pressure);
 		return tempString;
 	case WidgetContent_Temperature :
-		sprintf(tempString, "%.1f", context.vario.temperature);
+		sprintf(tempString, "%.1f", context.varioState.temperature);
 		return tempString;
 //	case WidgetContent_Thermal_Time :
 //		return "";
 //	case WidgetContent_Thermal_Gain :
 //		return "";
 	case WidgetContent_Battery :
-		sprintf(tempString, "%.1fV", context.batteryPower);
+		sprintf(tempString, "%.1fV", context.device.batteryPower);
 		return tempString;
 	case WidgetContent_Title :
 		return "Rascal";

@@ -86,11 +86,14 @@ void setup()
 	//
 	Wire.begin();
 
+	//
 	vario.begin();
 	display.begin();
 	
 	battery.begin();
-	context.batteryPower = battery.getVoltage();
+	context.device.batteryPower = battery.getVoltage();
+	
+	keybd.begin();
 }
 
 
@@ -98,19 +101,18 @@ void loop()
 {
 	if (vario.available())
 	{		
-		context.vario.speedVertActive = vario.getVelocity();
-		context.vario.speedVertLazy = context.vario.speedVertLazy * 0.8 + context.vario.speedVertActive * 0.2;
-		context.vario.altitudeBaro = vario.getAltitude();
-		context.vario.pressure = vario.getPressure();
-		context.vario.temperature = vario.getTemperature();
+		context.varioState.speedVertActive = vario.getVelocity();
+		context.varioState.speedVertLazy = context.varioState.speedVertLazy * 0.8 + context.varioState.speedVertActive * 0.2;
+		context.varioState.altitudeBaro = vario.getAltitude();
+		context.varioState.pressure = vario.getPressure();
+		context.varioState.temperature = vario.getTemperature();
 		
 		vario.flush();
-//		Serial.print("vario = "); Serial.println(context.vario.speedVertActive);
 	}
 	
 	//
 	if (battery.update())
-		context.batteryPower = battery.getVoltage();
+		context.device.batteryPower = battery.getVoltage();
 	
 	//
 	keybd.update();

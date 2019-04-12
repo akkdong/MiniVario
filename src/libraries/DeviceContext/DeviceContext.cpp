@@ -16,19 +16,18 @@ void DeviceContext::reset()
 {
 	memset(this, 0, sizeof(DeviceContext));
 	
-	timeCurrent = 15 * 3600 + 24 * 60 + 32;
-	timeFly = 23 * 60 + 59;
 	
-	batteryPower = 3.7;
-	stateGPS = 1;
-	stateBT = 1;
-	stateStorage = 1;
+	device.batteryPower = 3.7;
+	device.statusGPS = 1;
+	device.statusBT = 1;
+	device.statusSDCard = 1;
 	
-	vario.speedGround = 45.46;
-	vario.speedVertActive = 4.56;
-	vario.heading = 270.4;
-	vario.glideRatio = 8.45;
-	vario.altitudeGPS = 1564.6;
+	varioState.speedGround = 45.46;
+	varioState.speedVertActive = 4.56;
+	varioState.heading = 270.4;
+	varioState.glideRatio = 8.45;
+	varioState.altitudeGPS = 1564.6;
 	
-	
+	varioState.timeCurrent = 15 * 3600 + 24 * 60 + 32;
+	varioState.timeStart = 14 * 3600 + 45 * 60 + 2;	
 }
