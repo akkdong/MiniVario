@@ -69,6 +69,7 @@ BatteryVoltage battery;
 Keyboard keybd(keybdPins, sizeof(keybdPins) / sizeof(keybdPins[0]));
 
 VarioScreen pages[3];
+PopupMenu	topMenu;
 
 void loadPages(VarioScreen * pages)
 {
@@ -99,7 +100,7 @@ void loadPages(VarioScreen * pages)
 #define NORMAL_TEXT			(WS_FONT_BOLD_3 | WS_TA_RIGHT | WS_TA_BOTTOM)
 #define NORMAL_BOX			(WS_BORDER_LEFT | WS_BORDER_TOP)
 
-	
+#if 0	
 	pages[0].widget[widget].setStyle(Widget_StatusBar, 0, WidgetContent_Status_Bar);
 	pages[0].widget[widget].setPosition(x, y, SCREEN_WIDTH, STATUS_TIME_HEIGHT);
 	widget++;
@@ -111,6 +112,7 @@ void loadPages(VarioScreen * pages)
 	pages[0].widget[widget].setStyle(Widget_SimpleText, NORMAL_STATUS, WidgetContent_Time_Current);
 	pages[0].widget[widget].setPosition(x + SCREEN_WIDTH - STATUS_TIME_WIDTH, y, STATUS_TIME_WIDTH, STATUS_TIME_HEIGHT);
 	widget++;
+#endif	
 	y += STATUS_TIME_HEIGHT;
 	
 	pages[0].widget[widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Altitude_GPS);
@@ -158,6 +160,11 @@ void setup()
 	//
 	loadPages(pages);
 	
+	topMenu.addItem(0x5001, 0 /* IDS_BASIC_SETTINGS */);
+	topMenu.addItem(0x5002, 0 /* IDS_SOUND_ONOFF */);
+	topMenu.addItem(0x5003, 0 /* IDS_BLUETOOTH_ONOFF */);
+	topMenu.addItem(0x5004, 0 /* IDS_POWER_OFF */);
+	
 	//
 	initPins(powerPins, sizeof(powerPins) / sizeof(powerPins[0]));
 	delay(100);
@@ -172,6 +179,8 @@ void setup()
 	//
 	vario.begin();
 	display.begin();
+	
+	display.attachScreen(&pages[0]);
 	
 	battery.begin();
 	context.device.batteryPower = battery.getVoltage();
@@ -208,12 +217,18 @@ void loop()
 	case KEY_DOWN :
 		// move to next page
 		break;
-	case KEY_SEL_LONG :
-		// enter menu
 		
+		
+	case KEY_UP_LONG :
+	case KEY_DOWN_LONG :
 		// temporary
 		display.deepSleep();
 		while(1);
+	
+	case KEY_SEL_LONG :
+		// enter menu
+		display.showPopup((display.getActiveObject() == &topMenu) ? NULL : &topMenu);
+		break;
 	}
 }
 

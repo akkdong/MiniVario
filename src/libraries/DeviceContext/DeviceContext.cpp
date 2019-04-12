@@ -16,7 +16,7 @@ void DeviceContext::reset()
 {
 	memset(this, 0, sizeof(DeviceContext));
 	
-	
+	#if 0
 	device.batteryPower = 3.7;
 	device.statusGPS = 1;
 	device.statusBT = 1;
@@ -30,4 +30,5 @@ void DeviceContext::reset()
 	
 	varioState.timeCurrent = 15 * 3600 + 24 * 60 + 32;
 	varioState.timeStart = 14 * 3600 + 45 * 60 + 2;	
+	#endif
 }

@@ -28,13 +28,4 @@ typedef struct _PrefItem
 } PrefItem;
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-
-typedef struct _MenuItem
-{
-	int type;
-	
-} MenuItem;
-
 #endif // __PREFITEM_H__

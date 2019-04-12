@@ -63,6 +63,9 @@ VarioDisplay::VarioDisplay(EPaperDriver & _driver, DeviceContext & _context)
 void VarioDisplay::init()
 {
 	EPaperDisplay::init();
+	
+	statusBar.setStyle(Widget_StatusBar, 0, WidgetContent_Status_Bar);
+	statusBar.setPosition(0, 0, _width, 24);
 }
 
 int VarioDisplay::begin()
@@ -132,6 +135,7 @@ void VarioDisplay::attachPreference(VarioPreference * pref)
 
 void VarioDisplay::showPopup(VarioPopup * popupPtr)
 {
+	activePopup = popupPtr;
 }
 
 void VarioDisplay::sleepDevice()
@@ -154,10 +158,13 @@ void VarioDisplay::update()
 {
 	// erase screen
 	fillScreen(COLOR_WHITE);
+
+	//	
+	draw(&statusBar);
 	
+	// preference has high priority
 	if (activePref)
 	{
-		// preference has high priority
 		draw(activePref);
 	}
 	else if (activeScreen)
@@ -169,6 +176,7 @@ void VarioDisplay::update()
 	// draw activated popup
 	if (activePopup)
 	{
+		// draw any popup : menu, messagebox, ...
 		draw(activePopup);
 	}
 	
@@ -194,6 +202,58 @@ void VarioDisplay::draw(VarioPreference * pref)
 
 void VarioDisplay::draw(VarioPopup * popup)
 {
+	switch (popup->objType)
+	{
+	case DispObject_PopupMenu :
+		draw((PopupMenu *)popup);
+		break;
+	case DispObject_PopupMessageBox :
+		break;
+	case DispObject_PopupListBox :
+		break;
+	case DispObject_PopupCheckBox :
+		break;
+	case DispObject_PopupRadioBox :
+		break;
+	}
+}
+
+void VarioDisplay::draw(PopupMenu * menu)
+{
+	int mw = 120;
+	int mh = (menu->itemCount + 1) * 24;
+	int x = WORKAREA_X + (WORKAREA_W - mw) / 2;
+	int y = WORKAREA_Y + (WORKAREA_H - mh) / 2;
+	
+	fillRect(x, y, mw, mh, COLOR_WHITE);
+	drawRect(x, y, mw, mh, COLOR_BLACK);
+	
+	y += 24 / 2;
+	for (int i = 0; i < menu->itemCount; i++)
+	{
+		const char * str = NULL;
+		
+		switch (menu->items[i].itemId)
+		{
+		case 0x5001 : str = "Basic settings"; break;
+		case 0x5002 : str = "Sound on"; break;
+		case 0x5003 : str = "Bluetooth off"; break;
+		case 0x5004 : str = "Power off"; break;
+		}
+		
+		if (i == menu->itemSelect)
+		{
+			// draw selected item background
+			fillRect(x + 4, y + 4, mw - 4, 24 - 4, COLOR_BLACK);
+		}
+		
+		drawText(str, 
+			x, y, mw, 24,
+			WS_FONT_NORMAL_2 | WS_TA_CENTER | WS_TA_MIDDLE, 
+			(i == menu->itemSelect) ? COLOR_WHITE : COLOR_BLACK);	
+			
+		y += 24;
+	}
 }
 
 void VarioDisplay::draw(Widget * widget)
@@ -279,6 +339,7 @@ void VarioDisplay::drawStatusBar(Widget * widget)
 	int x = widget->x + 2;
 	int y = widget->y + (widget->h - SB_BITMAP_HEIGHT) / 2;
 	
+	//
 	drawBitmapBM(Bitmap_StatusBar_hanglider, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 	x += SB_BITMAP_WIDTH;
 	
@@ -296,6 +357,20 @@ void VarioDisplay::drawStatusBar(Widget * widget)
 		drawBitmapBM(Bitmap_StatusBar_sdcard, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 		x += SB_BITMAP_WIDTH;
 	}
+	
+	drawBitmapBM(context.device.statusSound ? Bitmap_StatusBar_soundon : Bitmap_StatusBar_soundoff, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
+	x += SB_BITMAP_WIDTH;
+	
+	//
+	drawText(getString(WidgetContent_Time_Current), 
+		widget->x + widget->w - STATUSBAR_TEXT_WIDTH, widget->y, STATUSBAR_TEXT_WIDTH, widget->h,
+		WS_FONT_NORMAL_2 | WS_TA_CENTER | WS_TA_MIDDLE, 
+		COLOR_BLACK);
+
+	drawText(getString(WidgetContent_Battery), 
+		widget->x + widget->w - (STATUSBAR_TEXT_WIDTH + STATUSBAR_TEXT_WIDTH), widget->y, STATUSBAR_TEXT_WIDTH, widget->h,
+		WS_FONT_NORMAL_2 | WS_TA_CENTER | WS_TA_MIDDLE, 
+		COLOR_BLACK);	
 }
 
 void VarioDisplay::drawVarioHistory(Widget * widget)
@@ -546,3 +621,16 @@ const char * VarioDisplay::getString(WidgetContentType type)
 	return "";
 }
 
+DisplayObject * VarioDisplay::getActiveObject()
+{
+	if (activePopup)
+		return activePopup;
+	
+	if (activePref)
+		return activePref;
+
+	if (activeScreen)
+		return activeScreen;
+	
+	return NULL;
+}

@@ -5,19 +5,10 @@
 
 
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class VarioScreen
 
-VarioScreen::VarioScreen()
-{
-}
-	
-void VarioScreen::reset()
-{
-}
-
-void VarioScreen::set()
+VarioScreen::VarioScreen() : DisplayObject(DispObject_Screen)
 {
 }
 
@@ -25,15 +16,7 @@ void VarioScreen::set()
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class VarioPreference
 
-VarioPreference::VarioPreference()
-{
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-// class VarioPopup
-
-VarioPopup::VarioPopup()
+VarioPreference::VarioPreference() : DisplayObject(DispObject_Screen)
 {
 }
 
@@ -41,14 +24,36 @@ VarioPopup::VarioPopup()
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class PopupMenu
 
-PopupMenu::PopupMenu()
+PopupMenu::PopupMenu() 
+	: VarioPopup(DispObject_PopupMenu)
+	, itemCount(0)
+	, itemTop(0)
+	, itemSelect(0)
 {
 }
+
+int16_t PopupMenu::addItem(uint16_t itemId, uint16_t strId)
+{
+	if (itemCount < MAX_MEUITEMS)
+	{
+		items[itemCount].itemId = itemId;
+		items[itemCount].strId = strId;
+		
+		return ++itemCount;
+	}
+	
+	return -1;
+}
+
+uint32_t PopupMenu::processKey(uint8_t key)
+{
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class PopupMessageBox
 
-PopupMessageBox::PopupMessageBox()
+PopupMessageBox::PopupMessageBox() : VarioPopup(DispObject_PopupMessageBox)
 {
 }
 
@@ -56,7 +61,7 @@ PopupMessageBox::PopupMessageBox()
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class PopupListBox
 
-PopupListBox::PopupListBox()
+PopupListBox::PopupListBox() : VarioPopup(DispObject_PopupListBox)
 {
 }
 
@@ -64,7 +69,7 @@ PopupListBox::PopupListBox()
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class PopupCheckBox
 
-PopupCheckBox::PopupCheckBox()
+PopupCheckBox::PopupCheckBox() : VarioPopup(DispObject_PopupCheckBox)
 {
 }
 
@@ -72,6 +77,6 @@ PopupCheckBox::PopupCheckBox()
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class PopupRadioBox
 
-PopupRadioBox::PopupRadioBox()
+PopupRadioBox::PopupRadioBox() : VarioPopup(DispObject_PopupRadioBox)
 {
 }

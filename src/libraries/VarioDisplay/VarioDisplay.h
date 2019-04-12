@@ -10,8 +10,19 @@
 #include "Task.h"
 #include "DisplayObjects.h"
 
-#define MAX_FONTS			(8)
-#define MAX_TEMP_STRING		(16)
+
+#define MAX_FONTS				(8)
+#define MAX_TEMP_STRLEN			(16)
+
+#define STATUSBAR_WIDTH			(WAVESHARE_270_WIDTH)
+#define	STATUSBAR_HEIGHT		(24)
+#define STATUSBAR_TEXT_WIDTH	(40)
+
+#define WORKAREA_X				(0)
+#define WORKAREA_Y				(STATUSBAR_HEIGHT)
+#define WORKAREA_W				(WAVESHARE_270_WIDTH)
+#define WORKAREA_H				(WAVESHARE_270_HEIGHT - STATUSBAR_HEIGHT)
+
 
 typedef const GFXfont * GFXfontPtr;
 
@@ -50,6 +61,8 @@ public:
 	void				showPopup(VarioPopup * popupPtr);
 
 	void				deepSleep() { assertSleep = true; }
+	
+	DisplayObject *		getActiveObject();
 
 protected:	
 	// 	
@@ -60,6 +73,7 @@ protected:
 	void				draw(VarioScreen * screen);
 	void				draw(VarioPreference * pref);
 	void				draw(VarioPopup * popup);
+	void				draw(PopupMenu * menu);
 	void 				draw(Widget * widget);
 
 	void 				drawEmptyArea(Widget * widget);
@@ -90,14 +104,18 @@ protected:
 	static GFXfontPtr 	__FontStack[MAX_FONTS];
 	
 protected:
+	//
+	Widget				statusBar;
+	
 	VarioScreen *		activeScreen;
 	VarioPreference *	activePref;
-	VarioPopup *		activePopup;
+	VarioPopup *		activePopup;	
 	
+	//
 	DeviceContext &		context;
 	
 private:
-	char				tempString[16];
+	char				tempString[MAX_TEMP_STRLEN];
 	volatile bool		assertSleep;
 };
 
