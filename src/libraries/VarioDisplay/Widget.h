@@ -133,7 +133,7 @@ typedef enum _WidgetContentType
 //
 
 class Widget;
-class VarioScreen;
+class VarioDisplay;
 
 
 
@@ -142,7 +142,7 @@ class VarioScreen;
 
 class Widget
 {
-	friend class VarioScreen;
+	friend class VarioDisplay;
 	
 public:
 	Widget() : style(Widget_Empty) {}

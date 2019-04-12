@@ -2,7 +2,7 @@
 //
 
 #include "KalmanVario.h"
-#include "VarioScreen.h"
+#include "VarioDisplay.h"
 #include "BatteryVoltage.h"
 #include "Keyboard.h"
 
@@ -63,7 +63,7 @@ KalmanVario vario(baro);
 DeviceContext context;
 
 VarioEPaper driver(ePaperPins);
-VarioScreen display(driver, context);
+VarioDisplay display(driver, context);
 
 BatteryVoltage battery;
 Keyboard keybd(keybdPins, sizeof(keybdPins) / sizeof(keybdPins[0]));

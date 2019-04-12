@@ -1,7 +1,7 @@
-// VarioScreen.cpp
+// VarioDisplay.cpp
 //
 
-#include "VarioScreen.h"
+#include "VarioDisplay.h"
 #include "Bitmap_StatusBar.h"
 #include "Bitmap_Paragliding.h"
 
@@ -32,7 +32,7 @@
 #include <Fonts/FreeSansBold24pt7b.h>
 
 
-const GFXfont * VarioScreen::__FontStack[] = 
+const GFXfont * VarioDisplay::__FontStack[] = 
 {
 	&FreeSans6pt7b,
 	&FreeSans7pt7b,
@@ -47,9 +47,9 @@ const GFXfont * VarioScreen::__FontStack[] =
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-// class VarioScreen
+// class VarioDisplay
 
-VarioScreen::VarioScreen(EPaperDriver & _driver, DeviceContext & _context) 
+VarioDisplay::VarioDisplay(EPaperDriver & _driver, DeviceContext & _context) 
 	: EPaperDisplay(_driver)
 	, Task("Display", 2048, 1)
 	, activePage(0)
@@ -58,7 +58,7 @@ VarioScreen::VarioScreen(EPaperDriver & _driver, DeviceContext & _context)
 
 }
 
-void VarioScreen::init()
+void VarioDisplay::init()
 {
 	EPaperDisplay::init();
 	
@@ -137,7 +137,7 @@ void VarioScreen::init()
 	pages[0][widget].setPosition(x, y, 176, 264 - y);
 }
 
-int VarioScreen::begin()
+int VarioDisplay::begin()
 {
 	// ...
 	assertSleep = false;
@@ -145,7 +145,7 @@ int VarioScreen::begin()
 	return Task::begin();
 }
 
-void VarioScreen::TaskProc()
+void VarioDisplay::TaskProc()
 {
 	bool fastUpdate = false;
 	
@@ -188,12 +188,12 @@ void VarioScreen::TaskProc()
 	}
 }
 
-void VarioScreen::end()
+void VarioDisplay::end()
 {
 	Task::end();
 }
 
-void VarioScreen::sleepDevice()
+void VarioDisplay::sleepDevice()
 {
     const int ext_wakeup_pin_1 = 34;
     const uint64_t ext_wakeup_pin_1_mask = 1ULL << ext_wakeup_pin_1;
@@ -209,7 +209,7 @@ void VarioScreen::sleepDevice()
 	// ...
 }
 
-void VarioScreen::update()
+void VarioDisplay::update()
 {
 	// erase screen
 	fillScreen(COLOR_WHITE);
@@ -229,7 +229,7 @@ void VarioScreen::update()
 	// ...
 }
 
-void VarioScreen::draw(Widget * widget)
+void VarioDisplay::draw(Widget * widget)
 {
 	switch (widget->getStyle())
 	{
@@ -271,11 +271,11 @@ void VarioScreen::draw(Widget * widget)
 	}
 }
 
-void VarioScreen::drawEmptyArea(Widget * widget)
+void VarioDisplay::drawEmptyArea(Widget * widget)
 {
 }
 
-void VarioScreen::drawTextBox(Widget * widget)
+void VarioDisplay::drawTextBox(Widget * widget)
 {
 	drawBorder(widget);
 	
@@ -295,7 +295,7 @@ void VarioScreen::drawTextBox(Widget * widget)
 		COLOR_BLACK);
 }
 
-void VarioScreen::drawSimpleText(Widget * widget)
+void VarioDisplay::drawSimpleText(Widget * widget)
 {
 	drawText(getString(widget->getContentType()), 
 		widget->x + 2, widget->y + 2, widget->w - 4, widget->h - 4, 
@@ -303,11 +303,11 @@ void VarioScreen::drawSimpleText(Widget * widget)
 		COLOR_BLACK);
 }
 
-void VarioScreen::drawIcon(Widget * widget)
+void VarioDisplay::drawIcon(Widget * widget)
 {
 }
 
-void VarioScreen::drawStatusBar(Widget * widget)
+void VarioDisplay::drawStatusBar(Widget * widget)
 {
 	int x = widget->x + 2;
 	int y = widget->y + (widget->h - SB_BITMAP_HEIGHT) / 2;
@@ -331,19 +331,19 @@ void VarioScreen::drawStatusBar(Widget * widget)
 	}
 }
 
-void VarioScreen::drawVarioHistory(Widget * widget)
+void VarioDisplay::drawVarioHistory(Widget * widget)
 {
 }
 
-void VarioScreen::drawVarioBar(Widget * widget)
+void VarioDisplay::drawVarioBar(Widget * widget)
 {
 }
 
-void VarioScreen::drawCompass(Widget * widget)
+void VarioDisplay::drawCompass(Widget * widget)
 {
 }
 
-void VarioScreen::drawBorder(Widget * widget)
+void VarioDisplay::drawBorder(Widget * widget)
 {
 	if (widget->extraStyle & WS_BORDER_TOP)
 		drawFastHLine(widget->x, widget->y, widget->w, COLOR_BLACK);
@@ -355,7 +355,7 @@ void VarioScreen::drawBorder(Widget * widget)
 		drawFastVLine(widget->x + widget->w - 1, widget->y, widget->h, COLOR_BLACK);
 }
 
-void VarioScreen::drawText(const char * str, int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t style, uint16_t color)
+void VarioDisplay::drawText(const char * str, int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t style, uint16_t color)
 {
 	int16_t tx, ty;
 	uint16_t tw, th;
@@ -384,7 +384,7 @@ void VarioScreen::drawText(const char * str, int16_t x, int16_t y, uint16_t w, u
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //
 
-const char * VarioScreen::getLabel(WidgetContentType type)
+const char * VarioDisplay::getLabel(WidgetContentType type)
 {
 	switch (type)
 	{
@@ -441,7 +441,7 @@ const char * VarioScreen::getLabel(WidgetContentType type)
 	return "";
 }
 
-const char * VarioScreen::getUnit(WidgetContentType type)
+const char * VarioDisplay::getUnit(WidgetContentType type)
 {
 	switch (type)
 	{
@@ -498,7 +498,7 @@ const char * VarioScreen::getUnit(WidgetContentType type)
 	return "";
 }
 
-const char * VarioScreen::getString(WidgetContentType type)
+const char * VarioDisplay::getString(WidgetContentType type)
 {
 	switch (type)
 	{

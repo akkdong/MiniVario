@@ -1,8 +1,8 @@
-// VarioScreen.h
+// VarioDisplay.h
 //
 
-#ifndef __SCREEN_H__
-#define __SCREEN_H__
+#ifndef __VARIODISPLAY_H__
+#define __VARIODISPLAY_H__
 
 #include <Arduino.h>
 #include "Widget.h"
@@ -31,12 +31,12 @@ public:
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-// class VarioScreen
+// class VarioDisplay
 
-class VarioScreen : public EPaperDisplay, public Task
+class VarioDisplay : public EPaperDisplay, public Task
 {
 public:
-	VarioScreen(EPaperDriver & _driver, DeviceContext & _context);
+	VarioDisplay(EPaperDriver & _driver, DeviceContext & _context);
 
 public:
 	int 			begin();
@@ -90,4 +90,4 @@ private:
 };
 
 
-#endif // __SCREEN_H__
+#endif // __VARIODISPLAY_H__

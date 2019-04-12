@@ -1,7 +1,7 @@
 // Screen.ino
 //
 
-#include "VarioScreen.h"
+#include "VarioDisplay.h"
 #include "Keyboard.h"
 
 //
@@ -42,7 +42,7 @@ enum _InputKey
 DeviceContext context;
 
 VarioEPaper driver(ePaperPins);
-VarioScreen display(driver, context);
+VarioDisplay display(driver, context);
 
 Keyboard keybd(keybdPins, sizeof(keybdPins) / sizeof(keybdPins[0]));
 
