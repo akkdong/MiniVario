@@ -3,6 +3,41 @@
 #include "soc/rtc_cntl_reg.h"
 
 BluetoothSerial SerialBT;
+uint32_t tickUpdate;
+
+void bluetoothSPPCallback(esp_spp_cb_event_t event, esp_spp_cb_param_t * param)
+{
+	switch (event)
+	{
+	case ESP_SPP_SRV_OPEN_EVT :
+		Serial.println("Server connection open");
+		break;
+		
+	case ESP_SPP_START_EVT :
+		Serial.println("Server started");
+		break;
+		
+	case ESP_SPP_OPEN_EVT :
+		Serial.println("Client connection open");
+		break;
+		
+	case ESP_SPP_CLOSE_EVT :
+		Serial.println("Client connection closed");
+		break;
+		
+	case ESP_SPP_CONG_EVT :
+		Serial.println("Connection congestion status changed");
+		break;
+		
+	case ESP_SPP_DISCOVERY_COMP_EVT :
+		Serial.println("Discovery complete");
+		break;
+		
+	case ESP_SPP_CL_INIT_EVT :
+		Serial.println("Client initiated a connection");
+		break;
+	}	
+}
  
 void setup() 
 {
@@ -15,14 +50,18 @@ void setup()
 
 	//
 	Serial.begin(115200);
-	
 	Serial2.begin(9600);
 
-	if(!SerialBT.begin("Abrakatabra"))
+	//
+	SerialBT.register_callback(bluetoothSPPCallback);
+	
+	if(!SerialBT.begin("MiniVario"))
 	{
 		Serial.println("An error occurred initializing Bluetooth");
 		while(1);
 	}
+	
+	tickUpdate = millis();
 }
  
 void loop() 
@@ -35,6 +74,12 @@ void loop()
 
 	while(Serial2.available()) 
 		SerialBT.write(Serial2.read());
+	
+	if (millis() - tickUpdate > 2000)
+	{
+		Serial.print("BluetoothSerial::hasClient = "); Serial.println(SerialBT.hasClient());
+		tickUpdate = millis();
+	}
 
 	delay(1);
 }
