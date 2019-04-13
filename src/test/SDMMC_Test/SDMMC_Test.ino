@@ -170,7 +170,8 @@ void testFileIO(fs::FS &fs, const char * path){
     file.close();
 }
 
-void setup(){
+void setup0()
+{
 	digitalWrite(19, HIGH);
 	pinMode(19, OUTPUT);
 	delay(100);
@@ -217,6 +218,72 @@ void setup(){
     Serial.printf("Used space: %lluMB\n", SD_MMC.usedBytes() / (1024 * 1024));
 }
 
-void loop(){
+void setup()
+{
+	digitalWrite(19, HIGH);
+	pinMode(19, OUTPUT);
+	delay(100);
+	
+    Serial.begin(115200);
+	Serial.println("SDCard Test...");
+	
+    if(!SD_MMC.begin() || SD_MMC.cardType() == CARD_MMC)
+	{
+		Serial.println("Mount FAILED!!!");
+		return;
+	}
+	
+	if (! SD_MMC.exists("/TrackLogs"))
+	{
+		Serial.print("Creat TrackLogs directory: ");
+		if (SD_MMC.mkdir("/TrackLogs"))
+		{
+			Serial.println("OK");
+		}
+		else
+		{
+			Serial.println("FAILED");
+			return;
+		}
+	}
+	
+	if (SD_MMC.exists("/TrackLogs/test.txt"))
+	{
+		Serial.print("Create File test2.txt : ");
+		File file = SD_MMC.open("/TrackLogs/test2.txt", "w");
+		if (file)
+		{
+			file.write((const uint8_t *)"Hello\r\n", 7);
+			file.write((const uint8_t *)"EOF\r\n", 5);
+			file.close();
+			
+			Serial.println("OK");
+		}
+		else
+		{
+			Serial.println("FAILED");
+		}
+	}
+	else
+	{
+		Serial.print("Create File test.txt : ");
+		File file = SD_MMC.open("/TrackLogs/test.txt", "w");
+		if (file)
+		{
+			file.write((const uint8_t *)"Hello\r\n", 7);
+			file.write((const uint8_t *)"EOF\r\n", 5);
+			file.close();
+			
+			Serial.println("OK");
+		}
+		else
+		{
+			Serial.println("FAILED");
+		}
+	}
+}
+
+void loop()
+{
 
 }

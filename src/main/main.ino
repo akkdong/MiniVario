@@ -7,6 +7,11 @@
 #include "Keyboard.h"
 #include "DeviceDefines.h"
 #include "VarioBeeper.h"
+#include "BluetoothSerialEx.h"
+#include "NmeaParserEx.h"
+#include "VarioSentence.h"
+#include "VarioLogger.h"
+#include "BluetoothMan.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -76,6 +81,28 @@ Keyboard keybd(keybdPins, sizeof(keybdPins) / sizeof(keybdPins[0]));
 
 VarioScreen pages[3];
 PopupMenu	topMenu;
+
+//
+//
+//
+
+BluetoothSerialEx  	serialBluetooth;
+
+//NmeaParserEx nmeaParser(Serial2);
+//VarioSentence varioNmea(VARIOMETER_DEFAULT_NMEA_SENTENCE);
+
+//VarioLogger logger;
+
+//
+//
+//
+
+//BluetoothMan btMan(serialBluetooth, nmeaParser, varioNmea);
+
+
+//
+//
+//
 
 void loadPages(VarioScreen * pages)
 {
@@ -164,6 +191,21 @@ void loadPages(VarioScreen * pages)
 void setup()
 {
 	//
+	initPins(powerPins, sizeof(powerPins) / sizeof(powerPins[0]));
+	delay(100);
+	
+	//
+	Serial.begin(115200);
+	Serial2.begin(9600);
+	serialBluetooth.begin("MiniVario");
+
+	Serial.println("Start MiniVario...\n");
+
+	//
+	Wire.begin();
+
+	
+	//
 	loadPages(pages);
 	
 	topMenu.addItem(0x5001, 0 /* IDS_BASIC_SETTINGS */);
@@ -172,15 +214,8 @@ void setup()
 	topMenu.addItem(0x5004, 0 /* IDS_POWER_OFF */);
 	
 	//
-	initPins(powerPins, sizeof(powerPins) / sizeof(powerPins[0]));
-	delay(100);
+	//logger.init();
 	
-	//
-	Serial.begin(115200);
-	Serial.println("Start MiniVario...\n");
-	
-	//
-	Wire.begin();
 	
 	//
 	toneGen.begin(SineGenerator::USE_DIFFERENTIAL, SineGenerator::SCALE_FULL);
@@ -222,6 +257,9 @@ void loop()
 	//
 	if (battery.update())
 		context.device.batteryPower = battery.getVoltage();
+	
+	//
+	//nmeaParser.update();
 	
 	//
 	keybd.update();
