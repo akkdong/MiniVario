@@ -6,10 +6,24 @@
 #include "PrefItem.h"
 #include "MenuItem.h"
 
-#define MAX_WIDGETS		(16)
-#define MAX_PREFITEMS	(16)
-#define MAX_MEUITEMS	(16)
+#define MAX_WIDGETS				(16)
+#define MAX_PREFITEMS			(16)
+#define MAX_MEUITEMS			(16)
 
+#define GET_COMMAND(x)			((x) & 0xFFFF0000)
+#define GET_PARAM(x)			((x) & 0x0000FFFF)
+
+#define CMD_SHOW_NEXT_PAGE		(0x00010000)
+#define CMD_SHOW_PREV_PAGE		(0x00020000)
+#define CMD_SHOW_PREFERENCE		(0x00030000)
+#define CMD_SHOW_TOP_MENU		(0x00040000)
+
+#define CMD_TOGGLE_SOUND		(0x00100000)
+#define CMD_TOGGLE_BLUETOOTH	(0x00200000)
+
+#define CMD_HIDE_POPUP			(0x80010000)
+
+#define CMD_SHUTDOWN			(0xFFFE0000)
 
 typedef enum _DispObjectType
 {
@@ -48,6 +62,9 @@ class VarioScreen : public DisplayObject
 {
 public:
 	VarioScreen();
+	
+public:
+	virtual uint32_t	processKey(uint8_t key);
 	
 public:
 	Widget				widget[MAX_WIDGETS];

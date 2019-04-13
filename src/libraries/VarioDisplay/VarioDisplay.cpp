@@ -231,20 +231,20 @@ void VarioDisplay::draw(PopupMenu * menu)
 	y += 24 / 2;
 	for (int i = 0; i < menu->itemCount; i++)
 	{
-		const char * str = NULL;
+		char * str = tempString;
 		
 		switch (menu->items[i].itemId)
 		{
-		case 0x5001 : str = "Basic settings"; break;
-		case 0x5002 : str = "Sound on"; break;
-		case 0x5003 : str = "Bluetooth off"; break;
-		case 0x5004 : str = "Power off"; break;
+		case 0x5001 : strcpy(str, "Basic settings"); break;
+		case 0x5002 : sprintf(str, "Sound %s", context.device.statusSound ? "Off" : "On"); break;
+		case 0x5003 : sprintf(str, "Bluetooth %s", context.device.statusBT ? "Off" : "On"); break;
+		case 0x5004 : strcpy(str, "Power Off"); break;
 		}
 		
 		if (i == menu->itemSelect)
 		{
 			// draw selected item background
-			fillRect(x + 4, y + 4, mw - 4, 24 - 4, COLOR_BLACK);
+			fillRect(x + 4, y + 2, mw - 8, 24 - 4, COLOR_BLACK);
 		}
 		
 		drawText(str, 

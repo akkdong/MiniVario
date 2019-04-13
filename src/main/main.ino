@@ -5,6 +5,7 @@
 #include "VarioDisplay.h"
 #include "BatteryVoltage.h"
 #include "Keyboard.h"
+#include "DeviceDefines.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -45,16 +46,6 @@ PinSetting keybdPins[] =
 	{  0, PIN_MODE_INPUT, PIN_ACTIVE_LOW, PIN_STATE_ACTIVE },
 };
 
-enum _InputKey
-{
-	KEY_UP,
-	KEY_DOWN,
-	KEY_SEL,
-	KEY_UP_LONG,
-	KEY_DOWN_LONG,
-	KEY_SEL_LONG,
-	KEY_Count
-};
 
 CriticalSection cs;
 Sensor_MS5611  baro(cs, Wire);
@@ -209,26 +200,55 @@ void loop()
 	//
 	keybd.update();
 	
-	switch (keybd.getch())
+	//
+	int key = keybd.getch();
+	if (key >= 0)
 	{
-	case KEY_UP :
-		// move to previous page
-		break;
-	case KEY_DOWN :
-		// move to next page
-		break;
-		
-		
-	case KEY_UP_LONG :
-	case KEY_DOWN_LONG :
-		// temporary
-		display.deepSleep();
-		while(1);
-	
-	case KEY_SEL_LONG :
-		// enter menu
-		display.showPopup((display.getActiveObject() == &topMenu) ? NULL : &topMenu);
-		break;
+		Serial.print("key = "); Serial.println(key);
+		DisplayObject * dispObject = display.getActiveObject();
+		if (dispObject)
+		{
+			uint32_t ret = dispObject->processKey(key);
+			uint32_t cmd = GET_COMMAND(ret);
+			Serial.print("cmd = "); Serial.println(cmd);
+			
+			switch (cmd)
+			{
+			case CMD_SHOW_NEXT_PAGE :
+			case CMD_SHOW_PREV_PAGE :
+				break;
+			case CMD_SHOW_PREFERENCE :
+				display.showPopup(NULL);
+				//display.activatePreference(xxx);
+				break;
+			case CMD_SHOW_TOP_MENU :
+				// enter menu
+				display.showPopup(&topMenu);
+				break;
+				
+			case CMD_TOGGLE_SOUND :
+				context.device.statusSound = context.device.statusSound ? 0 : 1;
+				display.showPopup(NULL);
+				break;
+			case CMD_TOGGLE_BLUETOOTH :
+				context.device.statusBT = context.device.statusBT ? 0 : 1;
+				display.showPopup(NULL);
+				break;
+				
+			case CMD_HIDE_POPUP :
+				// releave menu
+				display.showPopup(NULL);
+				break;
+				
+			case CMD_SHUTDOWN :
+				// stop logging
+				// close alarm
+				
+				// and then go to deep sleep
+				display.deepSleep();
+				while(1);
+			}
+		}
 	}
 }
 

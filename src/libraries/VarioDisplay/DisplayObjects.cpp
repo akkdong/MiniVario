@@ -2,7 +2,7 @@
 //
 
 #include "DisplayObjects.h"
-
+#include "DeviceDefines.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -10,6 +10,24 @@
 
 VarioScreen::VarioScreen() : DisplayObject(DispObject_Screen)
 {
+}
+
+uint32_t VarioScreen::processKey(uint8_t key)
+{
+	switch (key)
+	{
+	case KEY_UP :
+		// move to previous page
+		return CMD_SHOW_PREV_PAGE;
+	case KEY_DOWN :
+		// move to next page
+		return CMD_SHOW_NEXT_PAGE;
+	
+	case KEY_SEL_LONG :
+		return CMD_SHOW_TOP_MENU;
+	}
+	
+	return 0;
 }
 
 
@@ -47,6 +65,37 @@ int16_t PopupMenu::addItem(uint16_t itemId, uint16_t strId)
 
 uint32_t PopupMenu::processKey(uint8_t key)
 {
+	switch (key)
+	{
+	case KEY_UP :
+		// previous item
+		itemSelect = (itemSelect == 0) ? (itemCount - 1) : (itemSelect - 1);
+		break;
+	case KEY_DOWN :
+		// next item
+		itemSelect = itemSelect + 1;
+		if (itemSelect == itemCount)
+			itemSelect = 0;
+		break;
+		
+	case KEY_SEL :
+		switch (items[itemSelect].itemId)
+		{
+		case 0x5001 :
+			return CMD_SHOW_PREFERENCE;
+		case 0x5002 :
+			return CMD_TOGGLE_SOUND;
+		case 0x5003:
+			return CMD_TOGGLE_BLUETOOTH;
+		case 0x5004 :
+			return CMD_SHUTDOWN;
+		}
+		break;
+	case KEY_SEL_LONG :
+		return CMD_HIDE_POPUP;
+	}
+	
+	return 0;
 }
 
 

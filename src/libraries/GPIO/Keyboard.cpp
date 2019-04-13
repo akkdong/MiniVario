@@ -3,8 +3,8 @@
 
 #include "Keyboard.h"
 
-#define DELAY_DEBOUNCE		200
-#define DELAY_LONG_KEY		1000
+#define DELAY_DEBOUNCE		 60
+#define DELAY_LONG_KEY		640
 
 enum _state_machine
 {
