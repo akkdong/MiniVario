@@ -6,6 +6,7 @@
 #include "BatteryVoltage.h"
 #include "Keyboard.h"
 #include "DeviceDefines.h"
+#include "VarioBeeper.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -14,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //
-
+	
 //
 PinSetting ePaperPins[] = 
 {
@@ -47,11 +48,25 @@ PinSetting keybdPins[] =
 };
 
 
+//
+//
+//
+
+SineGenerator toneGen;
+TonePlayer tonePlayer(toneGen);
+
+VarioBeeper varioBeeper(tonePlayer);
+
+
+//
+//
+//
+
 CriticalSection cs;
 Sensor_MS5611  baro(cs, Wire);
 KalmanVario vario(baro);
 
-DeviceContext context;
+DeviceContext & context = __DeviceContext;
 
 VarioDisplayDriver driver(ePaperPins);
 VarioDisplay display(driver, context);
@@ -166,6 +181,10 @@ void setup()
 	
 	//
 	Wire.begin();
+	
+	//
+	toneGen.begin(SineGenerator::USE_DIFFERENTIAL, SineGenerator::SCALE_FULL);
+	tonePlayer.setVolume(context.volume.vario);
 
 	//
 	vario.begin();
@@ -177,6 +196,9 @@ void setup()
 	context.device.batteryPower = battery.getVoltage();
 	
 	keybd.begin();
+	
+	//
+	//tonePlayer.setBeep(NOTE_C4, 800, 500, 2, 100);
 }
 
 
@@ -191,7 +213,11 @@ void loop()
 		context.varioState.temperature = vario.getTemperature();
 		
 		vario.flush();
+		varioBeeper.setVelocity(context.varioState.speedVertActive);
 	}
+	
+	// beep beep beep!
+	tonePlayer.update();
 	
 	//
 	if (battery.update())

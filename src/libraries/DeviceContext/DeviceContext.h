@@ -5,6 +5,7 @@
 #define __DEVICECONTEXT_H__
 
 #include <Arduino.h>
+#include "DeviceDefines.h"
 
 #define MAX_STRING_SIZE					(16)
 #define MAX_VARIO_HISTORY				(30)
@@ -158,7 +159,7 @@ public:
 	GliderInfo			gliderInfo;
 	IGCLogger			logger;
 	
-	VarioTone			varioTone[MAX_VARIO_TONE];
+	VarioTone			toneTable[MAX_VARIO_TONE];
 	
 	VolumeSettings		volume;
 	ThresholdSettings	threshold;
@@ -167,7 +168,13 @@ public:
 	
 	// Device state
 	DeviceState			device;
+	
+private:
+	static VarioTone	defaultTone[MAX_VARIO_TONE];
+
 };
+
+extern DeviceContext	__DeviceContext;
 
 #endif // __DEVICECONTEXT_H__
 
