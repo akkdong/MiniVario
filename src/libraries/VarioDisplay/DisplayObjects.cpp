@@ -79,20 +79,10 @@ uint32_t PopupMenu::processKey(uint8_t key)
 		break;
 		
 	case KEY_SEL :
-		switch (items[itemSelect].itemId)
-		{
-		case 0x5001 :
-			return CMD_SHOW_PREFERENCE;
-		case 0x5002 :
-			return CMD_TOGGLE_SOUND;
-		case 0x5003:
-			return CMD_TOGGLE_BLUETOOTH;
-		case 0x5004 :
-			return CMD_SHUTDOWN;
-		}
+		return MAKE_LRESULT(CMD_LEAVE_TOPMENU, items[itemSelect].itemId);
 		break;
 	case KEY_SEL_LONG :
-		return CMD_HIDE_POPUP;
+		return MAKE_LRESULT(CMD_LEAVE_TOPMENU, 0x0000);
 	}
 	
 	return 0;

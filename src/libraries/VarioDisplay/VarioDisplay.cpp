@@ -51,7 +51,7 @@ GFXfontPtr VarioDisplay::__FontStack[] =
 
 VarioDisplay::VarioDisplay(EPaperDriver & _driver, DeviceContext & _context) 
 	: EPaperDisplay(_driver)
-	, Task("Display", 2048, 1)
+	, Task("Display", 4096, 1)
 	, activeScreen(NULL)
 	, activePref(NULL)
 	, activePopup(NULL)
@@ -239,6 +239,7 @@ void VarioDisplay::draw(PopupMenu * menu)
 		case 0x5002 : sprintf(str, "Sound %s", context.volume.vario ? "Off" : "On"); break;
 		case 0x5003 : sprintf(str, "Bluetooth %s", context.device.statusBT ? "Off" : "On"); break;
 		case 0x5004 : strcpy(str, "Power Off"); break;
+		case 0x5005 : strcpy(str, "Restart Device"); break;
 		}
 		
 		if (i == menu->itemSelect)
@@ -348,7 +349,7 @@ void VarioDisplay::drawStatusBar(Widget * widget)
 	
 	if (context.device.statusBT)
 	{
-		drawBitmapBM(Bitmap_StatusBar_bluetooth, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
+		drawBitmapBM(context.device.statusBT == 1 ? Bitmap_StatusBar_bluetooth_started : Bitmap_StatusBar_bluetooth_connected, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 		x += SB_BITMAP_WIDTH;
 	}
 		

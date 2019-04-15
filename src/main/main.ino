@@ -86,6 +86,46 @@ PopupMenu	topMenu;
 //
 //
 
+static void bluetoothSPPCallback(esp_spp_cb_event_t event, esp_spp_cb_param_t * param)
+{
+	switch (event)
+	{
+	case ESP_SPP_START_EVT :
+		Serial.println("Server started");
+		context.device.statusBT = 1;
+		break;
+
+	case ESP_SPP_SRV_OPEN_EVT :
+		Serial.println("Server connection open");
+		if (context.device.statusBT)
+			context.device.statusBT = 2;
+		break;
+		
+	case ESP_SPP_OPEN_EVT :
+		Serial.println("Client connection open");
+		break;
+
+	case ESP_SPP_CLOSE_EVT :
+		Serial.println("Client connection closed");
+		if (context.device.statusBT)
+			context.device.statusBT = 1;
+		break;
+		
+	case ESP_SPP_CONG_EVT :
+		Serial.println("Connection congestion status changed");
+		break;
+		
+	case ESP_SPP_DISCOVERY_COMP_EVT :
+		Serial.println("Discovery complete");
+		break;
+		
+	case ESP_SPP_CL_INIT_EVT :
+		Serial.println("Client initiated a connection");
+		break;
+	}
+}
+
+
 BluetoothSerialEx  	serialBluetooth;
 
 //NmeaParserEx nmeaParser(Serial2);
@@ -197,7 +237,12 @@ void setup()
 	//
 	Serial.begin(115200);
 	Serial2.begin(9600);
-	serialBluetooth.begin("MiniVario");
+	
+	if (context.device.statusBT)
+	{
+		serialBluetooth.register_callback(bluetoothSPPCallback);
+		serialBluetooth.begin("MiniVario");
+	}
 
 	Serial.println("Start MiniVario...\n");
 
@@ -212,6 +257,7 @@ void setup()
 	topMenu.addItem(0x5002, 0 /* IDS_SOUND_ONOFF */);
 	topMenu.addItem(0x5003, 0 /* IDS_BLUETOOTH_ONOFF */);
 	topMenu.addItem(0x5004, 0 /* IDS_POWER_OFF */);
+	topMenu.addItem(0x5005, 0 /* IDS_RESET_DEVICE */);
 	
 	//
 	//logger.init();
@@ -280,32 +326,63 @@ void loop()
 			
 			switch (cmd)
 			{
+			// from main scren
 			case CMD_SHOW_NEXT_PAGE :
 			case CMD_SHOW_PREV_PAGE :
-				break;
-			case CMD_SHOW_PREFERENCE :
-				display.showPopup(NULL);
-				//display.activatePreference(xxx);
 				break;
 			case CMD_SHOW_TOP_MENU :
 				// enter menu
 				display.showPopup(&topMenu);
 				break;
 				
-			case CMD_TOGGLE_SOUND :
-				context.volume.vario = context.volume.vario ? 0 : 1;
-				if (! context.volume.vario)
-					varioBeeper.setVelocity(0);
-				display.showPopup(NULL);
-				break;
-			case CMD_TOGGLE_BLUETOOTH :
-				context.device.statusBT = context.device.statusBT ? 0 : 1;
-				display.showPopup(NULL);
-				break;
-				
-			case CMD_HIDE_POPUP :
+			// from top-menu
+			case CMD_LEAVE_TOPMENU :
 				// releave menu
 				display.showPopup(NULL);
+			
+				switch (GET_PARAM(ret))
+				{
+				case 0x5001 : // show preference
+					break;
+					
+				case 0x5002 : // toggle sound
+					context.volume.vario = context.volume.vario ? 0 : 1;
+					if (! context.volume.vario)
+					{
+						varioBeeper.setVelocity(0);			
+						toneGen.setFrequency(0);
+					}
+					break;
+					
+				case 0x5003 : // toggle bluetooth
+					context.device.statusBT = context.device.statusBT ? 0 : 1;
+					if (context.device.statusBT)
+					{
+						serialBluetooth.register_callback(bluetoothSPPCallback);
+						serialBluetooth.begin("MiniVario");
+					}					
+					else
+					{
+						serialBluetooth.register_callback(NULL);
+						serialBluetooth.end();
+					}
+					break;
+					
+				case 0x5004 : // turn-off device
+					// confirm ?
+					// ...
+					
+					// stop logging
+					// close alarm
+					
+					// and then go to deep sleep
+					display.deepSleep();
+					while(1);
+					
+				case 0x5005 : // restart(reset) device
+					ESP.restart();
+					break;
+				}
 				break;
 				
 			case CMD_SHUTDOWN :
