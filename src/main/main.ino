@@ -218,7 +218,7 @@ void setup()
 	
 	
 	//
-	toneGen.begin(SineGenerator::USE_DIFFERENTIAL, SineGenerator::SCALE_FULL);
+	toneGen.begin(SineGenerator::USE_DIFFERENTIAL, SineGenerator::SCALE_FULL, 0);
 	tonePlayer.setVolume(context.volume.vario);
 
 	//
@@ -248,7 +248,9 @@ void loop()
 		context.varioState.temperature = vario.getTemperature();
 		
 		vario.flush();
-		varioBeeper.setVelocity(context.varioState.speedVertActive);
+		
+		if (context.volume.vario)
+			varioBeeper.setVelocity(context.varioState.speedVertActive);
 	}
 	
 	// beep beep beep!
@@ -291,7 +293,9 @@ void loop()
 				break;
 				
 			case CMD_TOGGLE_SOUND :
-				context.device.statusSound = context.device.statusSound ? 0 : 1;
+				context.volume.vario = context.volume.vario ? 0 : 1;
+				if (! context.volume.vario)
+					varioBeeper.setVelocity(0);
 				display.showPopup(NULL);
 				break;
 			case CMD_TOGGLE_BLUETOOTH :

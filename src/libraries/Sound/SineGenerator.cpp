@@ -203,18 +203,13 @@ void app_main()
 SineGenerator::SineGenerator()
 {
 	mMode = USE_DIFFERENTIAL;
-//	mFrequency	= 262;
-//	mScale = SCALE_FULL;
-//	mOffset = 0;
+	mFreqStep	= 0;
 }
 
 void SineGenerator::begin(MODE mode, SCALE scale, uint8_t offset, int freq)
 {
 	//
 	mMode = mode;
-//	mFrequency	= freq;
-//	mScale = scale;
-//	mOffset = offset;
 	
 	//
 	switch (mMode)
@@ -326,6 +321,10 @@ void SineGenerator::setFrequency(int freq)
 	}
 	else
 	{
+		//
+		mFreqStep = 0;
+		
+		//
 		switch (mMode)
 		{
 		case USE_CHANNEL_1 :

@@ -236,7 +236,7 @@ void VarioDisplay::draw(PopupMenu * menu)
 		switch (menu->items[i].itemId)
 		{
 		case 0x5001 : strcpy(str, "Basic settings"); break;
-		case 0x5002 : sprintf(str, "Sound %s", context.device.statusSound ? "Off" : "On"); break;
+		case 0x5002 : sprintf(str, "Sound %s", context.volume.vario ? "Off" : "On"); break;
 		case 0x5003 : sprintf(str, "Bluetooth %s", context.device.statusBT ? "Off" : "On"); break;
 		case 0x5004 : strcpy(str, "Power Off"); break;
 		}
@@ -358,7 +358,7 @@ void VarioDisplay::drawStatusBar(Widget * widget)
 		x += SB_BITMAP_WIDTH;
 	}
 	
-	drawBitmapBM(context.device.statusSound ? Bitmap_StatusBar_soundon : Bitmap_StatusBar_soundoff, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
+	drawBitmapBM(context.volume.vario ? Bitmap_StatusBar_soundon : Bitmap_StatusBar_soundoff, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 	x += SB_BITMAP_WIDTH;
 	
 	//

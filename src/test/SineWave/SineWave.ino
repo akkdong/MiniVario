@@ -31,14 +31,14 @@ void setup()
 	#endif
 	
 	
-	sGen.begin(SineGenerator::USE_DIFFERENTIAL, SineGenerator::SCALE_FULL);
+	sGen.begin(SineGenerator::USE_DIFFERENTIAL, SineGenerator::SCALE_FULL, 0);
 	
 	//sGen.turnOn(frequency);
 	//sGen.turnOff();
 	//sGen.setScale(SCALE_FULL);
 	//sGen.setOffset(offset);
 	
-	sGen.setFrequency(freq);
+	sGen.setFrequency(0);
 	tickCount = millis();
 	
 	//
@@ -48,6 +48,18 @@ void setup()
 void loop()
 {
 	#if 1
+	char buf[256];
+	memset(buf, 0, sizeof(buf));
+	if (Serial.readBytesUntil('\n', buf, sizeof(buf)))
+	{
+		Serial.print("> "); Serial.println(buf);
+		
+		int freq = atoi(buf);
+		sGen.setFrequency(freq);
+	}
+	#endif
+
+	#if 0
 	if ((millis() - tickCount) > 2000)
 	{
 		freq += 200;
