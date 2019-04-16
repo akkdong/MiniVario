@@ -51,7 +51,7 @@ GFXfontPtr VarioDisplay::__FontStack[] =
 
 VarioDisplay::VarioDisplay(EPaperDriver & _driver, DeviceContext & _context) 
 	: EPaperDisplay(_driver)
-	, Task("Display", 4096, 1)
+	, Task("Display", 8 * 1024, 1)
 	, activeScreen(NULL)
 	, activePref(NULL)
 	, activePopup(NULL)

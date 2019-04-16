@@ -128,9 +128,12 @@ static void bluetoothSPPCallback(esp_spp_cb_event_t event, esp_spp_cb_param_t * 
 
 BluetoothSerialEx  	serialBluetooth;
 
-//NmeaParserEx nmeaParser(Serial2);
-//VarioSentence varioNmea(VARIOMETER_DEFAULT_NMEA_SENTENCE);
+//
+//
+//
 
+NmeaParserEx nmeaParser(Serial2);
+//VarioSentence varioNmea(VARIOMETER_DEFAULT_NMEA_SENTENCE);
 //VarioLogger logger;
 
 //
@@ -307,7 +310,16 @@ void loop()
 		context.device.batteryPower = battery.getVoltage();
 	
 	//
-	//nmeaParser.update();
+	nmeaParser.update();
+	
+	if (nmeaParser.availableIGC())
+	{
+		context.varioState.altitudeGPS = nmeaParser.getAltitude();
+		context.varioState.latitude = nmeaParser.getLatitude();
+		context.varioState.longitude = nmeaParser.getLongitude();
+		context.varioState.speedGround = nmeaParser.getSpeed();
+		context.varioState.heading = nmeaParser.getHeading();
+	}
 	
 	//
 	keybd.update();

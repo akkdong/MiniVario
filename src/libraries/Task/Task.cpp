@@ -22,6 +22,7 @@ int Task::begin()
 	if (taskHandle != NULL)
 		return -1;
 	
+	#if 1
 	xTaskCreatePinnedToCore(
 		_TaskProc,  
 		taskName,     // A name just for humans
@@ -30,6 +31,15 @@ int Task::begin()
 		taskPriority,    // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
 		&taskHandle ,  
 		ARDUINO_RUNNING_CORE);
+	#else
+	xTaskCreate(
+		_TaskProc,  
+		taskName,     // A name just for humans
+		stackDepth,   // This stack size can be checked & adjusted by reading the Stack Highwater
+		this,  // Parameter
+		taskPriority,    // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
+		&taskHandle);
+	#endif
 
 	return 0;
 }

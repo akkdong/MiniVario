@@ -45,7 +45,7 @@ struct VarioState
 	float			speedVertHistory[MAX_VARIO_HISTORY]; // 1s vertial speed history
 
 	//
-	float			logitude;
+	float			longitude;
 	float			latitude;
 
 	float			heading;
