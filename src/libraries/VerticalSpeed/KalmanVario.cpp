@@ -14,7 +14,7 @@
 // class KalmanVario
 
 KalmanVario::KalmanVario(Sensor_MS5611 & _baro) 
-	: Task("Kalman", 4096, 2)
+	: Task("Kalman", 2 * 1024, 2)
 	, baro(_baro)
 	, mTimer(NULL)
 	, mSemaphore(xSemaphoreCreateBinary())

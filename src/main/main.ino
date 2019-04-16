@@ -312,13 +312,19 @@ void loop()
 	//
 	nmeaParser.update();
 	
-	if (nmeaParser.availableIGC())
+	//if (nmeaParser.availableIGC())
 	{
 		context.varioState.altitudeGPS = nmeaParser.getAltitude();
 		context.varioState.latitude = nmeaParser.getLatitude();
 		context.varioState.longitude = nmeaParser.getLongitude();
 		context.varioState.speedGround = nmeaParser.getSpeed();
 		context.varioState.heading = nmeaParser.getHeading();
+	
+		while (nmeaParser.available())
+			serialBluetooth.write(nmeaParser.read());
+		
+//		while (nmeaParser.availableIGC())
+//			serialBluetooth.write(nmeaParser.readIGC());
 	}
 	
 	//

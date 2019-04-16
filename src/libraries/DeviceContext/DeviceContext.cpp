@@ -79,5 +79,8 @@ void DeviceContext::reset()
 	//
 	kalman.varZMeas = KF_ZMEAS_VARIANCE;
 	kalman.varZAccel = KF_ZACCEL_VARIANCE;
-	kalman.varAccelBias = KF_ACCELBIAS_VARIANCE;	
+	kalman.varAccelBias = KF_ACCELBIAS_VARIANCE;
+
+	//
+	device.statusBT = 1;
 }
