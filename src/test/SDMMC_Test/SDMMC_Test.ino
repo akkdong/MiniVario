@@ -16,6 +16,10 @@
 #include "FS.h"
 #include "SD_MMC.h"
 
+#include <sys/time.h>
+#include <ff.h>
+
+
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels){
     Serial.printf("Listing directory: %s\n", dirname);
 
@@ -226,6 +230,21 @@ void setup()
 	
     Serial.begin(115200);
 	Serial.println("SDCard Test...");
+
+	{
+		struct tm tm;
+
+		tm.tm_year = 2019 - 1900;
+		tm.tm_mon = 4 - 1;
+		tm.tm_mday = 1;
+		tm.tm_hour = 0;
+		tm.tm_min = 0;
+		tm.tm_sec = 0;
+
+		struct timeval now = { mktime(&tm), 0 };
+    	settimeofday(&now, NULL);
+		Serial.print("Setting time: "); Serial.println(asctime(&tm));
+	}    
 	
     if(!SD_MMC.begin() || SD_MMC.cardType() == CARD_MMC)
 	{
@@ -253,7 +272,7 @@ void setup()
 		File file = SD_MMC.open("/TrackLogs/test2.txt", "w");
 		if (file)
 		{
-			file.write((const uint8_t *)"Hello\r\n", 7);
+			file.write((const uint8_t *)"Hello2\r\n", 7);
 			file.write((const uint8_t *)"EOF\r\n", 5);
 			file.close();
 			
@@ -263,6 +282,17 @@ void setup()
 		{
 			Serial.println("FAILED");
 		}
+
+        //
+        #if 0
+        FILINFO fi;
+        time_t now = time(NULL);
+        struct tm * _tm = localtime(&now);
+
+        fi.fdate = ((_tm->tm_year + 1900 - 1980) << 9) + ((_tm->tm_mon + 1) << 5) + (_tm->tm_mday);
+        fi.ftime = (_tm->tm_hour << 11) + (_tm->tm_min << 5) + (_tm->tm_sec);
+        f_utime("/TrackLogs/test.txt", &fi);
+        #endif
 	}
 	else
 	{

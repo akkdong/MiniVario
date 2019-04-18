@@ -527,7 +527,8 @@ const char * VarioDisplay::getUnit(WidgetContentType type)
 	case WidgetContent_Time_Current :
 		return "";
 	case WidgetContent_Time_Flight :
-		return ((context.varioState.timeCurrent - context.varioState.timeStart) < 3600) ? "mm/ss" : "hh/mm";
+//		return ((context.varioState.timeCurrent - context.varioState.timeStart) < 3600) ? "mm/ss" : "hh/mm";
+		return (context.varioState.timeFly < 3600) ? "mm/ss" : "hh/mm";
 	case WidgetContent_Pressure :
 		return "hPa";
 	case WidgetContent_Temperature :
@@ -587,14 +588,21 @@ const char * VarioDisplay::getString(WidgetContentType type)
 	case WidgetContent_DateTime :
 		return "16:34";
 	case WidgetContent_Time_Current :
+		#if 0
 		if (context.varioState.timeCurrent != 0)
 			sprintf(tempString, "%02d:%02d", (context.varioState.timeCurrent / 3600) % 24, (context.varioState.timeCurrent / 60) % 60);
 		else
 			strcpy(tempString, "--:--");
+		#else
+		{
+			time_t now = time(NULL);
+			sprintf(tempString, "%02d:%02d", (now / 3600) % 24, (now / 60) % 60);
+		}
+		#endif
 		return tempString;
 	case WidgetContent_Time_Flight :
 		{
-			time_t timeFly = (context.varioState.timeCurrent - context.varioState.timeStart);
+			time_t timeFly = context.varioState.timeFly; // (context.varioState.timeCurrent - context.varioState.timeStart);
 			
 			if (timeFly < 3600)
 				sprintf(tempString, "%02d:%02d", timeFly / 60, timeFly % 60);

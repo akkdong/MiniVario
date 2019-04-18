@@ -59,6 +59,7 @@ struct VarioState
 	//
 	time_t			timeCurrent;
 	time_t			timeStart;
+	time_t			timeFly;
 };
 
 struct VarioSettings

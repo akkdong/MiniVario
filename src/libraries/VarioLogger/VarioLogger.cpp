@@ -74,7 +74,7 @@ int VarioLogger::init()
 		return false;
 	}
 	
-	// IGC files are saved on the root-folder : not support sub-folder
+	// 
 	if (! SD_MMC.exists(logsFolder))
 	{
 		if (! SD_MMC.mkdir(logsFolder))
@@ -131,15 +131,15 @@ void VarioLogger::end(time_t date)
 	if (! IS_SET(LOGGER_WORKING))
 		return;
 	
-	if (date)
-	{
-		time_t localdate = date + (__DeviceContext.logger.timezone * 60 * 60); 
-		struct tm * _tm = localtime(&localdate);	
-		
-//		file.timestamp(T_ACCESS|T_WRITE,
-//						_tm->tm_year + 1900, _tm->tm_mon+1, _tm->tm_mday,
-//						_tm->tm_hour, _tm->tm_min, _tm->tm_sec);
-	}
+	// if (date)
+	// {
+	// 	time_t localdate = date + (__DeviceContext.logger.timezone * 60 * 60); 
+	// 	struct tm * _tm = localtime(&localdate);	
+	//	
+	// 	file.timestamp(T_ACCESS|T_WRITE,
+	// 					_tm->tm_year + 1900, _tm->tm_mon+1, _tm->tm_mday,
+	// 					_tm->tm_hour, _tm->tm_min, _tm->tm_sec);
+	// }
 	
 	UNSET_STATE(LOGGER_WORKING);
 	file.close();
