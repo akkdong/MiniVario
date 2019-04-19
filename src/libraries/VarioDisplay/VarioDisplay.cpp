@@ -73,7 +73,8 @@ int VarioDisplay::begin()
 	// ...
 	assertSleep = false;
 	
-	return Task::begin();
+	//
+	return Task::createPinnedToCore(1) ? 0 : -1;
 }
 
 void VarioDisplay::TaskProc()
@@ -121,7 +122,7 @@ void VarioDisplay::TaskProc()
 
 void VarioDisplay::end()
 {
-	Task::end();
+	Task::destroy();
 }
 
 void VarioDisplay::attachScreen(VarioScreen * screen)

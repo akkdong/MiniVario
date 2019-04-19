@@ -74,7 +74,7 @@ int KalmanVario::begin(float zVariance, float zAccelVariance, float zAccelBiasVa
 	t_ = millis();
 	
 	//
-	#if 0
+	#if 1
 	xTaskCreatePinnedToCore(
 		TaskProc,  
 		"Kalman",     // A name just for humans
@@ -82,7 +82,7 @@ int KalmanVario::begin(float zVariance, float zAccelVariance, float zAccelBiasVa
 		this,  // Parameter
 		2,    // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
 		&mTaskHandle ,  
-		ARDUINO_RUNNING_CORE);
+		0 /*ARDUINO_RUNNING_CORE*/);
 	#else
 	xTaskCreate(
 		TaskProc,  
@@ -233,7 +233,7 @@ void KalmanVario::update()
 		Paa_ += zAccelBiasVariance_;
 
 		// Error
-		float innov = baroAltitude - z_; 
+		float innov = altitude - z_; 
 		float sInv = 1.0f / (Pzz_ + zVariance_);  
 
 		// Kalman gains

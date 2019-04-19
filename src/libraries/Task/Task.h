@@ -16,8 +16,12 @@ public:
 	Task(const char * name, uint32_t stackDepth, UBaseType_t priority);
 
 public:
-	int					begin();
-	void				end();
+//	int					begin();
+//	void				end();
+
+	bool				create();
+	bool				createPinnedToCore(const BaseType_t xCoreID);
+	void				destroy();
 
 protected:
 	virtual void		TaskProc() = 0;

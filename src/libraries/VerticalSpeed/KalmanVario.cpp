@@ -76,7 +76,7 @@ int KalmanVario::begin(float zVariance, float zAccelVariance, float zAccelBiasVa
 	t_ = millis();
 	
 	//
-	Task::begin();
+	Task::createPinnedToCore(1);
 	
 	//
 	mActiveVario = this;
@@ -132,7 +132,7 @@ void KalmanVario::end()
 	}
 	
 	//
-	Task::end();
+	Task::destroy();
 	
 	//
 	baro.end();

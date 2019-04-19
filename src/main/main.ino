@@ -286,7 +286,7 @@ void loop()
 		context.varioState.longitude = nmeaParser.getLongitude();
 		context.varioState.speedGround = nmeaParser.getSpeed();
 		context.varioState.heading = nmeaParser.getHeading();	
-// 		context.varioState.timeCurrent = nmeaParser.getDateTime();
+ 		context.varioState.timeCurrent = nmeaParser.getDateTime();
 	}	
 
 	// IGC sentence is available when it received a valid GGA. -> altitude is valid
@@ -532,10 +532,9 @@ void processKey(int key)
 				// ...
 				
 				// stop logging
-				// close alarm
-				
+				// close alarm				
 				// and then go to deep sleep
-				display.deepSleep();
+				goDeepSleep();
 				while(1);
 				
 			case TMID_RESET_DEVICE : // restart(reset) device
@@ -547,14 +546,6 @@ void processKey(int key)
 				break;
 			}
 			break;
-			
-		case CMD_SHUTDOWN :
-			// stop logging
-			// close alarm
-			
-			// and then go to deep sleep
-			goDeepSleep();
-			while(1);
 		}
 	}
 }
