@@ -217,6 +217,9 @@ void setup()
 		struct timeval now = { mktime(&tm), 0 };
     	settimeofday(&now, NULL);
 		Serial.print("Setting time: "); Serial.println(asctime(&tm));
+
+		// logger.begin(time(NULL));
+		// logger.end(time(NULL));
 	}
 
 	//
@@ -303,9 +306,6 @@ void loop()
 		now.tv_sec +=  (__DeviceContext.logger.timezone * 60 * 60); // GMT(UTC+00) --> Local time
 		settimeofday(&now, NULL);
 
-		context.varioState.timeStart = nmeaParser.getDateTime();
-		context.varioState.timeFly = 0;
-
 		// play ready melody~~~
 		//tonePlayer.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, PLAY_PREEMPTIVE, Config.volume.effect);
 	}
@@ -322,6 +322,9 @@ void loop()
 			// start logging & change mode
 			logger.begin(nmeaParser.getDateTime());
 			
+			context.varioState.timeStart = nmeaParser.getDateTime();
+			context.varioState.timeFly = 0;
+
 			// set mode-tick
 			modeTick = millis();
 		}
@@ -351,7 +354,6 @@ void loop()
 			context.varioState.timeFly = nmeaParser.getDateTime() - context.varioState.timeStart;
 		}
 	}
-
 
 	// check logging state
 	if (logger.isLogging())

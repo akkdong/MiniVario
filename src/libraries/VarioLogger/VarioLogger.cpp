@@ -23,6 +23,8 @@ const char * tailOfFileName = "01.igc";
 
 const char * logsFolder = "/TrackLogs";
 
+char pathBuf[64];
+
 
 // ANRCSTM Variometer & GPS Loggger
 // HFDTExxxx
@@ -32,7 +34,7 @@ const char * logsFolder = "/TrackLogs";
 // HFDTM100GPSDATUM:WGS-84
 const char * igcHeader[] =
 {
-	"ANRC Variometer & GPS Loggger v1", 
+	"ANRC Variometer & GPS Loggger v2", 
 	"\r\nHFDTE",					// ex) DDMMYY
 	NULL,
 	"\r\nHFPLTPILOT:",				// ex) akkdong
@@ -112,7 +114,11 @@ int	VarioLogger::begin(time_t date)
 		return false;
 	}
 
-	if ((file = SD_MMC.open(name, FILE_WRITE)))
+	strcpy(pathBuf, logsFolder);
+	strcat(pathBuf, "/");
+	strcat(pathBuf, name);
+
+	if ((file = SD_MMC.open(pathBuf, FILE_WRITE)))
 	{
 		//
 		SET_STATE(LOGGER_WORKING);
@@ -245,7 +251,11 @@ const char * VarioLogger::makeFileName(char * buf, time_t date)
 	
 	for (i = 2; i < 101; i++) // valid number : 01 ~ 99
 	{
-		if (! SD_MMC.exists(buf))
+		strcpy(pathBuf, logsFolder);
+		strcat(pathBuf, "/");
+		strcat(pathBuf, buf);
+
+		if (! SD_MMC.exists(pathBuf))
 			return buf;
 		
 		buf[19] = (i / 10) + '0';

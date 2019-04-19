@@ -204,6 +204,8 @@ void app_main()
 SineGenerator::SineGenerator()
 {
 	mMode = USE_DIFFERENTIAL;
+
+	mFrequency = 0;
 	mFreqStep	= 0;
 }
 
@@ -234,6 +236,21 @@ void SineGenerator::begin(MODE mode, SCALE scale, uint8_t offset, int freq)
 	setScale(scale);
 	setOffset(offset);
 	setFrequency(freq);
+
+	//
+	switch (mMode)
+	{
+	case USE_CHANNEL_1 :
+		dac_output_enable(DAC_CHANNEL_1);
+		break;
+	case USE_CHANNEL_2 :
+		dac_output_enable(DAC_CHANNEL_2);
+		break;
+	case USE_DIFFERENTIAL :
+		dac_output_enable(DAC_CHANNEL_1);
+		dac_output_enable(DAC_CHANNEL_2);
+		break;
+	}	
 }
 
 void SineGenerator::end()
@@ -243,12 +260,17 @@ void SineGenerator::end()
 	switch (mMode)
 	{
 	case USE_CHANNEL_1 :
+		dac_output_disable(DAC_CHANNEL_1);
 		dac_cosine_disable(DAC_CHANNEL_1);
 		break;
 	case USE_CHANNEL_2 :
+		dac_output_disable(DAC_CHANNEL_2);
 		dac_cosine_disable(DAC_CHANNEL_2);
 		break;
 	case USE_DIFFERENTIAL :
+		dac_output_disable(DAC_CHANNEL_1);
+		dac_output_disable(DAC_CHANNEL_2);
+		
 		dac_cosine_disable(DAC_CHANNEL_1);
 		dac_cosine_disable(DAC_CHANNEL_2);
 		break;
@@ -261,10 +283,10 @@ void SineGenerator::setScale(SCALE scale)
 
 	switch (scale)
 	{
-	case SCALE_FULL 		: _scale = 0; break;
-	case SCALE_HALF 		: _scale = 1; break;
+	case SCALE_FULL 	: _scale = 0; break;
+	case SCALE_HALF 	: _scale = 1; break;
 	case SCALE_QUATER 	: _scale = 2; break;
-	default 					: return;
+	default 			: return;
 	}
 	
 	switch (mMode)
@@ -301,53 +323,13 @@ void SineGenerator::setOffset(uint8_t offset)
 
 void SineGenerator::setFrequency(int freq)
 {
-	if (freq > 0)
-	{
-		//Serial.println(freq);
-		//
-		uint16_t step = calcFreqencyStep(freq);
-		if (step != mFreqStep) 
-		{
-			dac_frequency_set(mClkDivider, step);
-			mFreqStep = step;
+	if (mFrequency == freq)
+		return;
 
-			//
-			switch (mMode)
-			{
-			case USE_CHANNEL_1 :
-				dac_output_enable(DAC_CHANNEL_1);
-				break;
-			case USE_CHANNEL_2 :
-				dac_output_enable(DAC_CHANNEL_2);
-				break;
-			case USE_DIFFERENTIAL :
-				dac_output_enable(DAC_CHANNEL_1);
-				dac_output_enable(DAC_CHANNEL_2);
-				break;
-			}
-		}
-	}
-	else if (mFreqStep != 0)
-	{
-		//Serial.println(freq);
-		//
-		mFreqStep = 0;
-		
-		//
-		switch (mMode)
-		{
-		case USE_CHANNEL_1 :
-			dac_output_disable(DAC_CHANNEL_1);
-			break;
-		case USE_CHANNEL_2 :
-			dac_output_disable(DAC_CHANNEL_2);
-			break;
-		case USE_DIFFERENTIAL :
-			dac_output_disable(DAC_CHANNEL_1);
-			dac_output_disable(DAC_CHANNEL_2);
-			break;
-		}
-	}
+	mFrequency = freq;
+	mFreqStep = calcFreqencyStep(freq);
+	
+	dac_frequency_set(mClkDivider, mFreqStep);
 }
 
 uint16_t SineGenerator::calcFreqencyStep(int frequency)
