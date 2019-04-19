@@ -23,12 +23,13 @@
  * so they may be then accessed and changed from debugger
  * over an JTAG interface
  */
+/*
 int clk_8m_div = 0;      // RTC 8M clock divider (division is by clk_8m_div+1, i.e. 0 means 8MHz frequency)
 int frequency_step = 8;  // Frequency step for CW generator
 int scale = 1;           // 50% of the full scale
 int offset;              // leave it default / 0 = no any offset
 int invert = 2;          // invert MSB to get sine waveform
-
+*/
 
 /*
  * Enable cosine waveform generator on a DAC channel
@@ -206,6 +207,8 @@ SineGenerator::SineGenerator()
 	mFreqStep	= 0;
 }
 
+int SineGenerator::mClkDivider = 0;
+
 void SineGenerator::begin(MODE mode, SCALE scale, uint8_t offset, int freq)
 {
 	//
@@ -300,12 +303,12 @@ void SineGenerator::setFrequency(int freq)
 {
 	if (freq > 0)
 	{
-		Serial.println(freq);
+		//Serial.println(freq);
 		//
 		uint16_t step = calcFreqencyStep(freq);
 		if (step != mFreqStep) 
 		{
-			dac_frequency_set(clk_8m_div, step);
+			dac_frequency_set(mClkDivider, step);
 			mFreqStep = step;
 
 			//
@@ -326,7 +329,7 @@ void SineGenerator::setFrequency(int freq)
 	}
 	else if (mFreqStep != 0)
 	{
-		Serial.println(freq);
+		//Serial.println(freq);
 		//
 		mFreqStep = 0;
 		
@@ -349,7 +352,7 @@ void SineGenerator::setFrequency(int freq)
 
 uint16_t SineGenerator::calcFreqencyStep(int frequency)
 {
-	return (uint16_t)((float)frequency * (1 + clk_8m_div) / RTC_FAST_CLK_FREQ_APPROX * 65536.0);
+	return (uint16_t)((float)frequency * (1 + mClkDivider) / RTC_FAST_CLK_FREQ_APPROX * 65536.0);
 }
 	
 

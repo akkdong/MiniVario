@@ -50,12 +50,11 @@ protected:
 	//
 	MODE 						mMode;
 	
-//	int							mFrequency;
-//	SCALE						mScale;
-//	uint8_t						mOffset;
-	
 	//
+	int							mFrequency;
 	uint16_t					mFreqStep;
+
+	static int					mClkDivider;
 };
 
 
