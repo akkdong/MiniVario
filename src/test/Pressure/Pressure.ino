@@ -2,11 +2,14 @@
 //
 
 #include "KalmanVario.h"
+#include "BluetoothSerialEx.h"
 
 CriticalSection mCriticalSection;
 Sensor_MS5611  Baro(mCriticalSection, Wire);
 KalmanVario Vario(Baro);
 uint32_t _tick;
+
+BluetoothSerialEx bt;
 
 void setup()
 {
@@ -25,6 +28,8 @@ void setup()
 	//
 	Serial.begin(115200);
 	Serial.println("Pressure Variometer Test...");
+
+	bt.begin("MiniVario");
 	
 	Wire.begin(-1, -1, 400000);
 	
@@ -51,8 +56,8 @@ void loop()
 	float v = 0.0;
 	if (Vario.available())
 	{
-		#if 0
-		Serial.print(Vario.getVelocity() * 100); Serial.print(","); Serial.print(Vario.getPressure()); Serial.print(","); Serial.println(Vario.getTemperature())
+		#if 1
+		Serial.print(Vario.getVelocity() * 100); Serial.print(", "); Serial.print(Vario.getPressure()); Serial.print(", "); Serial.println(Vario.getTemperature());
 		#elif 0
 		p = p * 0.8 + Vario.getPressure() * 0.2; 
 		Serial.println(p);
@@ -63,6 +68,8 @@ void loop()
 		v = v * 0.8 + Vario.getVelocity() * 100.0 * 0.2; 
 		Serial.println(v);;
 		#endif
+
+		Vario.flush();
 	}
 	#endif
 }

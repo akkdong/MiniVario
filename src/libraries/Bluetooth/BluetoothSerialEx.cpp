@@ -1,16 +1,21 @@
-// Copyright 2018 Evandro Luis Copercini
+// BluetoothSerialEx.cpp
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+
+#include "BluetoothSerialEx.h"
+
+#if USE_BLUETOOTHSERIAL
+
+size_t BluetoothSerialEx::writeEx(uint8_t ch)
+{
+    return write(ch);
+}
+
+int BluetoothSerialEx::availableForWrite(void)
+{
+    return 1;
+}
+
+#else // USE_BLUETOOTHSERIAL
 
 #include "sdkconfig.h"
 #include <cstdint>
@@ -20,14 +25,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-
-#if defined(CONFIG_BT_ENABLED) && defined(CONFIG_BLUEDROID_ENABLED)
-
 #ifdef ARDUINO_ARCH_ESP32
 #include "esp32-hal-log.h"
 #endif
-
-#include "BluetoothSerialEx.h"
 
 #include "esp_bt.h"
 #include "esp_bt_main.h"
@@ -40,10 +40,13 @@
 #include "esp32-hal-log.h"
 #endif
 
-const char * _spp_server_name = "ESP32SPP";
+#include "BluetoothSerialEx.h"
 
-#define RX_QUEUE_SIZE 128
+static const char * _spp_server_name = "ESP32SPP";
+
+#define RX_QUEUE_SIZE 256
 #define TX_QUEUE_SIZE 256
+
 static uint32_t _spp_client = 0;
 static xQueueHandle _spp_rx_queue = NULL;
 static xQueueHandle _spp_tx_queue = NULL;
@@ -82,7 +85,7 @@ static esp_err_t _spp_queue_packet(uint8_t *data, size_t len){
     return ESP_OK;
 }
 
-const uint16_t SPP_TX_MAX = 330;
+static const uint16_t SPP_TX_MAX = 330;
 static uint8_t _spp_tx_buffer[SPP_TX_MAX];
 static uint16_t _spp_tx_buffer_len = 0;
 
@@ -270,7 +273,18 @@ static bool _init_bt(const char *deviceName)
     }
 
     if(!_spp_task_handle){
-        xTaskCreate(_spp_tx_task, "spp_tx", 4096, NULL, 2, &_spp_task_handle);
+        #if 1
+        xTaskCreate(_spp_tx_task, "spp_tx", 4 * 1024, NULL, 2, &_spp_task_handle);
+        #else
+
+        #if CONFIG_FREERTOS_UNICORE
+        #define ARDUINO_RUNNING_CORE 0
+        #else
+        #define ARDUINO_RUNNING_CORE 1
+        #endif 
+
+        xTaskCreatePinnedToCore(_spp_tx_task, "spp_tx", 4 * 1024, NULL, 2, &_spp_task_handle, ARDUINO_RUNNING_CORE);
+        #endif
         if(!_spp_task_handle){
             log_e("Network Event Task Start Failed!");
             return false;
@@ -426,6 +440,7 @@ size_t BluetoothSerialEx::write(const uint8_t *buffer, size_t size)
     if (!_spp_client){
         return 0;
     }
+
     return (_spp_queue_packet((uint8_t *)buffer, size) == ESP_OK) ? size : 0;
 }
 
@@ -442,6 +457,7 @@ void BluetoothSerialEx::end()
 esp_err_t BluetoothSerialEx::register_callback(esp_spp_cb_t * callback)
 {
     custom_spp_callback = callback;
+
     return ESP_OK;
 }
 
@@ -455,4 +471,4 @@ int BluetoothSerialEx::availableForWrite()
 	return 1;
 }
 
-#endif
+#endif // USE_BLUETOOTHSERIAL

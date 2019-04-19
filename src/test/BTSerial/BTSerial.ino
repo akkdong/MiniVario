@@ -1,8 +1,8 @@
-#include "BluetoothSerial.h"
+#include "BluetoothSerialEx.h"
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 
-BluetoothSerial SerialBT;
+BluetoothSerialEx SerialBT;
 uint32_t tickUpdate;
 
 void bluetoothSPPCallback(esp_spp_cb_event_t event, esp_spp_cb_param_t * param)
@@ -77,7 +77,7 @@ void loop()
 	
 	if (millis() - tickUpdate > 2000)
 	{
-		Serial.print("BluetoothSerial::hasClient = "); Serial.println(SerialBT.hasClient());
+		Serial.print("BluetoothSerialEx::hasClient = "); Serial.println(SerialBT.hasClient());
 		tickUpdate = millis();
 	}
 

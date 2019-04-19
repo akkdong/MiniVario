@@ -69,8 +69,8 @@ int BatteryVoltage::updateVoltage()
 	{
 		// convert adc_reading to voltage in mV
 		measVoltage = esp_adc_cal_raw_to_voltage(measData / sampleCount, adcChars);
-		// need to convert from measured voltage to actual voltage, ex: 3.3 -> 5
-		// ...
+		// need to convert from measured voltage to actual voltage: voltage divider 1M : 1.56M
+		measVoltage = measVoltage * 1560.0 / 1000.0; 
 		
 		measData = 0.0f;
 		sampleCount = 0;

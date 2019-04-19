@@ -300,27 +300,33 @@ void SineGenerator::setFrequency(int freq)
 {
 	if (freq > 0)
 	{
+		Serial.println(freq);
 		//
-		mFreqStep = calcFreqencyStep(freq);
-		dac_frequency_set(clk_8m_div, mFreqStep);
-
-		//
-		switch (mMode)
+		uint16_t step = calcFreqencyStep(freq);
+		if (step != mFreqStep) 
 		{
-		case USE_CHANNEL_1 :
-			dac_output_enable(DAC_CHANNEL_1);
-			break;
-		case USE_CHANNEL_2 :
-			dac_output_enable(DAC_CHANNEL_2);
-			break;
-		case USE_DIFFERENTIAL :
-			dac_output_enable(DAC_CHANNEL_1);
-			dac_output_enable(DAC_CHANNEL_2);
-			break;
+			dac_frequency_set(clk_8m_div, step);
+			mFreqStep = step;
+
+			//
+			switch (mMode)
+			{
+			case USE_CHANNEL_1 :
+				dac_output_enable(DAC_CHANNEL_1);
+				break;
+			case USE_CHANNEL_2 :
+				dac_output_enable(DAC_CHANNEL_2);
+				break;
+			case USE_DIFFERENTIAL :
+				dac_output_enable(DAC_CHANNEL_1);
+				dac_output_enable(DAC_CHANNEL_2);
+				break;
+			}
 		}
 	}
-	else
+	else if (mFreqStep != 0)
 	{
+		Serial.println(freq);
 		//
 		mFreqStep = 0;
 		

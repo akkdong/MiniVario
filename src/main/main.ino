@@ -173,17 +173,20 @@ void setup()
 	//
 	loadPages(pages);
 	
-	topMenu.addItem(0x5001, 0 /* IDS_BASIC_SETTINGS */);
-	topMenu.addItem(0x5002, 0 /* IDS_SOUND_ONOFF */);
-	topMenu.addItem(0x5003, 0 /* IDS_BLUETOOTH_ONOFF */);
-	topMenu.addItem(0x5004, 0 /* IDS_POWER_OFF */);
-	topMenu.addItem(0x5005, 0 /* IDS_RESET_DEVICE */);
+	topMenu.addItem(TMID_SHOW_PREFERENCE, 0 /* IDS_BASIC_SETTINGS */);
+	topMenu.addItem(TMID_TOGGLE_SOUND, 0 /* IDS_SOUND_ONOFF */);
+	topMenu.addItem(TMID_TOGGLE_BLUETOOTH, 0 /* IDS_BLUETOOTH_ONOFF */);
+	topMenu.addItem(TMID_RESET_DEVICE, 0 /* IDS_RESET_DEVICE */);
+	topMenu.addItem(TMID_POWER_OFF, 0 /* IDS_POWER_OFF */);
 	
 	//
 	logger.init();
 	
 	//
+	toneGen.end();
+	delay(10);
 	toneGen.begin(SineGenerator::USE_DIFFERENTIAL, SineGenerator::SCALE_FULL, 0);
+	toneGen.setFrequency(0);
 	tonePlayer.setVolume(context.volume.vario);
 
 	//
@@ -383,6 +386,9 @@ void goDeepSleep()
 	// sleep display & device
 	display.deepSleep();
 
+	//
+	toneGen.end();
+
 	while(1);
 }
 
@@ -495,10 +501,10 @@ void processKey(int key)
 		
 			switch (GET_PARAM(ret))
 			{
-			case 0x5001 : // show preference
+			case TMID_SHOW_PREFERENCE : // show preference
 				break;
 				
-			case 0x5002 : // toggle sound
+			case TMID_TOGGLE_SOUND : // toggle sound
 				context.volume.vario = context.volume.vario ? 0 : 1;
 				if (! context.volume.vario)
 				{
@@ -507,7 +513,7 @@ void processKey(int key)
 				}
 				break;
 				
-			case 0x5003 : // toggle bluetooth
+			case TMID_TOGGLE_BLUETOOTH : // toggle bluetooth
 				context.device.statusBT = context.device.statusBT ? 0 : 1;
 				if (context.device.statusBT)
 				{
@@ -521,7 +527,7 @@ void processKey(int key)
 				}
 				break;
 				
-			case 0x5004 : // turn-off device
+			case TMID_POWER_OFF : // turn-off device
 				// confirm ?
 				// ...
 				
@@ -532,7 +538,7 @@ void processKey(int key)
 				display.deepSleep();
 				while(1);
 				
-			case 0x5005 : // restart(reset) device
+			case TMID_RESET_DEVICE : // restart(reset) device
 				#if 0
 				ESP.restart();
 				#else

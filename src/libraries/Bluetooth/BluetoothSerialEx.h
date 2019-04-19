@@ -1,26 +1,28 @@
-// Copyright 2018 Evandro Luis Copercini
+// BluetoothSerialEx.h
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
 #ifndef __BLUETOOTHEX_H__
 #define __BLUETOOTHEX_H__
 
-#include "sdkconfig.h"
+#define USE_BLUETOOTHSERIAL		0
 
-#if defined(CONFIG_BT_ENABLED) && defined(CONFIG_BLUEDROID_ENABLED)
+#if USE_BLUETOOTHSERIAL
 
-#include "Arduino.h"
-#include "Stream.h"
+#include <Arduino.h>
+#include <BluetoothSerial.h>
+
+class BluetoothSerialEx : public BluetoothSerial
+{
+public:
+	//
+	size_t		writeEx(uint8_t);
+    int 		availableForWrite(void);
+};
+
+#else // USE_BLUETOOTHSERIAL
+
+#include <Arduino.h>
+#include <Stream.h>
 #include <esp_spp_api.h>
 
 class BluetoothSerialEx : public Stream
@@ -50,6 +52,6 @@ private:
 	String 		local_name;
 };
 
-#endif
+#endif // USE_BLUETOOTHSERIAL
 
 #endif // __BLUETOOTHEX_H__

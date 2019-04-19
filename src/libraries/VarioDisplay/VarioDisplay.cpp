@@ -235,11 +235,11 @@ void VarioDisplay::draw(PopupMenu * menu)
 		
 		switch (menu->items[i].itemId)
 		{
-		case 0x5001 : strcpy(str, "Basic settings"); break;
-		case 0x5002 : sprintf(str, "Sound %s", context.volume.vario ? "Off" : "On"); break;
-		case 0x5003 : sprintf(str, "Bluetooth %s", context.device.statusBT ? "Off" : "On"); break;
-		case 0x5004 : strcpy(str, "Power Off"); break;
-		case 0x5005 : strcpy(str, "Restart Device"); break;
+		case TMID_SHOW_PREFERENCE : strcpy(str, "Basic settings"); break;
+		case TMID_TOGGLE_SOUND : sprintf(str, "Sound %s", context.volume.vario ? "Off" : "On"); break;
+		case TMID_TOGGLE_BLUETOOTH : sprintf(str, "Bluetooth %s", context.device.statusBT ? "Off" : "On"); break;
+		case TMID_RESET_DEVICE : strcpy(str, "Restart Device"); break;
+		case TMID_POWER_OFF : strcpy(str, "Power Off"); break;
 		}
 		
 		if (i == menu->itemSelect)

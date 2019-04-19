@@ -48,6 +48,20 @@ void setup()
 void loop()
 {
 	#if 1
+	for (int i = 0; i < 5; i++)
+	{
+		sGen.setFrequency(600);
+		delay(200);
+		sGen.setFrequency(0);
+		delay(200);
+	}
+	delay(1000);
+	delay(1000);
+	delay(1000);
+	delay(1000);
+	delay(1000);
+	#endif
+	#if 0
 	char buf[256];
 	memset(buf, 0, sizeof(buf));
 	if (Serial.readBytesUntil('\n', buf, sizeof(buf)))

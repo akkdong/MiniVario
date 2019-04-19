@@ -14,7 +14,7 @@
 // class KalmanVario
 
 KalmanVario::KalmanVario(Sensor_MS5611 & _baro) 
-	: Task("Kalman", 2 * 1024, 2)
+	: Task("Kalman", 2 * 1024, 3)
 	, baro(_baro)
 	, mTimer(NULL)
 	, mSemaphore(xSemaphoreCreateBinary())
@@ -162,7 +162,8 @@ void KalmanVario::update()
 		baroAltitude = baroAltitude * 0.9 + altitude * 0.1;
 
 		// delta time
-		unsigned long deltaTime = 20; // millis() - t_;
+//		unsigned long deltaTime = 20; // millis() - t_;
+		unsigned long deltaTime = millis() - t_;
 		float dt = ((float)deltaTime) / 1000.0;
 		t_ = millis();
 

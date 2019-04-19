@@ -92,7 +92,7 @@ void VarioBeeper::setVelocity(float velocity)
 		else
 			beepType = BEEP_TYPE_SILENT;
 	}
-	
+
 	if (beepType != BEEP_TYPE_SILENT)
 	{
 		int freq, period, duty;
