@@ -9,8 +9,8 @@
 //
 
 #define VARIOMETER_TIME_ZONE					(9)	// GMT+9
-#define VARIOMETER_BEEP_VOLUME					(0)	// percentage (0 ~ 100)
-#define VARIOMETER_EFFECT_VOLUME				(0)
+#define VARIOMETER_BEEP_VOLUME					(100)	// percentage (0 ~ 100)
+#define VARIOMETER_EFFECT_VOLUME				(100)
 
 #define VARIOMETER_SINKING_THRESHOLD 			(-3.0)
 #define VARIOMETER_CLIMBING_THRESHOLD 			(0.2)

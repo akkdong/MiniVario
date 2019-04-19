@@ -44,7 +44,7 @@ enum _VarioMode
 //
 	
 //
-PinSetting ePaperPins[] = 
+static PinSetting ePaperPins[] = 
 {
 	// CS
 	{ SS, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
@@ -56,7 +56,7 @@ PinSetting ePaperPins[] =
 	{ 39, PIN_MODE_INPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
 };
 
-PinSetting powerPins[] =
+static PinSetting powerPins[] =
 {
 	// PWR_PERIPH
 	{ 19, PIN_MODE_OUTPUT, PIN_ACTIVE_HIGH, PIN_STATE_ACTIVE },
@@ -64,7 +64,7 @@ PinSetting powerPins[] =
 	{ 27, PIN_MODE_OUTPUT, PIN_ACTIVE_HIGH, PIN_STATE_ACTIVE },
 };
 
-PinSetting keybdPins[] =
+static PinSetting keybdPins[] =
 {
 	// KEY_UP
 	{ 35, PIN_MODE_INPUT, PIN_ACTIVE_HIGH, PIN_STATE_ACTIVE },
@@ -72,6 +72,47 @@ PinSetting keybdPins[] =
 	{ 34, PIN_MODE_INPUT, PIN_ACTIVE_HIGH, PIN_STATE_ACTIVE },
 	// KEY_SEL
 	{  0, PIN_MODE_INPUT, PIN_ACTIVE_LOW, PIN_STATE_ACTIVE },
+};
+
+
+//
+
+static Tone melodyVarioReady[] =
+{
+	{ 262, 1000 / 4 }, 
+	{ 196, 1000 / 8 }, 
+	{ 196, 1000 / 8 }, 
+	{ 220, 1000 / 4 }, 
+	{ 196, 1000 / 4 }, 
+	{   0, 1000 / 4 }, 
+	{ 247, 1000 / 4 }, 
+	{ 262, 1000 / 4 },
+	{   0, 1000 / 8 }, 
+};
+static Tone melodyTakeOff[] =
+{
+	{ 262, 1000 / 4 }, 
+	{ 196, 1000 / 8 }, 
+	{ 196, 1000 / 8 }, 
+	{ 220, 1000 / 4 }, 
+	{ 196, 1000 / 4 }, 
+	{   0, 1000 / 4 }, 
+	{ 247, 1000 / 4 }, 
+	{ 262, 1000 / 4 },
+	{   0, 1000 / 8 }, 
+};
+
+static Tone melodyLanding[] =
+{
+	{ 262, 1000 / 4 }, 
+	{ 196, 1000 / 8 }, 
+	{ 196, 1000 / 8 }, 
+	{ 220, 1000 / 4 }, 
+	{ 196, 1000 / 4 }, 
+	{   0, 1000 / 4 }, 
+	{ 247, 1000 / 4 }, 
+	{ 262, 1000 / 4 },
+	{   0, 1000 / 8 }, 
 };
 
 
@@ -180,7 +221,8 @@ void setup()
 	topMenu.addItem(TMID_POWER_OFF, 0 /* IDS_POWER_OFF */);
 	
 	//
-	logger.init();
+	context.device.statusSDCard = logger.init() ? 1 : 0;
+
 	
 	//
 	toneGen.end();
@@ -201,7 +243,7 @@ void setup()
 	keybd.begin();
 	
 	//
-	//tonePlayer.setBeep(NOTE_C4, 800, 500, 2, 100);
+	tonePlayer.setBeep(NOTE_C4, 800, 500, 2, 100);
 
 	// just debug
 	{
@@ -290,6 +332,8 @@ void loop()
 		context.varioState.speedGround = nmeaParser.getSpeed();
 		context.varioState.heading = nmeaParser.getHeading();	
  		context.varioState.timeCurrent = nmeaParser.getDateTime();
+
+		context.device.statusGPS = nmeaParser.availableIGC();
 	}	
 
 	// IGC sentence is available when it received a valid GGA. -> altitude is valid
@@ -307,7 +351,7 @@ void loop()
 		settimeofday(&now, NULL);
 
 		// play ready melody~~~
-		//tonePlayer.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, PLAY_PREEMPTIVE, Config.volume.effect);
+		tonePlayer.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
 	}
 	else if (varioMode == VARIO_MODE_LANDING)
 	{
@@ -317,7 +361,7 @@ void loop()
 			varioMode = VARIO_MODE_FLYING;
 			
 			// play take-off melody
-			//tonePlayer.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, PLAY_PREEMPTIVE, Config.volume.effect);
+			tonePlayer.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
 			
 			// start logging & change mode
 			logger.begin(nmeaParser.getDateTime());
@@ -339,7 +383,7 @@ void loop()
 				varioMode = VARIO_MODE_LANDING;
 				
 				// play landing melody
-				//tonePlayer.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, PLAY_PREEMPTIVE, Config.volume.effect);
+				tonePlayer.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
 				
 				// stop logging & change mode
 				logger.end(nmeaParser.getDateTime());
@@ -377,6 +421,9 @@ void loop()
 	int key = keybd.getch();
 	if (key >= 0)
 		processKey(key);
+
+	//
+	yield();
 }
 
 
