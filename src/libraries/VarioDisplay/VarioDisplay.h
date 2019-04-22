@@ -14,14 +14,14 @@
 #define MAX_FONTS				(8)
 #define MAX_TEMP_STRLEN			(16)
 
-#define STATUSBAR_WIDTH			(WAVESHARE_270_WIDTH)
+#define STATUSBAR_WIDTH			(width())
 #define	STATUSBAR_HEIGHT		(24)
 #define STATUSBAR_TEXT_WIDTH	(40)
 
 #define WORKAREA_X				(0)
 #define WORKAREA_Y				(STATUSBAR_HEIGHT)
-#define WORKAREA_W				(WAVESHARE_270_WIDTH)
-#define WORKAREA_H				(WAVESHARE_270_HEIGHT - STATUSBAR_HEIGHT)
+#define WORKAREA_W				(width())
+#define WORKAREA_H				(height() - STATUSBAR_HEIGHT)
 
 
 typedef const GFXfont * GFXfontPtr;
@@ -53,14 +53,15 @@ public:
 	VarioDisplay(EPaperDriver & _driver, DeviceContext & _context);
 
 public:
-	int 				begin();
+	int 				begin(bool confirmWakeup);
 	void				end();
 	
 	void				attachScreen(VarioScreen * screen);
 	void				attachPreference(VarioPreference * pref);
 	void				showPopup(VarioPopup * popupPtr);
 
-	void				deepSleep() { assertSleep = true; }
+	void				deepSleep() { displayMode = _DEEPSLEEP; }
+	void				wakeupConfirmed() { displayMode = _VARIO; }
 	
 	DisplayObject *		getActiveObject();
 
@@ -87,6 +88,9 @@ protected:
 
 	void				drawBorder(Widget * widget);
 	void				drawText(const char * str, int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t style, uint16_t color);
+
+	void				drawLogoScreen();
+	void				drawConfirmMessage();
 
 	//	
 	const char *		getLabel(WidgetContentType type);
@@ -116,7 +120,15 @@ protected:
 	
 private:
 	char				tempString[MAX_TEMP_STRLEN];
-	volatile bool		assertSleep;
+
+	enum _DisplayMode
+	{
+		_CONFIRM,
+		_VARIO,
+		_DEEPSLEEP
+	};
+
+	volatile int		displayMode;
 };
 
 

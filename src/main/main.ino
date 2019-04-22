@@ -25,10 +25,11 @@
 enum _DeviceMode
 {
 	DEVICE_MODE_UNDEF = 0,
-	DEVICE_MODE_VARIO,			// (1)
-	DEVICE_MODE_UMS,			// (2)
-	DEVICE_MODE_CALIBRATION,	// (3)
-	DEVICE_MODE_SHUTDOWN,		// (4)
+	DEVICE_WAKEUP_CONFIRM,		// (1)
+	DEVICE_MODE_VARIO,			// (2)
+//	DEVICE_MODE_UMS,			// (3)
+//	DEVICE_MODE_CALIBRATION,	// (4)
+//	DEVICE_MODE_SHUTDOWN,		// (5)
 };
 
 enum _VarioMode
@@ -120,7 +121,7 @@ static Tone melodyLanding[] =
 //
 //
 
-uint8_t deviceMode = DEVICE_MODE_VARIO;
+uint8_t deviceMode = DEVICE_MODE_UNDEF;
 uint8_t	varioMode; 		// sub-mode of vario-mode
 
 uint32_t deviceTick;	// global tick-count
@@ -183,7 +184,9 @@ BluetoothMan btMan(serialBluetooth, nmeaParser, varioNmea);
 
 void goDeepSleep();
 void loadPages(VarioScreen * pages);
+void makeTopMenu();
 void processKey(int key);
+void initVario();
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -191,6 +194,18 @@ void processKey(int key);
 
 void setup()
 {
+	// check wakeup reason
+	switch (esp_sleep_get_wakeup_cause())
+	{
+	case ESP_SLEEP_WAKEUP_EXT0 :
+	case ESP_SLEEP_WAKEUP_EXT1 : 
+		deviceMode = DEVICE_WAKEUP_CONFIRM;
+		break;
+	default :
+		deviceMode = DEVICE_WAKEUP_CONFIRM; // DEVICE_MODE_VARIO;
+		break;
+	}
+
 	//
 	initPins(powerPins, sizeof(powerPins) / sizeof(powerPins[0]));
 	delay(100);
@@ -198,80 +213,74 @@ void setup()
 	//
 	Serial.begin(115200);
 	Serial2.begin(9600);
-	
-	if (context.device.statusBT)
-	{
-		serialBluetooth.register_callback(bluetoothSPPCallback);
-		serialBluetooth.begin("MiniVario");
-	}
-
-	Serial.println("Start MiniVario...\n");
-
-	//
 	Wire.begin();
 
+	// load last device-context
+	// ...
 	
 	//
-	loadPages(pages);
-	
-	topMenu.addItem(TMID_SHOW_PREFERENCE, 0 /* IDS_BASIC_SETTINGS */);
-	topMenu.addItem(TMID_TOGGLE_SOUND, 0 /* IDS_SOUND_ONOFF */);
-	topMenu.addItem(TMID_TOGGLE_BLUETOOTH, 0 /* IDS_BLUETOOTH_ONOFF */);
-	topMenu.addItem(TMID_RESET_DEVICE, 0 /* IDS_RESET_DEVICE */);
-	topMenu.addItem(TMID_POWER_OFF, 0 /* IDS_POWER_OFF */);
-	
-	//
-	context.device.statusSDCard = logger.init() ? 1 : 0;
-
-	
-	//
-	toneGen.end();
-	delay(10);
-	toneGen.begin(SineGenerator::USE_DIFFERENTIAL, SineGenerator::SCALE_FULL, 0);
-	toneGen.setFrequency(0);
-	tonePlayer.setVolume(context.volume.vario);
-
-	//
-	vario.begin();
-	display.begin();
-	
-	display.attachScreen(&pages[0]);
-	
-	battery.begin();
-	context.device.batteryPower = battery.getVoltage();
-	
 	keybd.begin();
-	
 	//
+	display.begin(deviceMode == DEVICE_WAKEUP_CONFIRM);
+	//
+	toneGen.begin(SineGenerator::USE_DIFFERENTIAL, SineGenerator::SCALE_FULL, 0);
+	tonePlayer.setVolume(context.volume.vario);
 	tonePlayer.setBeep(NOTE_C4, 800, 500, 2, 100);
 
-	// just debug
-	{
-		struct tm tm;
-
-		tm.tm_year = 2019 - 1900;
-		tm.tm_mon = 4 - 1;
-		tm.tm_mday = 1;
-		tm.tm_hour = 12;
-		tm.tm_min = 30;
-		tm.tm_sec = 0;
-
-		struct timeval now = { mktime(&tm), 0 };
-    	settimeofday(&now, NULL);
-		Serial.print("Setting time: "); Serial.println(asctime(&tm));
-
-		// logger.begin(time(NULL));
-		// logger.end(time(NULL));
-	}
-
 	//
-	varioMode = VARIO_MODE_INIT;
+	Serial.println("Start MiniVario...\n");
 	deviceTick = millis();
 }
 
 
 void loop()
 {
+	//
+	keybd.update();
+	
+	// beep beep beep!
+	tonePlayer.update();
+
+	if (deviceMode == DEVICE_WAKEUP_CONFIRM)
+	{
+		if ((millis() - deviceTick) > 10000)
+		{
+			goDeepSleep();
+			while(1);
+		}
+
+		if (keybd.getch() == KEY_SEL)
+		{
+			//
+			logger.init();
+			context.device.statusSDCard = logger.isInitialized() ? 1 : 0;
+			//
+			battery.begin();
+			context.device.batteryPower = battery.getVoltage();
+
+			if (context.device.statusBT)
+			{
+				serialBluetooth.register_callback(bluetoothSPPCallback);
+				serialBluetooth.begin("MiniVario");
+			}
+
+			loadPages(pages);
+			makeTopMenu();
+
+			display.attachScreen(&pages[0]);
+			display.wakeupConfirmed();
+
+			//
+			vario.begin();
+			
+			deviceMode = DEVICE_MODE_VARIO;
+			varioMode = VARIO_MODE_INIT;
+			deviceTick = millis();
+		}
+
+		return;
+	}
+
 	if (vario.available())
 	{
 		//
@@ -310,13 +319,6 @@ void loop()
 		//
 		vario.flush();
 	}
-	
-	// beep beep beep!
-	tonePlayer.update();
-	
-	//
-	if (battery.update())
-		context.device.batteryPower = battery.getVoltage();
 	
 	// read & prase gps sentence
 	nmeaParser.update();
@@ -412,10 +414,11 @@ void loop()
 			while (nmeaParser.availableIGC())
 				logger.write(nmeaParser.readIGC());
 		}
-	}	
-	
+	}
+
 	//
-	keybd.update();
+	if (battery.update())
+		context.device.batteryPower = battery.getVoltage();
 	
 	//
 	int key = keybd.getch();
@@ -423,7 +426,7 @@ void loop()
 		processKey(key);
 
 	//
-	yield();
+	//yield();
 }
 
 
@@ -520,6 +523,15 @@ void loadPages(VarioScreen * pages)
 
 	pages[0].widget[widget].setStyle(Widget_TextBox, WS_FONT_BOLD_4 | WS_TA_LEFT | WS_TA_BOTTOM | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Pressure);
 	pages[0].widget[widget].setPosition(x, y, 176, 264 - y);
+}
+
+void makeTopMenu()
+{
+	topMenu.addItem(TMID_SHOW_PREFERENCE, 0 /* IDS_BASIC_SETTINGS */);
+	topMenu.addItem(TMID_TOGGLE_SOUND, 0 /* IDS_SOUND_ONOFF */);
+	topMenu.addItem(TMID_TOGGLE_BLUETOOTH, 0 /* IDS_BLUETOOTH_ONOFF */);
+	topMenu.addItem(TMID_RESET_DEVICE, 0 /* IDS_RESET_DEVICE */);
+	topMenu.addItem(TMID_POWER_OFF, 0 /* IDS_POWER_OFF */);
 }
 
 void processKey(int key)

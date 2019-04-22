@@ -56,7 +56,7 @@ VarioDisplay::VarioDisplay(EPaperDriver & _driver, DeviceContext & _context)
 	, activePref(NULL)
 	, activePopup(NULL)
 	, context(_context)
-	, assertSleep(false)
+	, displayMode(_VARIO)
 {
 }
 
@@ -68,10 +68,10 @@ void VarioDisplay::init()
 	statusBar.setPosition(0, 0, _width, 24);
 }
 
-int VarioDisplay::begin()
+int VarioDisplay::begin(bool confirmWakeup)
 {
 	// ...
-	assertSleep = false;
+	displayMode = confirmWakeup ? _CONFIRM : _VARIO;
 	
 	//
 	return Task::createPinnedToCore(1) ? 0 : -1;
@@ -79,37 +79,49 @@ int VarioDisplay::begin()
 
 void VarioDisplay::TaskProc()
 {
-	bool fastUpdate = false;
+	uint32_t updateCount = 0;
 	
 	//
 	init();
+
+	//
+	if (displayMode == _CONFIRM)
+	{
+		//
+		drawLogoScreen();
+		drawConfirmMessage();
+
+		//
+		refresh(false);
+	}
 	
 	//
 	while (1)
 	{
-		//
-		update();
-		refresh(fastUpdate);
-		fastUpdate = true;
-		
-		//
-		if (assertSleep)
+		switch (displayMode)
 		{
-			// display sleep screen & sleep e-ink
-			setRotation(0);
-			fillScreen(COLOR_WHITE);
-			setFont(__FontStack[WS_FONT_NORMAL_3]);
-			setTextColor(COLOR_BLACK, COLOR_WHITE);
-			drawBitmapBM(Bitmap_Paragliding, 6, 24, 164, 166, COLOR_WHITE, bm_invert);
-			setCursor(0, 240);
-			print("Fly high~");
-			setFont(__FontStack[WS_FONT_NORMAL_1]);
-			setCursor(0, 260);
-			print("Notorious Rascal 2019");
-			
+		case _CONFIRM :
+			// nop
+			break;
+
+		case _VARIO :
+			// update & refresh
+			update();
+			refresh(updateCount++);
+
+			// periodic full refresh: refresh rate ==> about 5 times / 2 seconds,  500 times ==> 200s
+			if (updateCount > 500)
+				updateCount = 0; 
+			break;
+
+		case _DEEPSLEEP :
+			// draw logo screen: default sleep screen
+			drawLogoScreen();
+			// full refresh
 			refresh(false);
-			sleep(); // 
-			
+
+			// sleep display
+			sleep(); 
 			// now sleep device
 			sleepDevice();
 		}
@@ -423,6 +435,40 @@ void VarioDisplay::drawText(const char * str, int16_t x, int16_t y, uint16_t w, 
 	print(str);
 }
 
+void VarioDisplay::drawLogoScreen()
+{
+	setRotation(0);
+	fillScreen(COLOR_WHITE);
+	setFont(__FontStack[WS_FONT_NORMAL_3]);
+	setTextColor(COLOR_BLACK, COLOR_WHITE);
+	drawBitmapBM(Bitmap_Paragliding, 6, 24, 164, 166, COLOR_WHITE, bm_invert);
+	setCursor(0, 240);
+	print("Fly high~");
+	setFont(__FontStack[WS_FONT_NORMAL_1]);
+	setCursor(0, 260);
+	print("Notorious Rascal 2019");
+}
+
+void VarioDisplay::drawConfirmMessage()
+{
+	int mw = 160;
+	int mh = 50;
+	int x = (width() - mw) / 2;
+	int y = (height() - mh) / 2;
+	
+	fillRect(x, y, mw, mh, COLOR_WHITE);
+	drawRect(x, y, mw, mh, COLOR_BLACK);
+
+	drawText("Confirm wakeup !!", 
+		x, y, mw, 25,
+		WS_FONT_NORMAL_2 | WS_TA_CENTER | WS_TA_MIDDLE, 
+		COLOR_BLACK);
+	y += 25;
+	drawText("Press OK in 10 seconds.", 
+		x, y, mw, 25,
+		WS_FONT_NORMAL_1 | WS_TA_CENTER | WS_TA_MIDDLE, 
+		COLOR_BLACK);	
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

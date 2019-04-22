@@ -126,7 +126,12 @@ public:
 class PopupMessageBox : public VarioPopup
 {
 public:
-	PopupMessageBox();
+	PopupMessageBox(uint32_t type, const char * msg);
+
+public:
+	virtual uint32_t	processKey(uint8_t key);
+
+protected:
 };
 
 

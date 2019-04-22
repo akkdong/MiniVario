@@ -92,7 +92,7 @@ uint32_t PopupMenu::processKey(uint8_t key)
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class PopupMessageBox
 
-PopupMessageBox::PopupMessageBox() : VarioPopup(DispObject_PopupMessageBox)
+PopupMessageBox::PopupMessageBox(uint32_t type, const char * msg) : VarioPopup(DispObject_PopupMessageBox)
 {
 }
 

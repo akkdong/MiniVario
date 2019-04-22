@@ -85,8 +85,8 @@ void DeviceContext::reset()
 	
 	
 	//
-	volume.vario = VARIOMETER_BEEP_VOLUME; // 0 ~ 80
-	volume.effect = VARIOMETER_EFFECT_VOLUME;
+	volume.vario = 0; // VARIOMETER_BEEP_VOLUME; // 0 ~ 80
+	volume.effect = 0; // VARIOMETER_EFFECT_VOLUME;
 	
 	//
 	threshold.lowBattery = LOW_BATTERY_THRESHOLD;
