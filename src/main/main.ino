@@ -228,7 +228,7 @@ void setup()
 	//
 	toneGen.begin(SineGenerator::USE_DIFFERENTIAL, SineGenerator::SCALE_FULL, 0);
 	tonePlayer.setVolume(context.volume.vario);
-	tonePlayer.setBeep(NOTE_C4, 800, 500, 2, 100);
+	//tonePlayer.setBeep(NOTE_C4, 800, 500, 2, 100);
 
 	// start right now or ...
 	if (deviceMode != DEVICE_WAKEUP_CONFIRM)
