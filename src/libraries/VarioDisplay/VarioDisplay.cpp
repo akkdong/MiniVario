@@ -109,8 +109,8 @@ void VarioDisplay::TaskProc()
 			update();
 			refresh(updateCount++);
 
-			// periodic full refresh: refresh rate ==> about 5 times / 2 seconds,  500 times ==> 200s
-			if (updateCount > 500)
+			// periodic full refresh: update rate : 2.5 times per second ==> 10 min = 600 x 2.5 = 1500
+			if (updateCount > 1500)
 				updateCount = 0; 
 			break;
 
@@ -368,7 +368,7 @@ void VarioDisplay::drawStatusBar(Widget * widget)
 		
 	if (context.device.statusSDCard)
 	{
-		drawBitmapBM(Bitmap_StatusBar_sdcard, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
+		drawBitmapBM(context.device.statusSDCard == 1 ? Bitmap_StatusBar_sdcard : Bitmap_StatusBar_sdcard_logging, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 		x += SB_BITMAP_WIDTH;
 	}
 	

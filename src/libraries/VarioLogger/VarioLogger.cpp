@@ -182,7 +182,7 @@ int VarioLogger::write(uint8_t ch)
 	return 1;
 }
 
-void VarioLogger::update(float varioAlt)
+void VarioLogger::updateBaroAltitude(float varioAlt)
 {
 	varioAltitude = varioAlt;
 	//Serial.println(varioAltitude);

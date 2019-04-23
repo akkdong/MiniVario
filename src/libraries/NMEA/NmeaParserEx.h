@@ -27,7 +27,10 @@ public:
 	
 	int					availableIGC();
 	int					readIGC();
-	
+
+	bool				dataReady() { return mDataReady; }
+	void				resetReady() { mDataReady = false; }
+
 	void				reset();
 	
 	//
@@ -41,6 +44,8 @@ public:
 	float				getAltitude();
 	uint32_t			getSpeed();
 	uint32_t			getHeading();
+
+	bool				isFixed()	{ return mFixed; }
 	
 private:
 	int					isFull() 	{ return ((mWrite + 1) % MAX_NMEA_PARSER_BUFFER) == mTail; }
@@ -69,6 +74,8 @@ private:
 	volatile uint8_t	mParity;
 	
 	//
+	bool				mDataReady;
+
 	//uint32_t			mDate;
 	//uint32_t			mTime;
 	
@@ -80,6 +87,8 @@ private:
 	float				mAltitude;
 	uint32_t			mSpeed;
 	uint32_t			mHeading;
+
+	bool				mFixed;
 	
 //	float				mBaroAlt;
 	

@@ -29,7 +29,7 @@ public:
 	
 	int					write(uint8_t ch);
 
-	void				update(float varioAlt);
+	void				updateBaroAltitude(float varioAlt);
 	
 	int					isInitialized();
 	int					isLogging();

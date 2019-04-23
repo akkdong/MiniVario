@@ -183,10 +183,11 @@ BluetoothMan btMan(serialBluetooth, nmeaParser, varioNmea);
 //
 
 void goDeepSleep();
+void resetDevice();
 void loadPages(VarioScreen * pages);
 void makeTopMenu();
 void processKey(int key);
-void initVario();
+void startVario();
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -202,18 +203,20 @@ void setup()
 		deviceMode = DEVICE_WAKEUP_CONFIRM;
 		break;
 	default :
-		deviceMode = DEVICE_WAKEUP_CONFIRM; // DEVICE_MODE_VARIO;
+		deviceMode = DEVICE_MODE_VARIO;
 		break;
 	}
 
-	//
+	// power on peripherals : default is power on
 	initPins(powerPins, sizeof(powerPins) / sizeof(powerPins[0]));
-	delay(100);
+	delay(20);
 	
-	//
+	// initialize communication channels
 	Serial.begin(115200);
 	Serial2.begin(9600);
 	Wire.begin();
+
+	Serial.println("Start MiniVario...\n");
 
 	// load last device-context
 	// ...
@@ -227,15 +230,17 @@ void setup()
 	tonePlayer.setVolume(context.volume.vario);
 	tonePlayer.setBeep(NOTE_C4, 800, 500, 2, 100);
 
+	// start right now or ...
+	if (deviceMode != DEVICE_WAKEUP_CONFIRM)
+		startVario();
+
 	//
-	Serial.println("Start MiniVario...\n");
 	deviceTick = millis();
 }
 
-
 void loop()
 {
-	//
+	// check key-input
 	keybd.update();
 	
 	// beep beep beep!
@@ -250,33 +255,7 @@ void loop()
 		}
 
 		if (keybd.getch() == KEY_SEL)
-		{
-			//
-			logger.init();
-			context.device.statusSDCard = logger.isInitialized() ? 1 : 0;
-			//
-			battery.begin();
-			context.device.batteryPower = battery.getVoltage();
-
-			if (context.device.statusBT)
-			{
-				serialBluetooth.register_callback(bluetoothSPPCallback);
-				serialBluetooth.begin("MiniVario");
-			}
-
-			loadPages(pages);
-			makeTopMenu();
-
-			display.attachScreen(&pages[0]);
-			display.wakeupConfirmed();
-
-			//
-			vario.begin();
-			
-			deviceMode = DEVICE_MODE_VARIO;
-			varioMode = VARIO_MODE_INIT;
-			deviceTick = millis();
-		}
+			startVario();
 
 		return;
 	}
@@ -310,7 +289,7 @@ void loop()
 
 		//
 		float altitude = vario.getCalibratedAltitude(); // getCalibratedAltitude or getAltitude
-		logger.update(altitude);
+		logger.updateBaroAltitude(altitude);
 
 		// update vario sentence periodically
 		if (varioNmea.checkInterval())
@@ -326,8 +305,9 @@ void loop()
 	// send any prepared sentence to BT
 	btMan.update();	
 
-	//if (nmeaParser.availableIGC())
+	if (nmeaParser.dataReady())
 	{
+		// update device-context
 		context.varioState.altitudeGPS = nmeaParser.getAltitude();
 		context.varioState.latitude = nmeaParser.getLatitude();
 		context.varioState.longitude = nmeaParser.getLongitude();
@@ -335,85 +315,92 @@ void loop()
 		context.varioState.heading = nmeaParser.getHeading();	
  		context.varioState.timeCurrent = nmeaParser.getDateTime();
 
-		context.device.statusGPS = nmeaParser.availableIGC();
-	}	
+		context.device.statusGPS = nmeaParser.isFixed();
 
-	// IGC sentence is available when it received a valid GGA. -> altitude is valid
-	if (varioMode == VARIO_MODE_INIT  && nmeaParser.availableIGC())
-	{
-		// do position calibration
-		vario.calibrateAltitude(nmeaParser.getAltitude());
-		
-		// now ready to fly~~~
-		varioMode = VARIO_MODE_LANDING;
-
-		//
-		struct timeval now = { nmeaParser.getDateTime(), 0 };
-		now.tv_sec +=  (__DeviceContext.logger.timezone * 60 * 60); // GMT(UTC+00) --> Local time
-		settimeofday(&now, NULL);
-
-		// play ready melody~~~
-		tonePlayer.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
-	}
-	else if (varioMode == VARIO_MODE_LANDING)
-	{
-		if (nmeaParser.getSpeed() > FLIGHT_START_MIN_SPEED && nmeaParser.getDateTime())
+		// IGC sentence is available when it received a valid GGA. -> altitude is valid
+		if (varioMode == VARIO_MODE_INIT  && nmeaParser.availableIGC())
 		{
+			// do position calibration
+			vario.calibrateAltitude(nmeaParser.getAltitude());
+			
+			// now ready to fly~~~
+			varioMode = VARIO_MODE_LANDING;
+
 			//
-			varioMode = VARIO_MODE_FLYING;
-			
-			// play take-off melody
-			tonePlayer.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
-			
-			// start logging & change mode
-			logger.begin(nmeaParser.getDateTime());
-			
-			context.varioState.timeStart = nmeaParser.getDateTime();
-			context.varioState.timeFly = 0;
+			struct timeval now = { nmeaParser.getDateTime(), 0 };
+			now.tv_sec +=  (__DeviceContext.logger.timezone * 60 * 60); // GMT(UTC+00) --> Local time
+			settimeofday(&now, NULL);
 
-			// set mode-tick
-			modeTick = millis();
+			// play ready melody~~~
+			tonePlayer.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
 		}
-	}
-	else if (varioMode == VARIO_MODE_FLYING)
-	{
-		if (nmeaParser.getSpeed() < FLIGHT_START_MIN_SPEED)
+		else if (varioMode == VARIO_MODE_LANDING)
 		{
-			if ((millis() - modeTick) > FLIGHT_LANDING_THRESHOLD)
+			if (nmeaParser.getSpeed() > FLIGHT_START_MIN_SPEED && nmeaParser.getDateTime())
 			{
 				//
-				varioMode = VARIO_MODE_LANDING;
+				varioMode = VARIO_MODE_FLYING;
 				
-				// play landing melody
-				tonePlayer.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
+				// play take-off melody
+				tonePlayer.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
 				
-				// stop logging & change mode
-				logger.end(nmeaParser.getDateTime());
+				// start logging & change mode
+				if (logger.begin(nmeaParser.getDateTime()))
+					context.device.statusSDCard = 2;
+				
+				context.varioState.timeStart = nmeaParser.getDateTime();
+				context.varioState.timeFly = 0;
+
+				// set mode-tick
+				modeTick = millis();
 			}
 		}
-		else
+		else if (varioMode == VARIO_MODE_FLYING)
 		{
-			// reset modeTick
-			modeTick = millis();
+			if (nmeaParser.getSpeed() < FLIGHT_START_MIN_SPEED)
+			{
+				if ((millis() - modeTick) > FLIGHT_LANDING_THRESHOLD)
+				{
+					//
+					varioMode = VARIO_MODE_LANDING;
+					
+					// play landing melody
+					tonePlayer.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
+					
+					// stop logging & change mode
+					if (logger.isLogging())
+					{
+						logger.end(nmeaParser.getDateTime());
+						context.device.statusSDCard = 1;
+					}
+				}
+			}
+			else
+			{
+				// reset modeTick
+				modeTick = millis();
 
-			//
-			context.varioState.timeFly = nmeaParser.getDateTime() - context.varioState.timeStart;
+				//
+				context.varioState.timeFly = nmeaParser.getDateTime() - context.varioState.timeStart;
+			}
 		}
-	}
 
-	// check logging state
-	if (logger.isLogging())
-	{
-		// nmeaParser parses GPS sentence and converts it to IGC sentence
-		
-		//static unsigned long tick = millis();
-		//static int index = 0;
-		
-		//if ((millis()-tick) > time_interval)
-		{		
-			while (nmeaParser.availableIGC())
-				logger.write(nmeaParser.readIGC());
+		// check logging state
+		if (logger.isLogging())
+		{
+			// nmeaParser parses GPS sentence and converts it to IGC sentence
+			
+			//static unsigned long tick = millis();
+			//static int index = 0;
+			
+			//if ((millis()-tick) > time_interval)
+			{		
+				while (nmeaParser.availableIGC())
+					logger.write(nmeaParser.readIGC());
+			}
 		}
+
+		nmeaParser.resetReady();
 	}
 
 	//
@@ -434,14 +421,32 @@ void goDeepSleep()
 {
 	// close logging-file
 	logger.end(nmeaParser.getDateTime());
-
-	// sleep display & device
-	display.deepSleep();
-
 	//
 	toneGen.end();
 
+	// sleep display & device
+	display.deepSleep();
 	while(1);
+}
+
+void resetDevice()
+{
+	// close logging-file
+	logger.end(nmeaParser.getDateTime());
+	//
+	toneGen.end();
+
+	// turn-off peripherals
+	setPinState(&powerPins[0], PIN_STATE_INACTIVE);
+	setPinState(&powerPins[1], PIN_STATE_INACTIVE);
+	delay(100);
+
+	//
+	#if 1
+	ESP.restart();
+	#else
+	HardReset();
+	#endif
 }
 
 void loadPages(VarioScreen * pages)
@@ -510,12 +515,12 @@ void loadPages(VarioScreen * pages)
 	x = 0;
 	y += TEXTBOX_S_HEIGHT;
 	
-	pages[0].widget[widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Altitude_Baro);
+	pages[0].widget[widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Altitude_Baro);
 	pages[0].widget[widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
 	widget++;
 	x += TEXTBOX_S_WIDTH;
 
-	pages[0].widget[widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Temperature);
+	pages[0].widget[widget].setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Temperature);
 	pages[0].widget[widget].setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
 	widget++;
 	x = 0;
@@ -599,14 +604,40 @@ void processKey(int key)
 				while(1);
 				
 			case TMID_RESET_DEVICE : // restart(reset) device
-				#if 0
-				ESP.restart();
-				#else
-				HardReset();
-				#endif
+				resetDevice();
 				break;
 			}
 			break;
 		}
 	}
+}
+
+void startVario()
+{
+	//
+	loadPages(pages);
+	makeTopMenu();
+
+	display.attachScreen(&pages[0]);
+	display.wakeupConfirmed();
+
+	//
+	logger.init();
+	context.device.statusSDCard = logger.isInitialized() ? 1 : 0;
+	//
+	battery.begin();
+	context.device.batteryPower = battery.getVoltage();
+
+	if (context.device.statusBT)
+	{
+		serialBluetooth.register_callback(bluetoothSPPCallback);
+		serialBluetooth.begin("MiniVario");
+	}
+
+	//
+	vario.begin();
+	
+	deviceMode = DEVICE_MODE_VARIO;
+	varioMode = VARIO_MODE_INIT;
+	deviceTick = millis();
 }

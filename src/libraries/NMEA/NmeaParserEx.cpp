@@ -251,11 +251,17 @@ void NmeaParserEx::update(/*float baroAlt*/)
 					mHead = mWrite;
 
 					//
-					if (IS_SET(PARSE_GGA) && IS_SET(GGA_VALID) && ! IS_SET(IGC_LOCKED))
+					if (IS_SET(PARSE_GGA))
 					{
-						// IGC sentence is available
-						mIGCSize = MAX_IGC_SENTENCE;
-						mIGCNext = 0;
+						if (IS_SET(GGA_VALID) && ! IS_SET(IGC_LOCKED))
+						{
+							// IGC sentence is available
+							mIGCSize = MAX_IGC_SENTENCE;
+							mIGCNext = 0;
+						}
+
+						mFixed = IS_SET(GGA_VALID) ? true : false;
+						mDataReady = true;
 					}
 					
 					// unset parse state
@@ -327,8 +333,11 @@ int NmeaParserEx::readIGC()
 
 void NmeaParserEx::reset()
 {
+	//
 	mHead = mTail = mWrite = 0;
 	
+	//
+	mDataReady = false;	
 	mDateTime = 0;
 	//mDate = 0;
 	//mTime = 0;
@@ -337,10 +346,12 @@ void NmeaParserEx::reset()
 	mSpeed = 0;
 	mAltitude = 0.0;
 	mHeading = 0;
+	mFixed = false;
 	
 	mParseStep = -1;
 	mParseState = 0;
-	
+
+	//	
 	mIGCSize = 0;
 	mIGCNext = 0;
 }

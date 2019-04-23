@@ -132,7 +132,7 @@ struct DeviceState
 	
 	uint8_t			statusGPS;		// 0: no-signal, 1: 
 	uint8_t			statusBT;		// 0: disabled, 1: on-wait-client, 2: connected
-	uint8_t			statusSDCard;	// 0: empty, 1: valid
+	uint8_t			statusSDCard;	// 0: empty, 1: valid, 2: logging
 //	uint8_t			statusSound;	// 0: mute, 1: on
 	
 	char			btName[MAX_STRING_SIZE];
