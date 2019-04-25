@@ -10,7 +10,7 @@
 DeviceContext __DeviceContext;
 
 
-VarioTone DeviceContext::defaultTone[MAX_VARIO_TONE] =
+const VarioTone DeviceContext::defaultTone[MAX_VARIO_TONE] =
 #if 0
 {
 	{ -10.00,    200, 200,  100 },
@@ -74,7 +74,7 @@ void DeviceContext::reset()
 	//
 	varioSetting.sinkThreshold = VARIOMETER_SINKING_THRESHOLD; // -3.0
 	varioSetting.climbThreshold = VARIOMETER_CLIMBING_THRESHOLD; // 0.2
-	varioSetting.sensitivity = VARIOMETER_SENSITIVITY; // 0.3
+	varioSetting.sensitivity = VARIOMETER_SENSITIVITY; // 0.12
 	
 	varioSetting.sentence = VARIOMETER_DEFAULT_NMEA_SENTENCE;
 
@@ -83,10 +83,9 @@ void DeviceContext::reset()
 	// vario_tone_table 
 	memcpy(&toneTable[0], &defaultTone[0], sizeof(defaultTone));
 	
-	
 	//
-	volume.vario = 0; // VARIOMETER_BEEP_VOLUME; // 0 ~ 80
-	volume.effect = 0; // VARIOMETER_EFFECT_VOLUME;
+	volume.vario = VARIOMETER_BEEP_VOLUME;
+	volume.effect = VARIOMETER_EFFECT_VOLUME;
 	
 	//
 	threshold.lowBattery = LOW_BATTERY_THRESHOLD;
@@ -99,5 +98,59 @@ void DeviceContext::reset()
 	kalman.varAccelBias = KF_ACCELBIAS_VARIANCE;
 
 	//
-	device.statusBT = 1;
+	deviceDefault.enableBT = 1;
+	deviceDefault.enableSound = 0;
+
+	strcpy(deviceDefault.btName, "MiniVario");
+
+	//
+	deviceState.statusBT = deviceDefault.enableBT ? 1 : 0;	
+}
+
+bool DeviceContext::load(Preferences & pref)
+{
+	//
+	pref.getBytes("vset", &varioSetting, sizeof(varioSetting));
+	
+	//
+	pref.getBytes("ginfo", &gliderInfo, sizeof(gliderInfo));
+	pref.getBytes("logger", &logger, sizeof(logger));
+	
+	//
+	pref.getBytes("tones", &toneTable, sizeof(toneTable));
+
+	//	
+	pref.getBytes("volume", &volume, sizeof(volume));
+	pref.getBytes("thshld", &threshold, sizeof(threshold));
+
+	//	
+	pref.getBytes("kman", &kalman, sizeof(kalman));
+	
+	// Device state
+	pref.getBytes("device", &deviceDefault, sizeof(deviceDefault));
+
+	return true;
+}
+
+bool DeviceContext::save(Preferences & pref)
+{
+	// 
+	pref.putBytes("vset", &varioSetting, sizeof(varioSetting));
+	
+	//
+	pref.putBytes("ginfo", &gliderInfo, sizeof(gliderInfo));
+	pref.putBytes("logger", &logger, sizeof(logger));
+	
+	//
+	pref.putBytes("tones", &toneTable, sizeof(toneTable));
+
+	//	
+	pref.putBytes("volume", &volume, sizeof(volume));
+	pref.putBytes("thshld", &threshold, sizeof(threshold));
+
+	//	
+	pref.putBytes("kman", &kalman, sizeof(kalman));
+	
+	// Device state
+	pref.putBytes("device", &deviceDefault, sizeof(deviceDefault));
 }

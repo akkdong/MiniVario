@@ -127,6 +127,19 @@ uint8_t	varioMode; 		// sub-mode of vario-mode
 uint32_t deviceTick;	// global tick-count
 uint32_t modeTick;		// mode-specific tick-count
 
+VarioScreen pages[3];
+PopupMenu	topMenu;
+
+
+DeviceContext & context = __DeviceContext;
+
+
+//
+//
+//
+
+BluetoothSerialEx  	serialBluetooth;
+
 
 //
 //
@@ -137,31 +150,11 @@ TonePlayer tonePlayer(toneGen);
 
 VarioBeeper varioBeeper(tonePlayer);
 
-
-//
-//
-//
-
-CriticalSection cs;
-Sensor_MS5611  baro(cs, Wire);
-KalmanVario vario(baro);
-
-DeviceContext & context = __DeviceContext;
-
 VarioDisplayDriver driver(ePaperPins);
 VarioDisplay display(driver, context);
 
 BatteryVoltage battery;
 Keyboard keybd(keybdPins, sizeof(keybdPins) / sizeof(keybdPins[0]));
-
-VarioScreen pages[3];
-PopupMenu	topMenu;
-
-//
-//
-//
-
-BluetoothSerialEx  	serialBluetooth;
 
 //
 //
@@ -182,12 +175,23 @@ BluetoothMan btMan(serialBluetooth, nmeaParser, varioNmea);
 //
 //
 
+CriticalSection cs;
+Sensor_MS5611  baro(cs, Wire);
+static KalmanVario vario(baro);
+
+
+//
+//
+//
+
 void goDeepSleep();
 void resetDevice();
 void loadPages(VarioScreen * pages);
 void makeTopMenu();
 void processKey(int key);
 void startVario();
+void loadPreferences();
+void savePreferences();
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -219,7 +223,7 @@ void setup()
 	Serial.println("Start MiniVario...\n");
 
 	// load last device-context
-	// ...
+	loadPreferences();
 	
 	//
 	keybd.begin();
@@ -269,7 +273,7 @@ void loop()
 		context.varioState.pressure = vario.getPressure();
 		context.varioState.temperature = vario.getTemperature();
 
-		if (context.volume.vario)
+		if (context.deviceDefault.enableSound)
 			varioBeeper.setVelocity(context.varioState.speedVertActive);
 
 		//
@@ -315,7 +319,7 @@ void loop()
 		context.varioState.heading = nmeaParser.getHeading();	
  		context.varioState.timeCurrent = nmeaParser.getDateTime();
 
-		context.device.statusGPS = nmeaParser.isFixed();
+		context.deviceState.statusGPS = nmeaParser.isFixed();
 
 		// IGC sentence is available when it received a valid GGA. -> altitude is valid
 		if (varioMode == VARIO_MODE_INIT  && nmeaParser.availableIGC())
@@ -346,7 +350,7 @@ void loop()
 				
 				// start logging & change mode
 				if (logger.begin(nmeaParser.getDateTime()))
-					context.device.statusSDCard = 2;
+					context.deviceState.statusSDCard = 2;
 				
 				context.varioState.timeStart = nmeaParser.getDateTime();
 				context.varioState.timeFly = 0;
@@ -371,7 +375,7 @@ void loop()
 					if (logger.isLogging())
 					{
 						logger.end(nmeaParser.getDateTime());
-						context.device.statusSDCard = 1;
+						context.deviceState.statusSDCard = 1;
 					}
 				}
 			}
@@ -405,7 +409,7 @@ void loop()
 
 	//
 	if (battery.update())
-		context.device.batteryPower = battery.getVoltage();
+		context.deviceState.batteryPower = battery.getVoltage();
 	
 	//
 	int key = keybd.getch();
@@ -571,17 +575,18 @@ void processKey(int key)
 				break;
 				
 			case TMID_TOGGLE_SOUND : // toggle sound
-				context.volume.vario = context.volume.vario ? 0 : 1;
-				if (! context.volume.vario)
+				context.deviceDefault.enableSound = context.deviceDefault.enableSound ? 0 : 1;
+				if (! context.deviceDefault.enableSound)
 				{
 					varioBeeper.setVelocity(0);			
 					toneGen.setFrequency(0);
 				}
+				savePreferences();
 				break;
 				
 			case TMID_TOGGLE_BLUETOOTH : // toggle bluetooth
-				context.device.statusBT = context.device.statusBT ? 0 : 1;
-				if (context.device.statusBT)
+				context.deviceDefault.enableBT = context.deviceState.statusBT = context.deviceState.statusBT ? 0 : 1;
+				if (context.deviceState.statusBT)
 				{
 					serialBluetooth.register_callback(bluetoothSPPCallback);
 					serialBluetooth.begin("MiniVario");
@@ -591,6 +596,7 @@ void processKey(int key)
 					serialBluetooth.register_callback(NULL);
 					serialBluetooth.end();
 				}
+				savePreferences();
 				break;
 				
 			case TMID_POWER_OFF : // turn-off device
@@ -623,16 +629,18 @@ void startVario()
 
 	//
 	logger.init();
-	context.device.statusSDCard = logger.isInitialized() ? 1 : 0;
+	context.deviceState.statusSDCard = logger.isInitialized() ? 1 : 0;
 	//
 	battery.begin();
-	context.device.batteryPower = battery.getVoltage();
-
-	if (context.device.statusBT)
+	context.deviceState.batteryPower = battery.getVoltage();
+	//
+	if (context.deviceDefault.enableBT)
 	{
+
 		serialBluetooth.register_callback(bluetoothSPPCallback);
-		serialBluetooth.begin("MiniVario");
+		serialBluetooth.begin(context.deviceDefault.btName);
 	}
+	context.deviceState.statusBT = context.deviceDefault.enableBT ? 1 : 0;
 
 	//
 	vario.begin();
@@ -640,4 +648,20 @@ void startVario()
 	deviceMode = DEVICE_MODE_VARIO;
 	varioMode = VARIO_MODE_INIT;
 	deviceTick = millis();
+}
+
+void loadPreferences()
+{
+	Preferences pref;
+	pref.begin("vario", true);
+	context.load(pref);
+	pref.end();
+}
+
+void savePreferences()
+{
+	Preferences pref;
+	pref.begin("vario", true);
+	context.save(pref);
+	pref.end();
 }

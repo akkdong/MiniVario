@@ -19,13 +19,13 @@ void bluetoothSPPCallback(esp_spp_cb_event_t event, esp_spp_cb_param_t * param)
 	{
 	case ESP_SPP_START_EVT :
 		Serial.println("Server started");
-		context.device.statusBT = 1;
+		context.deviceState.statusBT = 1;
 		break;
 
 	case ESP_SPP_SRV_OPEN_EVT :
 		Serial.println("Server connection open");
-		if (context.device.statusBT)
-			context.device.statusBT = 2;
+		if (context.deviceState.statusBT)
+			context.deviceState.statusBT = 2;
 		break;
 		
 	case ESP_SPP_OPEN_EVT :
@@ -34,8 +34,8 @@ void bluetoothSPPCallback(esp_spp_cb_event_t event, esp_spp_cb_param_t * param)
 
 	case ESP_SPP_CLOSE_EVT :
 		Serial.println("Client connection closed");
-		if (context.device.statusBT)
-			context.device.statusBT = 1;
+		if (context.deviceState.statusBT)
+			context.deviceState.statusBT = 1;
 		break;
 		
 	case ESP_SPP_CONG_EVT :

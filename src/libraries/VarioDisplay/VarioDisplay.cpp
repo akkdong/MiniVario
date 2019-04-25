@@ -249,8 +249,8 @@ void VarioDisplay::draw(PopupMenu * menu)
 		switch (menu->items[i].itemId)
 		{
 		case TMID_SHOW_PREFERENCE : strcpy(str, "Basic settings"); break;
-		case TMID_TOGGLE_SOUND : sprintf(str, "Sound %s", context.volume.vario ? "Off" : "On"); break;
-		case TMID_TOGGLE_BLUETOOTH : sprintf(str, "Bluetooth %s", context.device.statusBT ? "Off" : "On"); break;
+		case TMID_TOGGLE_SOUND : sprintf(str, "Sound %s", context.deviceDefault.enableSound ? "Off" : "On"); break;
+		case TMID_TOGGLE_BLUETOOTH : sprintf(str, "Bluetooth %s", context.deviceState.statusBT ? "Off" : "On"); break;
 		case TMID_RESET_DEVICE : strcpy(str, "Restart Device"); break;
 		case TMID_POWER_OFF : strcpy(str, "Power Off"); break;
 		}
@@ -357,22 +357,22 @@ void VarioDisplay::drawStatusBar(Widget * widget)
 	drawBitmapBM(Bitmap_StatusBar_hanglider, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 	x += SB_BITMAP_WIDTH;
 	
-	drawBitmapBM(context.device.statusGPS ? Bitmap_StatusBar_gps_valid : Bitmap_StatusBar_gps_invalid, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
+	drawBitmapBM(context.deviceState.statusGPS ? Bitmap_StatusBar_gps_valid : Bitmap_StatusBar_gps_invalid, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 	x += SB_BITMAP_WIDTH;
 	
-	if (context.device.statusBT)
+	if (context.deviceState.statusBT)
 	{
-		drawBitmapBM(context.device.statusBT == 1 ? Bitmap_StatusBar_bluetooth_started : Bitmap_StatusBar_bluetooth_connected, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
+		drawBitmapBM(context.deviceState.statusBT == 1 ? Bitmap_StatusBar_bluetooth_started : Bitmap_StatusBar_bluetooth_connected, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 		x += SB_BITMAP_WIDTH;
 	}
 		
-	if (context.device.statusSDCard)
+	if (context.deviceState.statusSDCard)
 	{
-		drawBitmapBM(context.device.statusSDCard == 1 ? Bitmap_StatusBar_sdcard : Bitmap_StatusBar_sdcard_logging, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
+		drawBitmapBM(context.deviceState.statusSDCard == 1 ? Bitmap_StatusBar_sdcard : Bitmap_StatusBar_sdcard_logging, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 		x += SB_BITMAP_WIDTH;
 	}
 	
-	drawBitmapBM(context.volume.vario ? Bitmap_StatusBar_soundon : Bitmap_StatusBar_soundoff, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
+	drawBitmapBM(context.deviceDefault.enableSound ? Bitmap_StatusBar_soundon : Bitmap_StatusBar_soundoff, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 	x += SB_BITMAP_WIDTH;
 	
 	//
@@ -668,7 +668,7 @@ const char * VarioDisplay::getString(WidgetContentType type)
 //	case WidgetContent_Thermal_Gain :
 //		return "";
 	case WidgetContent_Battery :
-		sprintf(tempString, "%.1fV", context.device.batteryPower);
+		sprintf(tempString, "%.1fV", context.deviceState.batteryPower);
 		return tempString;
 	case WidgetContent_Title :
 		return "Rascal";

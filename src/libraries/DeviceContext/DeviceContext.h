@@ -5,6 +5,7 @@
 #define __DEVICECONTEXT_H__
 
 #include <Arduino.h>
+#include <Preferences.h>
 #include "DeviceDefines.h"
 
 #define MAX_STRING_SIZE					(16)
@@ -133,8 +134,13 @@ struct DeviceState
 	uint8_t			statusGPS;		// 0: no-signal, 1: 
 	uint8_t			statusBT;		// 0: disabled, 1: on-wait-client, 2: connected
 	uint8_t			statusSDCard;	// 0: empty, 1: valid, 2: logging
-//	uint8_t			statusSound;	// 0: mute, 1: on
-	
+};
+
+struct DeviceDefault
+{
+	uint8_t			enableBT;
+	uint8_t			enableSound;
+
 	char			btName[MAX_STRING_SIZE];
 };
 
@@ -150,13 +156,14 @@ public:
 	
 public:
 	void				reset();
+
+	bool				load(Preferences & pref);
+	bool				save(Preferences & pref);
 	
 public:
-	// Variometer State
-	VarioState			varioState;
+	// Persist Settings
 	VarioSettings		varioSetting;
 	
-	//
 	GliderInfo			gliderInfo;
 	IGCLogger			logger;
 	
@@ -166,13 +173,16 @@ public:
 	ThresholdSettings	threshold;
 	
 	KelmanParameters	kalman;
+
+	DeviceDefault		deviceDefault;
 	
+	// Variometer State
+	VarioState			varioState;
 	// Device state
-	DeviceState			device;
+	DeviceState			deviceState;
 	
 private:
-	static VarioTone	defaultTone[MAX_VARIO_TONE];
-
+	static const VarioTone defaultTone[MAX_VARIO_TONE];
 };
 
 extern DeviceContext	__DeviceContext;
