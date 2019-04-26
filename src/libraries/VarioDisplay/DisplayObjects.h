@@ -39,6 +39,12 @@ typedef enum _DispObjectType
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
+//
+
+class VarioDisplay;
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 // class DisplayObject
 
 class DisplayObject
@@ -59,13 +65,17 @@ public:
 
 class VarioScreen : public DisplayObject
 {
+	friend class VarioDisplay;
+
 public:
 	VarioScreen();
 	
 public:
 	virtual uint32_t	processKey(uint8_t key);
+
+	Widget *			getWidget(size_t index);
 	
-public:
+protected:
 	Widget				widget[MAX_WIDGETS];
 };
 
@@ -75,10 +85,15 @@ public:
 
 class VarioPreference : public DisplayObject
 {
+	friend class VarioDisplay;
+	
 public:
 	VarioPreference();
 	
 public:
+	virtual uint32_t	processKey(uint8_t key);
+
+protected:
 	PrefItem			prefs[MAX_PREFITEMS];
 	
 	volatile int16_t	itemCount;
@@ -92,6 +107,8 @@ public:
 
 class VarioPopup : public DisplayObject
 {
+	friend class VarioDisplay;
+	
 public:
 	VarioPopup(DispObjectType type) : DisplayObject(type) { }
 	
@@ -103,6 +120,8 @@ public:
 
 class PopupMenu : public VarioPopup
 {
+	friend class VarioDisplay;
+	
 public:
 	PopupMenu();
 	
@@ -111,7 +130,7 @@ public:
 	
 	virtual uint32_t	processKey(uint8_t key);
 	
-public:
+protected:
 	MenuItem			items[MAX_MEUITEMS];
 	
 	volatile int16_t	itemCount;
@@ -125,6 +144,8 @@ public:
 
 class PopupMessageBox : public VarioPopup
 {
+	friend class VarioDisplay;
+	
 public:
 	PopupMessageBox(uint32_t type, const char * msg);
 
@@ -140,6 +161,8 @@ protected:
 
 class PopupListBox : public VarioPopup
 {
+	friend class VarioDisplay;
+	
 public:
 	PopupListBox();
 };
@@ -150,6 +173,8 @@ public:
 
 class PopupCheckBox : public VarioPopup
 {
+	friend class VarioDisplay;
+	
 public:
 	PopupCheckBox();
 };
@@ -160,6 +185,8 @@ public:
 
 class PopupRadioBox : public VarioPopup
 {
+	friend class VarioDisplay;
+	
 public:
 	PopupRadioBox();
 };

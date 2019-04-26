@@ -30,6 +30,14 @@ uint32_t VarioScreen::processKey(uint8_t key)
 	return 0;
 }
 
+Widget * VarioScreen::getWidget(size_t index)
+{
+	if (index < MAX_WIDGETS)
+		return &widget[index];
+
+	return NULL;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class VarioPreference

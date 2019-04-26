@@ -198,7 +198,7 @@ void EPaper_Waveshare270::refresh(bool fast_mode)
 		
 		// refreshWindow
 		_refreshPartialWindow(0, 0, WAVESHARE_270_WIDTH, WAVESHARE_270_HEIGHT);	
-		_waitWhileBusy(partial_refresh_time);
+		_waitWhileBusy(partial_refresh_time - 60, partial_refresh_time);
 	
 		// writeWindow
 		_transfer(0x14, buffer);
@@ -222,7 +222,7 @@ void EPaper_Waveshare270::refresh(bool fast_mode)
 			_writeData(buffer[i]);
 		
 		_writeCommand(0x12);
-		_waitWhileBusy(full_refresh_time);
+		_waitWhileBusy(full_refresh_time - 400, full_refresh_time);
 		
 		_writeCommand(0x10);
 		for (int i = 0; i < WAVESHARE_270_WIDTH * WAVESHARE_270_HEIGHT / 8; i++)

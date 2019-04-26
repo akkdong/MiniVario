@@ -191,8 +191,7 @@ void VarioDisplay::update()
 	{
 		// draw any popup : menu, messagebox, ...
 		draw(activePopup);
-	}
-	
+	}	
 }
 
 void VarioDisplay::draw(VarioScreen * screen)
@@ -211,6 +210,21 @@ void VarioDisplay::draw(VarioScreen * screen)
 
 void VarioDisplay::draw(VarioPreference * pref)
 {
+	int16_t item = pref->itemTop;
+	int16_t x = WORKAREA_X, y = WORKAREA_Y, w, h;
+
+	while (item < pref->itemCount)
+	{
+		PrefItem * prefItem = &pref->prefs[item];
+
+		w = WORKAREA_W;
+		h = prefItem->getHeight();
+
+		if (y + h > WORKAREA_Y + WORKAREA_H)
+			break;
+
+		drawPrefItem(prefItem, x, y, w, h, item == pref->itemSelect);
+	}
 }
 
 void VarioDisplay::draw(VarioPopup * popup)
@@ -433,6 +447,10 @@ void VarioDisplay::drawText(const char * str, int16_t x, int16_t y, uint16_t w, 
 	setCursor(x, y);
 	setTextColor(color);
 	print(str);
+}
+
+void VarioDisplay::drawPrefItem(PrefItem * item, int16_t x, int16_t y, int16_t w, int16_t h, bool selected)
+{	
 }
 
 void VarioDisplay::drawLogoScreen()

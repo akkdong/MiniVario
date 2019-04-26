@@ -19,13 +19,19 @@ typedef enum _PrefItem_Style
 
 
 
-typedef struct _PrefItem
+class PrefItem
 {
+public:
+	PrefItem() : type(0), title(0), value(0) {}
+
+	int16_t getHeight() { return 0; }
+
+protected:
 	int type;
 	const char * title;
 	int value;
 	
-} PrefItem;
+};
 
 
 #endif // __PREFITEM_H__

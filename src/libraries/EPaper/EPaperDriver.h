@@ -63,6 +63,7 @@ protected:
 	void					_writeDataP(const uint8_t * data, uint16_t n);
 	
 	void					_waitWhileBusy(uint16_t timeout);
+	void					_waitWhileBusy(uint16_t minWait, uint16_t maxWait);
 	
 	virtual void			_delay(int msec) { delay(msec); }
 	

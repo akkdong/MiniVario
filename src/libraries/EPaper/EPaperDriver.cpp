@@ -84,7 +84,7 @@ void EPaperDriver::_waitWhileBusy(uint16_t timeout)
 	while (1)
 	{
 		_delay(2);
-		
+
 		if (getPinState(&_pin_settings[_PIN_BUSY]) != PIN_STATE_ACTIVE)
 		{
 //			Serial.print("NOT BUSY!! : "); Serial.println(millis() - start);
@@ -96,5 +96,28 @@ void EPaperDriver::_waitWhileBusy(uint16_t timeout)
 //			Serial.println("TIMEOUT~~");
 			break;
 		}
+	}
+}
+
+void EPaperDriver::_waitWhileBusy(uint16_t minWait, uint16_t maxWait)
+{
+	unsigned long start = millis();
+	_delay(minWait);
+	
+	while (1)
+	{
+		if (getPinState(&_pin_settings[_PIN_BUSY]) != PIN_STATE_ACTIVE)
+		{
+//			Serial.print("NOT BUSY!! : "); Serial.println(millis() - start);
+			break;
+		}
+		
+		if ((millis() - start) > maxWait)
+		{
+//			Serial.println("TIMEOUT~~");
+			break;
+		}
+
+		_delay(1);
 	}
 }
