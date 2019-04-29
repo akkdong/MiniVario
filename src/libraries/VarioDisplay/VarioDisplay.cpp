@@ -417,7 +417,7 @@ void VarioDisplay::drawCompass(Widget * widget)
 	int16_t cy = widget->y + widget->h / 2;
 
 	drawCircle(cx, cy, r - 4, COLOR_BLACK);
-	drawTriangle(cx, cy, r - 10, context.varioState.heading);
+	drawTriangle(cx, cy, r - 10, -context.varioState.heading);
 }
 
 void VarioDisplay::drawTriangle(int16_t cx, int16_t cy, int16_t r, int16_t heading)
