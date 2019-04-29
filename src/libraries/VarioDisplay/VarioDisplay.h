@@ -85,6 +85,7 @@ protected:
 	void 				drawVarioHistory(Widget * widget);
 	void 				drawVarioBar(Widget * widget);
 	void 				drawCompass(Widget * widget);
+	void				drawTriangle(int16_t cx, int16_t cy, int16_t r, int16_t heading);
 
 	void				drawBorder(Widget * widget);
 	void				drawText(const char * str, int16_t x, int16_t y, uint16_t w, uint16_t h, uint32_t style, uint16_t color);

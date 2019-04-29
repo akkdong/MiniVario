@@ -519,19 +519,19 @@ void loadPages(VarioScreen * pages)
 	x = 0;
 	y += TEXTBOX_S_HEIGHT;
 	
-	pages[0].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Altitude_Baro);
+	pages[0].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Altitude_Baro);
 	pages[0].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
 	widget++;
 	x += TEXTBOX_S_WIDTH;
 
-	pages[0].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Temperature);
+	pages[0].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Temperature);
 	pages[0].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
 	widget++;
 	x = 0;
 	y += TEXTBOX_S_HEIGHT;
 
-	pages[0].getWidget(widget)->setStyle(Widget_TextBox, WS_FONT_BOLD_4 | WS_TA_LEFT | WS_TA_BOTTOM | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Pressure);
-	pages[0].getWidget(widget)->setPosition(x, y, 176, 264 - y);
+	pages[0].getWidget(widget)->setStyle(Widget_Compass, 0, WidgetContent_Heading);
+	pages[0].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, 264 - y);
 }
 
 void makeTopMenu()

@@ -17,7 +17,7 @@
 #define LOGGER_WORKING			(1 << 1)
 
 
-const char * nameManufacture = "NRC";
+const char * nameManufacture = "MIN";
 const char * serialNumber = "XXX";
 const char * tailOfFileName = "01.igc";
 

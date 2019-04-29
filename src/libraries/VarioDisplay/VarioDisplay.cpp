@@ -4,6 +4,7 @@
 #include "VarioDisplay.h"
 #include "Bitmap_StatusBar.h"
 #include "Bitmap_Paragliding.h"
+#include <math.h>
 
 #if CONFIG_FREERTOS_UNICORE
 #define ARDUINO_RUNNING_CORE 0
@@ -411,6 +412,39 @@ void VarioDisplay::drawVarioBar(Widget * widget)
 
 void VarioDisplay::drawCompass(Widget * widget)
 {
+	int16_t r = (widget->w < widget->h ? widget->w : widget->h) / 2;
+	int16_t cx = widget->x + widget->w / 2;
+	int16_t cy = widget->y + widget->h / 2;
+
+	drawCircle(cx, cy, r - 4, COLOR_BLACK);
+	drawTriangle(cx, cy, r - 10, context.varioState.heading);
+}
+
+void VarioDisplay::drawTriangle(int16_t cx, int16_t cy, int16_t r, int16_t heading)
+{
+	double theta;
+	int16_t x1, y1, x2, y2, x3, y3;
+
+	//
+	theta = heading;
+	x1 = r * sin(theta * PI / 180.0) + cx;
+	y1 = -r * cos(theta * PI / 180.0) + cy;
+
+	//
+	theta = heading + 120.0;
+	x2 = r * sin(theta * PI / 180.0) + cx;
+	y2 = -r * cos(theta * PI / 180.0) + cy;
+	//
+
+	theta = heading + 240.0;
+	x3 = r * sin(theta * PI / 180.0) + cx;
+	y3 = -r * cos(theta * PI / 180.0) + cy;
+
+	//
+	drawLine(x1, y1, x2, y2, COLOR_BLACK);
+	drawLine(x2, y2, cx, cy, COLOR_BLACK);
+	drawLine(cx, cy, x3, y3, COLOR_BLACK);
+	drawLine(x1, y1, x3, y3, COLOR_BLACK);
 }
 
 void VarioDisplay::drawBorder(Widget * widget)
