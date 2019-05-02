@@ -24,7 +24,7 @@
 
 #define VARIOMETER_SENTENCE_DELAY				(500)
 
-#define VARIOMETER_DEFAULT_DAMPING_FACTOR 		(0.5)
+#define VARIOMETER_DEFAULT_DAMPING_FACTOR 		(0.1)	// x1 = x0 + (x1 - x0) * damping_factor
 
 
 

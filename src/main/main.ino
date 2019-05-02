@@ -268,10 +268,14 @@ void loop()
 	{
 		//
 		context.varioState.speedVertActive = vario.getVelocity();
-		context.varioState.speedVertLazy = context.varioState.speedVertLazy * 0.8 + context.varioState.speedVertActive * 0.2;
+//		context.varioState.speedVertLazy = context.varioState.speedVertLazy * (1 - context.varioSetting.dampingFactor) + context.varioState.speedVertActive * context.varioSetting.dampingFactor;
+		context.varioState.speedVertLazy = context.varioState.speedVertLazy + (context.varioState.speedVertActive - context.varioState.speedVertLazy) * context.varioSetting.dampingFactor;
 		context.varioState.altitudeBaro = vario.getAltitude();
+		context.varioState.altitudeCalibrated = vario.getCalibratedAltitude();
 		context.varioState.pressure = vario.getPressure();
 		context.varioState.temperature = vario.getTemperature();
+
+		context.updateVarioHistory();
 
 		if (context.deviceDefault.enableSound)
 			varioBeeper.setVelocity(context.varioState.speedVertActive);
@@ -291,13 +295,9 @@ void loop()
 				goDeepSleep();
 		}			
 
-		//
-		float altitude = vario.getCalibratedAltitude(); // getCalibratedAltitude or getAltitude
-		logger.updateBaroAltitude(altitude);
-
 		// update vario sentence periodically
 		if (varioNmea.checkInterval())
-			varioNmea.begin(altitude, vario.getVelocity(), vario.getTemperature(), vario.getPressure(), battery.getVoltage());
+			varioNmea.begin(vario.getAltitude(), vario.getVelocity(), vario.getTemperature(), vario.getPressure(), battery.getVoltage());
 		
 		//
 		vario.flush();
@@ -313,6 +313,11 @@ void loop()
 	{
 		// update device-context
 		context.varioState.altitudeGPS = nmeaParser.getAltitude();
+		context.varioState.altitudeAGL = 0.0;
+		context.varioState.altitudeRef1 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef1;
+		context.varioState.altitudeRef2 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef2;
+		context.varioState.altitudeRef3 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef3;
+
 		context.varioState.latitude = nmeaParser.getLatitude();
 		context.varioState.longitude = nmeaParser.getLongitude();
 		context.varioState.speedGround = nmeaParser.getSpeed();
@@ -344,6 +349,9 @@ void loop()
 			{
 				//
 				varioMode = VARIO_MODE_FLYING;
+
+				if (context.volume.autoTurnOn)
+					context.deviceDefault.enableSound = 1;
 				
 				// play take-off melody
 				tonePlayer.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
@@ -351,9 +359,14 @@ void loop()
 				// start logging & change mode
 				if (logger.begin(nmeaParser.getDateTime()))
 					context.deviceState.statusSDCard = 2;
-				
+
 				context.varioState.timeStart = nmeaParser.getDateTime();
 				context.varioState.timeFly = 0;
+
+				context.varioState.longitudeStart = context.varioState.longitudeLast = context.varioState.longitude;
+				context.varioState.latitudeStart = context.varioState.latitudeLast = context.varioState.latitude;
+
+				context.varioState.altitudeStart = context.varioState.altitudeGPS;
 
 				// set mode-tick
 				modeTick = millis();
@@ -386,6 +399,9 @@ void loop()
 
 				//
 				context.varioState.timeFly = nmeaParser.getDateTime() - context.varioState.timeStart;
+
+				context.varioState.longitudeLast = context.varioState.longitude;
+				context.varioState.latitudeLast = context.varioState.latitude;
 			}
 		}
 
@@ -398,7 +414,11 @@ void loop()
 			//static int index = 0;
 			
 			//if ((millis()-tick) > time_interval)
-			{		
+			{
+				//
+				float altitude = vario.getAltitude(); // getCalibratedAltitude or getAltitude
+				logger.updateBaroAltitude(altitude);
+
 				while (nmeaParser.availableIGC())
 					logger.write(nmeaParser.readIGC());
 			}
@@ -476,6 +496,7 @@ void loadPages(VarioScreen * pages)
 #define TEXTBOX_S_WIDTH		88
 
 #define SCREEN_WIDTH		176
+#define SCREEN_HEIGHT		264
 
 
 #define NORMAL_STATUS		(WS_FONT_NORMAL_2 | WS_TA_CENTER | WS_TA_MIDDLE)
@@ -519,19 +540,26 @@ void loadPages(VarioScreen * pages)
 	x = 0;
 	y += TEXTBOX_S_HEIGHT;
 	
-	pages[0].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Altitude_Baro);
+//	pages[0].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Altitude_Baro);
+	pages[0].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Altitude_Baro);
 	pages[0].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
 	widget++;
 	x += TEXTBOX_S_WIDTH;
 
-	pages[0].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Temperature);
+//	pages[0].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Temperature);
+	pages[0].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Temperature);
 	pages[0].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, TEXTBOX_S_HEIGHT);
 	widget++;
 	x = 0;
 	y += TEXTBOX_S_HEIGHT;
 
-	pages[0].getWidget(widget)->setStyle(Widget_Compass, 0, WidgetContent_Heading);
-	pages[0].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, 264 - y);
+	pages[0].getWidget(widget)->setStyle(Widget_Compass, NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Heading);
+	pages[0].getWidget(widget)->setPosition(x, y, SCREEN_HEIGHT - y, SCREEN_HEIGHT - y);
+	widget++;
+	x += SCREEN_HEIGHT - y;
+
+	pages[0].getWidget(widget)->setStyle(Widget_VarioHistory, NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Vario_History);
+	pages[0].getWidget(widget)->setPosition(x, y, SCREEN_WIDTH - x, SCREEN_HEIGHT - y);
 }
 
 void makeTopMenu()

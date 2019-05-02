@@ -119,7 +119,7 @@ protected:
 	VarioPopup *		activePopup;	
 	
 	//
-	DeviceContext &		context;
+	DeviceContext & 	context;
 	
 private:
 	char				tempString[MAX_TEMP_STRLEN];

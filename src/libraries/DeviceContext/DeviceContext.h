@@ -26,13 +26,14 @@ struct VarioState
 	float			altitudeRef1;		// QFE (from take-off)
 	float			altitudeRef2;		// QFE (from landing)
 	float			altitudeRef3;		// QFE (from any-altitude)
+	float			altitudeStart;		// take-off altitude
 	
-	float			altitudeDrift;
+//	float			altitudeDrift;
 	
 	//
 //	float			altitudeAbtain;
-//	float			thermalTime;
-//	float			thermalGain;
+	float			thermalTime;
+	float			thermalGain;
 	float			glideRatio;	
 	
 	//
@@ -44,10 +45,22 @@ struct VarioState
 //	float			speedVertStat;
 
 	float			speedVertHistory[MAX_VARIO_HISTORY]; // 1s vertial speed history
+	float			speedVertSumTotal;
+	int16_t			speedVertSumCount;
+	int16_t			speedVertNext;
 
 	//
 	float			longitude;
 	float			latitude;
+
+	float			longitudeLast;
+	float			latitudeLast;
+
+	float			longitudeStart;	// take-off longitude
+	float			latitudeStart;	// take-off latitude
+
+	float			distTakeoff;	// distance from take-off place
+	float			distFlight;		// total flight distance(odometer?)
 
 	float			heading;
 	float			bearing;
@@ -110,6 +123,8 @@ struct VolumeSettings
 {
 	uint8_t			vario;
 	uint8_t			effect;
+
+	uint8_t			autoTurnOn; // turn-on then sound automatically when it start flying
 };
 
 struct ThresholdSettings
@@ -144,7 +159,17 @@ struct DeviceDefault
 	char			btName[MAX_STRING_SIZE];
 };
 
+struct FlightStats
+{
+	float			altitudeMax;
+	float			altitudeMin;
 
+	float			varioMax;
+	float			varioMin;
+
+//	int16_t			totalTherming;
+//	int16_t			thermalGainMax;
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class DeviceContext
@@ -159,6 +184,8 @@ public:
 
 	bool				load(Preferences & pref);
 	bool				save(Preferences & pref);
+
+	void				updateVarioHistory();
 	
 public:
 	// Persist Settings
@@ -177,9 +204,15 @@ public:
 	DeviceDefault		deviceDefault;
 	
 	// Variometer State
-	VarioState			varioState;
+	volatile VarioState	varioState;
 	// Device state
-	DeviceState			deviceState;
+	volatile DeviceState			deviceState;
+
+	//
+	volatile FlightStats			flightStats;
+
+private:
+
 	
 private:
 	static const VarioTone defaultTone[MAX_VARIO_TONE];

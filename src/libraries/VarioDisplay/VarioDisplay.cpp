@@ -404,6 +404,43 @@ void VarioDisplay::drawStatusBar(Widget * widget)
 
 void VarioDisplay::drawVarioHistory(Widget * widget)
 {
+	drawBorder(widget);
+
+	int y0 = widget->y + widget->h / 2;
+//	int yt = widget->x + 6;
+//	int yb = widget->x + widget->h - 6;
+	int xs = widget->x + 8;
+//	int xe = widget->x + widget->w - 8;
+	int bw = 3;	
+	int mh = (widget->h - 8) / 2;
+	int j = context.varioState.speedVertNext;
+	int v;
+
+	for (int i = 0; i < MAX_VARIO_HISTORY; i++)
+	{
+		v = (int)(context.varioState.speedVertHistory[j] * 5);
+		j = (j + 1) % MAX_VARIO_HISTORY;
+
+		if (v > 0)
+		{
+			if (v > mh)
+				v = mh;
+			fillRect(xs, y0 - v, bw, v, COLOR_BLACK);
+		}
+		else if (v < 0)
+		{
+			v = -v;
+			if (v > mh)
+				v = mh;
+			fillRect(xs, y0, bw, v, COLOR_BLACK);
+		}
+		else
+		{
+			drawFastHLine(xs, y0, bw, COLOR_BLACK);
+		}
+
+		xs += bw;
+	}
 }
 
 void VarioDisplay::drawVarioBar(Widget * widget)
@@ -416,6 +453,7 @@ void VarioDisplay::drawCompass(Widget * widget)
 	int16_t cx = widget->x + widget->w / 2;
 	int16_t cy = widget->y + widget->h / 2;
 
+	drawBorder(widget);
 	drawCircle(cx, cy, r - 4, COLOR_BLACK);
 	drawTriangle(cx, cy, r - 10, -context.varioState.heading);
 }
@@ -431,12 +469,12 @@ void VarioDisplay::drawTriangle(int16_t cx, int16_t cy, int16_t r, int16_t headi
 	y1 = -r * cos(theta * PI / 180.0) + cy;
 
 	//
-	theta = heading + 120.0;
+	theta = heading + 140.0;
 	x2 = r * sin(theta * PI / 180.0) + cx;
 	y2 = -r * cos(theta * PI / 180.0) + cy;
 	//
 
-	theta = heading + 240.0;
+	theta = heading + 220.0;
 	x3 = r * sin(theta * PI / 180.0) + cx;
 	y3 = -r * cos(theta * PI / 180.0) + cy;
 

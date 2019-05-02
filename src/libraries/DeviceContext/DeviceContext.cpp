@@ -95,7 +95,7 @@ void DeviceContext::reset()
 	
 	varioSetting.sentence = VARIOMETER_DEFAULT_NMEA_SENTENCE;
 
-	varioSetting.dampingFactor	= VARIOMETER_DEFAULT_DAMPING_FACTOR; // 0.5
+	varioSetting.dampingFactor	= VARIOMETER_DEFAULT_DAMPING_FACTOR; // 0.1
 
 	// vario_tone_table 
 	memcpy(&toneTable[0], &defaultTone[0], sizeof(defaultTone));
@@ -103,6 +103,7 @@ void DeviceContext::reset()
 	//
 	volume.vario = VARIOMETER_BEEP_VOLUME;
 	volume.effect = VARIOMETER_EFFECT_VOLUME;
+	volume.autoTurnOn = 1;
 	
 	//
 	threshold.lowBattery = LOW_BATTERY_THRESHOLD;
@@ -170,4 +171,20 @@ bool DeviceContext::save(Preferences & pref)
 	
 	// Device state
 	pref.putBytes("device", &deviceDefault, sizeof(deviceDefault));
+}
+
+void DeviceContext::updateVarioHistory()
+{
+	varioState.speedVertSumTotal += varioState.speedVertActive;
+	varioState.speedVertSumCount += 1;
+
+	if (varioState.speedVertSumCount == 50 /*1000 / 20*/) // vario update every 20ms --> 50Hz
+	{
+		varioState.speedVertHistory[varioState.speedVertNext] = varioState.speedVertSumTotal / varioState.speedVertSumCount;
+		//Serial.printf("#%d: %.1f -> %.1f\n", varioState.speedVertNext, varioState.speedVertSumTotal, varioState.speedVertHistory[varioState.speedVertNext]);
+
+		varioState.speedVertSumTotal = 0.0;
+		varioState.speedVertSumCount = 0;
+		varioState.speedVertNext = (varioState.speedVertNext + 1) % MAX_VARIO_HISTORY;
+	}
 }
