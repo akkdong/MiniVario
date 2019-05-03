@@ -16,6 +16,7 @@
 KalmanVario::KalmanVario(Sensor_MS5611 & _baro) 
 	: Task("Kalman", 2 * 1024, 3)
 	, baro(_baro)
+	, seaLevel(1013.25)
 	, mTimer(NULL)
 	, mSemaphore(xSemaphoreCreateBinary())
 	, mMux(portMUX_INITIALIZER_UNLOCKED)
@@ -30,10 +31,10 @@ int KalmanVario::begin(float zVariance, float zAccelVariance, float zAccelBiasVa
 	//
 	baro.begin();
 	
-	// read dummy data 10 times
+	// read dummy data 100 times (2 seconds)
 	// it may be stabilize data...
 	baro.startConvert();
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 100; i++)
 	{
 		delay(10);
 		baro.convertNext();
@@ -42,7 +43,7 @@ int KalmanVario::begin(float zVariance, float zAccelVariance, float zAccelBiasVa
 
 		float p, t;
 		baro.read(&p, &t);
-		Serial.print("Pressure = "); Serial.print(p); Serial.print("Temperature = "); Serial.println(t);
+		//Serial.printf("Pressure = %.2f, Temperature = %.1f\n", p, t);
 	}
 	
 	//
@@ -53,7 +54,7 @@ int KalmanVario::begin(float zVariance, float zAccelVariance, float zAccelBiasVa
     zAccelBiasVariance_ = zAccelBiasVariance;
 	zVariance_ = zVariance;
 
-	z_ = Sensor_MS5611::getAltitude(baro.getPressure());
+	z_ = Sensor_MS5611::getAltitude(baro.getPressure(), seaLevel);
 	v_ = 0.0f; // vInitial;
 	aBias_ = 0.0f; // aBiasInitial;
 	Pzz_ = 1.0f;
@@ -158,8 +159,8 @@ void KalmanVario::update()
 		baro.read(&prs, 0);
 		
 		//
-		float altitude = Sensor_MS5611::getAltitude(prs);
-		baroAltitude = baroAltitude * 0.9 + altitude * 0.1;
+		float altitude = Sensor_MS5611::getAltitude(prs, seaLevel);
+		baroAltitude += (altitude - baroAltitude) * 0.1;
 
 		// delta time
 		unsigned long deltaTime = 20; // millis() - t_;
@@ -248,4 +249,10 @@ void KalmanVario::update()
 		//
 		varioUpdated = true;		
 	}
+}
+
+void KalmanVario::calculateSeaLevel(float altitude)
+{
+	// update seaLevel pressure
+	seaLevel = baro.getPressure() / pow(1.0 - (altitude / 44330.0), 5.255);
 }

@@ -35,6 +35,7 @@ public:
 	uint32_t				getTimestamp();
 	
 	void					calibrateAltitude(float altitudeRef);
+	void					calculateSeaLevel(float altitude);
 	
 protected:
 	static void IRAM_ATTR 	TimerProc();
@@ -77,6 +78,7 @@ private:
 	
 	//
 	Sensor_MS5611 &			baro;
+	float					seaLevel;
 	
 protected:
 	hw_timer_t *			mTimer;

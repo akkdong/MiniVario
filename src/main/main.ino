@@ -3,7 +3,6 @@
 
 #include <sys/time.h>
 
-#include "KalmanVario.h"
 #include "VarioDisplay.h"
 #include "BatteryVoltage.h"
 #include "Keyboard.h"
@@ -16,6 +15,14 @@
 #include "VarioLogger.h"
 #include "BluetoothMan.h"
 #include "HardReset.h"
+
+#define USE_KALMAN_VARIO 	0
+
+#if USE_KALMAN_VARIO
+#include "KalmanVario.h"
+#else
+#include "KalmanSkyDrop.h"
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -177,7 +184,11 @@ BluetoothMan btMan(serialBluetooth, nmeaParser, varioNmea);
 
 CriticalSection cs;
 Sensor_MS5611  baro(cs, Wire);
+#if USE_KALMAN_VARIO
 KalmanVario vario(baro);
+#else
+KalmanSkyDrop vario(baro);
+#endif
 
 
 //
@@ -331,6 +342,7 @@ void loop()
 		{
 			// do position calibration
 			vario.calibrateAltitude(nmeaParser.getAltitude());
+			vario.calculateSeaLevel(nmeaParser.getAltitude());
 			
 			// now ready to fly~~~
 			varioMode = VARIO_MODE_LANDING;
