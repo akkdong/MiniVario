@@ -160,7 +160,7 @@ void KalmanVario::update()
 		
 		//
 		float altitude = Sensor_MS5611::getAltitude(prs, seaLevel);
-		baroAltitude += (altitude - baroAltitude) * 0.1;
+		baroAltitude += (altitude - baroAltitude) * 0.06;
 
 		// delta time
 		unsigned long deltaTime = 20; // millis() - t_;

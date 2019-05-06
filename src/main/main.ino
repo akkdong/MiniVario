@@ -16,7 +16,7 @@
 #include "BluetoothMan.h"
 #include "HardReset.h"
 
-#define USE_KALMAN_VARIO 	0
+#define USE_KALMAN_VARIO 	1
 
 #if USE_KALMAN_VARIO
 #include "KalmanVario.h"
@@ -684,6 +684,9 @@ void startVario()
 
 	//
 	vario.begin();
+
+	context.varioState.speedVertActive = vario.getVelocity();
+	context.varioState.speedVertLazy = context.varioState.speedVertLazy + (context.varioState.speedVertActive - context.varioState.speedVertLazy) * context.varioSetting.dampingFactor;
 	
 	deviceMode = DEVICE_MODE_VARIO;
 	varioMode = VARIO_MODE_INIT;

@@ -418,7 +418,7 @@ void VarioDisplay::drawVarioHistory(Widget * widget)
 
 	for (int i = 0; i < MAX_VARIO_HISTORY; i++)
 	{
-		v = (int)(context.varioState.speedVertHistory[j] * 5);
+		v = (int)(context.varioState.speedVertHistory[j] * 6);
 		j = (j + 1) % MAX_VARIO_HISTORY;
 
 		if (v > 0)
