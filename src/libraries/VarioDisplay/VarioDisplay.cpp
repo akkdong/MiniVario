@@ -445,6 +445,49 @@ void VarioDisplay::drawVarioHistory(Widget * widget)
 
 void VarioDisplay::drawVarioBar(Widget * widget)
 {
+	#define BAR_H	(4)
+	#define BAR_G	(1)
+	int16_t h = (widget->h - 6) / 2;
+	int16_t w = widget->w - 6;
+	int16_t x = widget->x + 3;
+	int16_t y = widget->y + widget->h / 2;
+	int16_t sign = 1;
+
+	float vario = context.varioState.speedVertLazy;
+	if (vario > 0) 
+	{
+		sign = 1;
+		vario = (vario > 5.0) ? 5.0 : vario;
+	}
+	else
+	{
+		sign = -1;
+		vario = (vario < -5.0) ? 5.0 : -vario;
+	}
+
+	// vario --> height
+	// vario : 5.0 = y : h, y = vario / 5.0 * h;
+	int16_t v_offset = (int16_t)(vario / 5.0 * h);
+
+	drawBorder(widget);
+	drawFastHLine(x, y, w, COLOR_BLACK);	
+
+	for (int16_t yy = 0; yy <= h; yy += (BAR_H + BAR_G))
+	{
+		if (v_offset <= yy)
+			break;
+
+		if (sign > 0)
+		{
+			fillRect(x, y - (yy + BAR_H), w, BAR_H, COLOR_BLACK);
+		}
+		else
+		{
+			fillRect(x, y + yy, w, BAR_H, COLOR_BLACK);
+		}
+		
+		w -= 2;
+	}
 }
 
 void VarioDisplay::drawCompass(Widget * widget)
@@ -723,7 +766,7 @@ const char * VarioDisplay::getString(WidgetContentType type)
 		sprintf(tempString, "%.1f", context.varioState.speedVertLazy);
 		return tempString;
 	case WidgetContent_DateTime :
-		return "16:34";
+		return "";
 	case WidgetContent_Time_Current :
 		#if 0
 		if (context.varioState.timeCurrent != 0)

@@ -136,6 +136,7 @@ uint32_t modeTick;		// mode-specific tick-count
 
 VarioScreen pages[3];
 PopupMenu	topMenu;
+uint8_t		activePage = 0;
 
 
 DeviceContext & context = __DeviceContext;
@@ -572,6 +573,51 @@ void loadPages(VarioScreen * pages)
 
 	pages[0].getWidget(widget)->setStyle(Widget_VarioHistory, NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Vario_History);
 	pages[0].getWidget(widget)->setPosition(x, y, SCREEN_WIDTH - x, SCREEN_HEIGHT - y);
+
+	//
+#define W_W		(SCREEN_WIDTH/2)
+#define W_H		(60)
+
+	widget = 0;
+	x = 0, y = STATUS_TIME_HEIGHT;
+
+	pages[1].getWidget(widget)->setStyle(Widget_VarioBar, NORMAL_BOX, WidgetContent_Vario_Lazy);
+	pages[1].getWidget(widget)->setPosition(x, y, 48, W_H + W_H);
+	widget++;
+	x += 48;
+
+	pages[1].getWidget(widget)->setStyle(Widget_Compass, NORMAL_BOX, WidgetContent_Heading_North);
+	pages[1].getWidget(widget)->setPosition(x, y, 52, W_H);
+	widget++;
+	x += 52;
+
+	pages[1].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Speed_Ground);
+	pages[1].getWidget(widget)->setPosition(x, y, SCREEN_WIDTH - x, W_H);
+	widget++;
+	x = 48; y += W_H;
+
+	pages[1].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Altitude_GPS);
+	pages[1].getWidget(widget)->setPosition(x, y, SCREEN_WIDTH - x, W_H);
+	widget++;
+	x = 0; y += W_H;
+
+	pages[1].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Vario_Lazy);
+	pages[1].getWidget(widget)->setPosition(x, y, W_W, W_H);
+	widget++;
+	x += W_W;
+
+	pages[1].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Time_Flight);
+	pages[1].getWidget(widget)->setPosition(x, y, W_W, W_H);
+	widget++;
+	x = 0; y += W_H;
+
+	pages[1].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Altitude_AGL);
+	pages[1].getWidget(widget)->setPosition(x, y, W_W, W_H);
+	widget++;
+	x += W_W;
+
+	pages[1].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Temperature);
+	pages[1].getWidget(widget)->setPosition(x, y, W_W, W_H);
 }
 
 void makeTopMenu()
@@ -598,6 +644,8 @@ void processKey(int key)
 		// from main scren
 		case CMD_SHOW_NEXT_PAGE :
 		case CMD_SHOW_PREV_PAGE :
+			activePage = 1 - activePage;
+			display.attachScreen(&pages[activePage]);
 			break;
 		case CMD_SHOW_TOP_MENU :
 			// enter menu
@@ -664,7 +712,7 @@ void startVario()
 	loadPages(pages);
 	makeTopMenu();
 
-	display.attachScreen(&pages[0]);
+	display.attachScreen(&pages[activePage]);
 	display.wakeupConfirmed();
 
 	//

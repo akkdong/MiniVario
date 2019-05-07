@@ -78,6 +78,8 @@ typedef enum _WidgetContentType
 //	WidgetContent_Heading_GPS,
 //	WidgetContent_Heading_Compass,
 //	WidgetContent_Bearing,
+	WidgetContent_Heading_North,
+	WidgetContent_Heading_TakeOff,
 	
 	WidgetContent_Longitude,
 	WidgetContent_Latitude,

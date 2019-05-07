@@ -41,7 +41,7 @@ struct VarioState
 	float			speedAir;
 	float			speedVertActive;
 	float			speedVertLazy;
-	float			speedVertMean2S;
+//	float			speedVertMean2S;
 //	float			speedVertStat;
 
 	float			speedVertHistory[MAX_VARIO_HISTORY]; // 1s vertial speed history

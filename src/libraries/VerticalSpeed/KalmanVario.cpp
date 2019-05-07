@@ -113,8 +113,14 @@ void KalmanVario::TaskProc()
 		
 		if (baro.available())
 		{
+			// Prevent the RTOS kernel swapping out the task.
+			//vTaskSuspendAll();
+
 			// update vertical velocity
 			update();
+
+			// The operation is complete.  Restart the RTOS kernel.
+			//xTaskResumeAll();
 		}
 	}
 }
