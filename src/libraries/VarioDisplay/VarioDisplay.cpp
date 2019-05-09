@@ -499,6 +499,15 @@ void VarioDisplay::drawCompass(Widget * widget)
 	drawBorder(widget);
 	drawCircle(cx, cy, r - 4, COLOR_BLACK);
 	drawTriangle(cx, cy, r - 10, -context.varioState.heading);
+
+	{
+		double theta = -context.flightState.headingTakeoff;
+
+		int16_t x = (r - 10) * sin(theta * PI / 180.0) + cx;
+		int16_t y = -(r - 10) * cos(theta * PI / 180.0) + cy;
+
+		drawCircle(x, y, 4, COLOR_BLACK);
+	}
 }
 
 void VarioDisplay::drawTriangle(int16_t cx, int16_t cy, int16_t r, int16_t heading)
@@ -707,8 +716,7 @@ const char * VarioDisplay::getUnit(WidgetContentType type)
 	case WidgetContent_Time_Current :
 		return "";
 	case WidgetContent_Time_Flight :
-//		return ((context.varioState.timeCurrent - context.varioState.timeStart) < 3600) ? "mm/ss" : "hh/mm";
-		return (context.varioState.timeFly < 3600) ? "mm/ss" : "hh/mm";
+		return (context.flightState.flightTime < 3600) ? "mm/ss" : "hh/mm";
 	case WidgetContent_Pressure :
 		return "hPa";
 	case WidgetContent_Temperature :
@@ -782,12 +790,12 @@ const char * VarioDisplay::getString(WidgetContentType type)
 		return tempString;
 	case WidgetContent_Time_Flight :
 		{
-			time_t timeFly = context.varioState.timeFly; // (context.varioState.timeCurrent - context.varioState.timeStart);
+			time_t flightTime = context.flightState.flightTime;
 			
-			if (timeFly < 3600)
-				sprintf(tempString, "%02d:%02d", timeFly / 60, timeFly % 60);
+			if (flightTime < 3600)
+				sprintf(tempString, "%02d:%02d", flightTime / 60, flightTime % 60);
 			else 
-				sprintf(tempString, "%02d:%02d", timeFly / 3600, (timeFly / 60) % 60);
+				sprintf(tempString, "%02d:%02d", flightTime / 3600, (flightTime / 60) % 60);
 		}
 		return tempString;
 	case WidgetContent_Pressure :

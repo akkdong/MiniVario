@@ -15,6 +15,7 @@
 #include "VarioLogger.h"
 #include "BluetoothMan.h"
 #include "HardReset.h"
+#include "Util.h"
 
 #define USE_KALMAN_VARIO 	1
 
@@ -23,6 +24,9 @@
 #else
 #include "KalmanSkyDrop.h"
 #endif
+
+#define DAMPING_FACTOR_DELTA_HEADING			0.1
+#define THRESHOLD_CIRCLING_HEADING		10
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -44,7 +48,7 @@ enum _VarioMode
 	VARIO_MODE_INIT = 0,		// (0)
 	VARIO_MODE_LANDING,			// (1)
 	VARIO_MODE_FLYING,			// (2)
-//	VARIO_MODE_SHUTDOWN,		// (3)
+	VARIO_MODE_CIRCLING,		// (3)
 };
 
 
@@ -330,6 +334,10 @@ void loop()
 		context.varioState.altitudeRef2 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef2;
 		context.varioState.altitudeRef3 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef3;
 
+		context.varioState.longitudeLast = context.varioState.longitude;
+		context.varioState.latitudeLast = context.varioState.latitude;
+		context.varioState.headingLast = context.varioState.heading;
+
 		context.varioState.latitude = nmeaParser.getLatitude();
 		context.varioState.longitude = nmeaParser.getLongitude();
 		context.varioState.speedGround = nmeaParser.getSpeed();
@@ -373,20 +381,96 @@ void loop()
 				if (logger.begin(nmeaParser.getDateTime()))
 					context.deviceState.statusSDCard = 2;
 
-				context.varioState.timeStart = nmeaParser.getDateTime();
-				context.varioState.timeFly = 0;
+				//
+				context.resetFlightState();
+				context.resetFlightStats();
 
-				context.varioState.longitudeStart = context.varioState.longitudeLast = context.varioState.longitude;
-				context.varioState.latitudeStart = context.varioState.latitudeLast = context.varioState.latitude;
+				context.flightState.takeOffTime = nmeaParser.getDateTime();
+				context.flightState.takeOffPos.lon = context.varioState.longitude;
+				context.flightState.takeOffPos.lat = context.varioState.latitude;
+				context.flightState.takeOffPos.alt = context.varioState.altitudeGPS;
+				context.flightState.flightTime = 0;
 
-				context.varioState.altitudeStart = context.varioState.altitudeGPS;
+				context.flightStats.altitudeMax = context.flightStats.altitudeMin = context.varioState.altitudeGPS;
 
 				// set mode-tick
 				modeTick = millis();
 			}
 		}
-		else if (varioMode == VARIO_MODE_FLYING)
+		else if (varioMode == VARIO_MODE_FLYING || varioMode == VARIO_MODE_CIRCLING)
 		{
+			// update flight time
+			context.flightState.flightTime = nmeaParser.getDateTime() - context.flightState.takeOffTime;
+			// update bearing & distance from takeoff
+			context.flightState.headingTakeoff = GET_BEARING(context.varioState.latitude, context.varioState.longitude, 
+					context.flightState.takeOffPos.lat, context.flightState.takeOffPos.lon);
+			context.flightState.distTakeoff = GET_DISTANCE(context.varioState.latitude, context.varioState.longitude, 
+					context.flightState.takeOffPos.lat, context.flightState.takeOffPos.lon);
+			// and update total flight distance
+			context.flightState.distFlight = GET_DISTANCE(context.varioState.latitude, context.varioState.longitude, 
+					context.varioState.latitudeLast, context.varioState.longitudeLast);
+
+			// update flight statistics
+			context.flightStats.altitudeMax = _MAX(context.flightStats.altitudeMax, context.varioState.altitudeGPS);
+			context.flightStats.altitudeMin = _MIN(context.flightStats.altitudeMin, context.varioState.altitudeGPS);
+
+			context.flightStats.varioMax = _MAX(context.flightStats.varioMax, context.varioState.speedVertLazy);
+			context.flightStats.varioMin = _MIN(context.flightStats.varioMin, context.varioState.speedVertLazy);
+			
+
+			// check circling
+			int16_t deltaHeading = context.varioState.heading - context.varioState.headingLast;
+
+			if (deltaHeading > 180)
+				deltaHeading = deltaHeading - 360;
+			if (deltaHeading < -180)
+				deltaHeading = deltaHeading + 360;
+
+			context.flightState.deltaHeading_AVG += (deltaHeading - context.flightState.deltaHeading_AVG) * DAMPING_FACTOR_DELTA_HEADING;
+			context.flightState.deltaHeading_SUM += context.flightState.deltaHeading_AVG;
+
+			if (context.flightState.deltaHeading_SUM > 450)
+				context.flightState.deltaHeading_SUM = 450;
+			if (context.flightState.deltaHeading_SUM < -450)
+				context.flightState.deltaHeading_SUM = -450;
+
+			if (abs(context.flightState.deltaHeading_AVG) > THRESHOLD_CIRCLING_HEADING && abs(context.flightState.deltaHeading_SUM) > 360 && varioMode != VARIO_MODE_CIRCLING)
+			{
+				if (varioMode != VARIO_MODE_CIRCLING)
+				{
+					varioMode == VARIO_MODE_CIRCLING;
+
+					// save circling state
+					context.flightState.circlingStartTime = nmeaParser.getDateTime();
+					context.flightState.circlingIncline = -1;
+					context.flightState.circlingStartPos.lon = nmeaParser.getLongitude();
+					context.flightState.circlingStartPos.lat = nmeaParser.getLatitude();
+					context.flightState.circlingStartPos.alt = nmeaParser.getAltitude();
+
+					context.flightState.deltaHeading_AVG = 0;
+					context.flightState.deltaHeading_SUM = 0;
+				}
+
+				context.flightState.circlingTime = nmeaParser.getDateTime() - context.flightState.circlingStartTime;
+				context.flightState.circlingGain = nmeaParser.getAltitude() - context.flightState.circlingStartPos.alt;
+				//context.flightState.circlingIncline = -1;  ?????
+			}
+			else
+			{
+				if (varioMode == VARIO_MODE_CIRCLING)
+				{
+					varioMode = VARIO_MODE_FLYING;
+
+					// update flight-statistics : thermaling count, max-gain
+					if (context.flightState.circlingGain > 10 && context.flightState.circlingTime > 0)
+					{
+						context.flightStats.totalThermaling += 1;
+						context.flightStats.thermalingMaxGain = _MAX(context.flightStats.thermalingMaxGain, context.flightState.circlingGain);
+					}
+				}
+			}
+			
+
 			if (nmeaParser.getSpeed() < FLIGHT_START_MIN_SPEED)
 			{
 				if ((millis() - modeTick) > FLIGHT_LANDING_THRESHOLD)
@@ -409,12 +493,6 @@ void loop()
 			{
 				// reset modeTick
 				modeTick = millis();
-
-				//
-				context.varioState.timeFly = nmeaParser.getDateTime() - context.varioState.timeStart;
-
-				context.varioState.longitudeLast = context.varioState.longitude;
-				context.varioState.latitudeLast = context.varioState.latitude;
 			}
 		}
 
@@ -586,7 +664,7 @@ void loadPages(VarioScreen * pages)
 	widget++;
 	x += 48;
 
-	pages[1].getWidget(widget)->setStyle(Widget_Compass, NORMAL_BOX, WidgetContent_Heading_North);
+	pages[1].getWidget(widget)->setStyle(Widget_Compass, NORMAL_BOX, WidgetContent_Heading);
 	pages[1].getWidget(widget)->setPosition(x, y, 52, W_H);
 	widget++;
 	x += 52;

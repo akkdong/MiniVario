@@ -42,8 +42,8 @@ public:
 	float				getLatitude();
 	float				getLongitude();
 	float				getAltitude();
-	uint32_t			getSpeed();
-	uint32_t			getHeading();
+	int16_t				getSpeed();
+	int16_t				getHeading();
 
 	bool				isFixed()	{ return mFixed; }
 	
@@ -85,8 +85,8 @@ private:
 	float				mLatitude;
 	float				mLongitude;
 	float				mAltitude;
-	uint32_t			mSpeed;
-	uint32_t			mHeading;
+	int16_t				mSpeed;
+	int16_t				mHeading;
 
 	bool				mFixed;
 	
@@ -122,10 +122,10 @@ inline float NmeaParserEx::getLongitude()
 inline float NmeaParserEx::getAltitude()
 	{ return mAltitude; }
 	
-inline uint32_t NmeaParserEx::getSpeed()
+inline int16_t NmeaParserEx::getSpeed()
 	{ return mSpeed; }
 	
-inline uint32_t NmeaParserEx::getHeading()
+inline int16_t NmeaParserEx::getHeading()
 	{ return mHeading; }
 	
 

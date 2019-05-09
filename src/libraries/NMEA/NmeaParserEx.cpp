@@ -413,10 +413,10 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 		case 5 : // Longitude (E or W)
 			break;
 		case 6 : // Speed over ground, Knots
-			mSpeed = (uint32_t)(strToFloat(startPos) * 1.852); // convert Knot to Km/h
+			mSpeed = (int16_t)(strToFloat(startPos) * 1.852); // convert Knot to Km/h
 			break;
 		case 7 : // Track Angle in degrees, True
-			mHeading = (uint32_t)(strToFloat(startPos) + 0.5);
+			mHeading = (int16_t)(strToFloat(startPos) + 0.5);
 			break;
 		case 8 : // Date of fix  (DDMMYY)
 			dateStr2TmStruct(&mTmStruct, &mBuffer[startPos]);

@@ -77,9 +77,8 @@ typedef enum _WidgetContentType
 	WidgetContent_Heading,
 //	WidgetContent_Heading_GPS,
 //	WidgetContent_Heading_Compass,
-//	WidgetContent_Bearing,
-	WidgetContent_Heading_North,
 	WidgetContent_Heading_TakeOff,
+//	WidgetContent_Bearing,
 	
 	WidgetContent_Longitude,
 	WidgetContent_Latitude,
@@ -102,9 +101,21 @@ typedef enum _WidgetContentType
 	
 	WidgetContent_Pressure,
 	WidgetContent_Temperature,
+
+	//
+	WidgetContent_Distance_Takeoff,
+	WidgetContent_Distance_Flight,
+
+	WidgetContent_Thermaling_Gain,
+	WidgetContent_Thermaling_Time,
+	WidgetContent_Thermaling_Slope, // thermal incline (degree)
+
+	//
+	WidgetContent_Altitude_Max,
+	WidgetContent_Altitude_Min,
+	WidgetContent_ClimbRate_Max,
+	WidgetContent_SinkRate_Max,
 	
-//	WidgetContent_Thermal_Time
-//	WidgetContent_Thermal_Gain
 
 	// Simple Text
 	WidgetContent_Title,

@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // 
 
-struct VarioState
+struct VarioState // VarioDeviceState
 {
 	//
 	float			altitudeGPS;		// QNH
@@ -56,14 +56,15 @@ struct VarioState
 	float			longitudeLast;
 	float			latitudeLast;
 
-	float			longitudeStart;	// take-off longitude
-	float			latitudeStart;	// take-off latitude
+//	float			longitudeStart;	// take-off longitude
+//	float			latitudeStart;	// take-off latitude
 
-	float			distTakeoff;	// distance from take-off place
-	float			distFlight;		// total flight distance(odometer?)
+//	float			distTakeoff;	// distance from take-off place
+//	float			distFlight;		// total flight distance(odometer?)
 
-	float			heading;
-	float			bearing;
+	int16_t			heading;
+	int16_t			headingLast;
+//	int16_t			bearing;
 	
 	//
 	float			pressure;
@@ -72,8 +73,8 @@ struct VarioState
 
 	//
 	time_t			timeCurrent;
-	time_t			timeStart;
-	time_t			timeFly;
+//	time_t			timeStart;
+//	time_t			timeFly;
 };
 
 struct VarioSettings
@@ -167,9 +168,45 @@ struct FlightStats
 	float			varioMax;
 	float			varioMin;
 
-//	int16_t			totalTherming;
-//	int16_t			thermalGainMax;
+	int16_t			totalThermaling;
+	int16_t			thermalingMaxGain;
 };
+
+struct Position
+{
+	float			lat;
+	float 			lon;
+	float			alt;
+};
+
+struct FlightState
+{
+	//
+	uint32_t		takeOffTime;
+	Position		takeOffPos;
+	uint32_t		flightTime;
+
+	//
+	uint32_t		circlingStartTime;
+	Position		circlingStartPos; // latitude, longitude, altitude
+	uint32_t		circlingTime;
+	int32_t			circlingGain;
+	int32_t			circlingIncline; // tilt, slope ??
+
+	int16_t			deltaHeading_AVG;
+	int16_t			deltaHeading_SUM;
+
+	//
+	float			glideRatio; // L/D(Lift to Drag)
+
+	//
+	int16_t			headingTakeoff;
+
+	//
+	float			distTakeoff;
+	float			distFlight;
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class DeviceContext
@@ -186,6 +223,9 @@ public:
 	bool				save(Preferences & pref);
 
 	void				updateVarioHistory();
+
+	void				resetFlightState() { memset(&flightState, 0, sizeof(flightState)); }
+	void				resetFlightStats() { memset(&flightStats, 0, sizeof(flightStats)); }
 	
 public:
 	// Persist Settings
@@ -204,12 +244,13 @@ public:
 	DeviceDefault		deviceDefault;
 	
 	// Variometer State
-	volatile VarioState	varioState;
+	VarioState			varioState;
 	// Device state
-	volatile DeviceState			deviceState;
+	DeviceState			deviceState;
 
 	//
-	volatile FlightStats			flightStats;
+	FlightState			flightState;
+	FlightStats			flightStats;
 
 private:
 
