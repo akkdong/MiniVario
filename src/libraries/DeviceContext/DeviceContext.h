@@ -200,7 +200,7 @@ struct FlightState
 	float			glideRatio; // L/D(Lift to Drag)
 
 	//
-	int16_t			headingTakeoff;
+	int16_t			bearingTakeoff;
 
 	//
 	float			distTakeoff;

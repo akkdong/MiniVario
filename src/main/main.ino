@@ -382,6 +382,8 @@ void loop()
 					context.deviceState.statusSDCard = 2;
 
 				//
+				context.varioSetting.altitudeRef1 = context.varioState.altitudeGPS;
+
 				context.resetFlightState();
 				context.resetFlightStats();
 
@@ -390,6 +392,7 @@ void loop()
 				context.flightState.takeOffPos.lat = context.varioState.latitude;
 				context.flightState.takeOffPos.alt = context.varioState.altitudeGPS;
 				context.flightState.flightTime = 0;
+				context.flightState.bearingTakeoff = -1;
 
 				context.flightStats.altitudeMax = context.flightStats.altitudeMin = context.varioState.altitudeGPS;
 
@@ -402,7 +405,7 @@ void loop()
 			// update flight time
 			context.flightState.flightTime = nmeaParser.getDateTime() - context.flightState.takeOffTime;
 			// update bearing & distance from takeoff
-			context.flightState.headingTakeoff = GET_BEARING(context.varioState.latitude, context.varioState.longitude, 
+			context.flightState.bearingTakeoff = GET_BEARING(context.varioState.latitude, context.varioState.longitude, 
 					context.flightState.takeOffPos.lat, context.flightState.takeOffPos.lon);
 			context.flightState.distTakeoff = GET_DISTANCE(context.varioState.latitude, context.varioState.longitude, 
 					context.flightState.takeOffPos.lat, context.flightState.takeOffPos.lon);
@@ -469,7 +472,6 @@ void loop()
 					}
 				}
 			}
-			
 
 			if (nmeaParser.getSpeed() < FLIGHT_START_MIN_SPEED)
 			{
@@ -477,6 +479,9 @@ void loop()
 				{
 					//
 					varioMode = VARIO_MODE_LANDING;
+
+					//
+					context.flightState.bearingTakeoff = -1;
 					
 					// play landing melody
 					tonePlayer.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
@@ -689,13 +694,74 @@ void loadPages(VarioScreen * pages)
 	widget++;
 	x = 0; y += W_H;
 
-	pages[1].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Altitude_AGL);
+	pages[1].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Altitude_Ref1);
 	pages[1].getWidget(widget)->setPosition(x, y, W_W, W_H);
 	widget++;
 	x += W_W;
 
 	pages[1].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Temperature);
 	pages[1].getWidget(widget)->setPosition(x, y, W_W, W_H);
+
+
+	//
+#define MIN_H	48
+	widget = 0;
+	x = 0, y = STATUS_TIME_HEIGHT;
+
+	pages[2].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Altitude_GPS);
+	pages[2].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[2].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Speed_Ground);
+	pages[2].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x = 0;
+	y += MIN_H;
+
+	pages[2].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Altitude_Baro);
+	pages[2].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[2].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Vario_Lazy);
+	pages[2].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x = 0;
+	y += MIN_H;
+
+	pages[2].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Heading);
+	pages[2].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[2].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Bearing_Takeoff);
+	pages[2].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x = 0;
+	y += MIN_H;
+
+	pages[2].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Thermaling_Gain);
+	pages[2].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[2].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Thermaling_Time);
+	pages[2].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x = 0;
+	y += MIN_H;
+
+	pages[2].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Distance_Takeoff);
+	pages[2].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[2].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Distance_Flight);
+	pages[2].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x = 0;
+	y += MIN_H;
 }
 
 void makeTopMenu()
@@ -721,8 +787,11 @@ void processKey(int key)
 		{
 		// from main scren
 		case CMD_SHOW_NEXT_PAGE :
+			activePage = (activePage + 1) % 3;
+			display.attachScreen(&pages[activePage]);
+			break;
 		case CMD_SHOW_PREV_PAGE :
-			activePage = 1 - activePage;
+			activePage = activePage == 0 ? 2 : activePage - 1;
 			display.attachScreen(&pages[activePage]);
 			break;
 		case CMD_SHOW_TOP_MENU :

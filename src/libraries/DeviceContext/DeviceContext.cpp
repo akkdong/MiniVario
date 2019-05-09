@@ -122,7 +122,10 @@ void DeviceContext::reset()
 	strcpy(deviceDefault.btName, "MiniVario");
 
 	//
-	deviceState.statusBT = deviceDefault.enableBT ? 1 : 0;	
+	deviceState.statusBT = deviceDefault.enableBT ? 1 : 0;
+
+	//
+	flightState.bearingTakeoff = -1;
 }
 
 bool DeviceContext::load(Preferences & pref)

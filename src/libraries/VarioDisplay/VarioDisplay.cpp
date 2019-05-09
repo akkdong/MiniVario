@@ -500,8 +500,9 @@ void VarioDisplay::drawCompass(Widget * widget)
 	drawCircle(cx, cy, r - 4, COLOR_BLACK);
 	drawTriangle(cx, cy, r - 10, -context.varioState.heading);
 
+	if  (context.flightState.bearingTakeoff >= 0)
 	{
-		double theta = -context.flightState.headingTakeoff;
+		double theta = context.varioState.heading - context.flightState.bearingTakeoff;
 
 		int16_t x = (r - 10) * sin(theta * PI / 180.0) + cx;
 		int16_t y = -(r - 10) * cos(theta * PI / 180.0) + cy;
@@ -630,8 +631,8 @@ const char * VarioDisplay::getLabel(WidgetContentType type)
 //		return "Heading";
 //	case WidgetContent_Heading_Compass :
 //		return "Heading";
-//	case WidgetContent_Bearing :
-//		return "Heading";
+	case WidgetContent_Bearing_Takeoff :
+		return "Takeoff";
 	case WidgetContent_Longitude :
 		return "Lon";
 	case WidgetContent_Latitude :
@@ -664,10 +665,16 @@ const char * VarioDisplay::getLabel(WidgetContentType type)
 		return "Prs";
 	case WidgetContent_Temperature :
 		return "Temp";
-//	case WidgetContent_Thermal_Time :
-//		return "";
-//	case WidgetContent_Thermal_Gain :
-//		return "";
+	case WidgetContent_Distance_Takeoff :
+		return "Dist.T";
+	case WidgetContent_Distance_Flight :
+		return "Dist.F";
+	case WidgetContent_Thermaling_Gain :
+		return "T.Gain";
+	case WidgetContent_Thermaling_Time :
+		return "T.Time";
+	case WidgetContent_Thermaling_Slope :
+		return "";
 	}
 	
 	return "";
@@ -687,8 +694,8 @@ const char * VarioDisplay::getUnit(WidgetContentType type)
 //		return "Deg";
 //	case WidgetContent_Heading_Compass :
 //		return "Deg";
-//	case WidgetContent_Bearing :
-//		return "Deg";
+	case WidgetContent_Bearing_Takeoff :
+		return "Deg";
 	case WidgetContent_Longitude :
 		return "";
 	case WidgetContent_Latitude :
@@ -721,10 +728,13 @@ const char * VarioDisplay::getUnit(WidgetContentType type)
 		return "hPa";
 	case WidgetContent_Temperature :
 		return "C";
-//	case WidgetContent_Thermal_Time :
-//		return "";
-//	case WidgetContent_Thermal_Gain :
-//		return "";
+	case WidgetContent_Distance_Takeoff :
+	case WidgetContent_Distance_Flight :
+		return "m";
+	case WidgetContent_Thermaling_Gain :
+		return "m";
+	case WidgetContent_Thermaling_Time :
+		return "mm:ss";
 	}
 	
 	return "";
@@ -739,13 +749,13 @@ const char * VarioDisplay::getString(WidgetContentType type)
 	case WidgetContent_Speed_Air :
 		return itoa(context.varioState.speedAir + 0.5, tempString, 10);
 	case WidgetContent_Heading :
-		return itoa(context.varioState.heading + 0.5, tempString, 10);
+		return itoa(context.varioState.heading, tempString, 10);
 //	case WidgetContent_Heading_GPS :
 //		return "";
 //	case WidgetContent_Heading_Compass :
 //		return "";
-//	case WidgetContent_Bearing :
-//		return "";
+	case WidgetContent_Bearing_Takeoff :
+		return itoa(context.flightState.bearingTakeoff, tempString, 10);
 	case WidgetContent_Longitude :
 		return "";
 	case WidgetContent_Latitude :
@@ -804,10 +814,15 @@ const char * VarioDisplay::getString(WidgetContentType type)
 	case WidgetContent_Temperature :
 		sprintf(tempString, "%.1f", context.varioState.temperature);
 		return tempString;
-//	case WidgetContent_Thermal_Time :
-//		return "";
-//	case WidgetContent_Thermal_Gain :
-//		return "";
+	case WidgetContent_Distance_Takeoff :
+		return itoa(context.flightState.distTakeoff + 0.5, tempString, 10);
+	case WidgetContent_Distance_Flight :
+		return itoa(context.flightState.distFlight + 0.5, tempString, 10);
+	case WidgetContent_Thermaling_Gain :
+		return itoa(context.flightState.circlingGain, tempString, 10);
+	case WidgetContent_Thermaling_Time :
+		sprintf(tempString, "%02d:%02d", context.flightState.circlingTime / 60, context.flightState.circlingTime % 60);
+		return tempString;
 	case WidgetContent_Battery :
 		sprintf(tempString, "%.1fV", context.deviceState.batteryPower);
 		return tempString;
