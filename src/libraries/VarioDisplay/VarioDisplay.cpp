@@ -502,7 +502,7 @@ void VarioDisplay::drawCompass(Widget * widget)
 
 	if  (context.flightState.bearingTakeoff >= 0)
 	{
-		double theta = context.varioState.heading - context.flightState.bearingTakeoff;
+		double theta = context.flightState.bearingTakeoff - context.varioState.heading;
 
 		int16_t x = (r - 10) * sin(theta * PI / 180.0) + cx;
 		int16_t y = -(r - 10) * cos(theta * PI / 180.0) + cy;
@@ -632,7 +632,7 @@ const char * VarioDisplay::getLabel(WidgetContentType type)
 //	case WidgetContent_Heading_Compass :
 //		return "Heading";
 	case WidgetContent_Bearing_Takeoff :
-		return "Takeoff";
+		return "Track";
 	case WidgetContent_Longitude :
 		return "Lon";
 	case WidgetContent_Latitude :
@@ -689,13 +689,13 @@ const char * VarioDisplay::getUnit(WidgetContentType type)
 	case WidgetContent_Speed_Air :
 		return "Km/h";
 	case WidgetContent_Heading :
-		return "Deg";
+		return "Hdg";
 //	case WidgetContent_Heading_GPS :
 //		return "Deg";
 //	case WidgetContent_Heading_Compass :
 //		return "Deg";
 	case WidgetContent_Bearing_Takeoff :
-		return "Deg";
+		return "Brg";
 	case WidgetContent_Longitude :
 		return "";
 	case WidgetContent_Latitude :
@@ -730,7 +730,7 @@ const char * VarioDisplay::getUnit(WidgetContentType type)
 		return "C";
 	case WidgetContent_Distance_Takeoff :
 	case WidgetContent_Distance_Flight :
-		return "m";
+		return "Km";
 	case WidgetContent_Thermaling_Gain :
 		return "m";
 	case WidgetContent_Thermaling_Time :
@@ -755,6 +755,8 @@ const char * VarioDisplay::getString(WidgetContentType type)
 //	case WidgetContent_Heading_Compass :
 //		return "";
 	case WidgetContent_Bearing_Takeoff :
+		if (context.flightState.bearingTakeoff < 0)
+			return "--";
 		return itoa(context.flightState.bearingTakeoff, tempString, 10);
 	case WidgetContent_Longitude :
 		return "";
@@ -815,9 +817,11 @@ const char * VarioDisplay::getString(WidgetContentType type)
 		sprintf(tempString, "%.1f", context.varioState.temperature);
 		return tempString;
 	case WidgetContent_Distance_Takeoff :
-		return itoa(context.flightState.distTakeoff + 0.5, tempString, 10);
+		sprintf(tempString, "%.1f", context.flightState.distTakeoff / 1000.0);
+		return tempString;
 	case WidgetContent_Distance_Flight :
-		return itoa(context.flightState.distFlight + 0.5, tempString, 10);
+		sprintf(tempString, "%.1f", context.flightState.distFlight / 1000.0);
+		return tempString;
 	case WidgetContent_Thermaling_Gain :
 		return itoa(context.flightState.circlingGain, tempString, 10);
 	case WidgetContent_Thermaling_Time :

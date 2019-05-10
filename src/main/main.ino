@@ -335,24 +335,27 @@ void loop()
 
 	if (nmeaParser.dataReady())
 	{
-		// update device-context
-		context.varioState.altitudeGPS = nmeaParser.getAltitude();
-		context.varioState.altitudeAGL = context.varioState.altitudeGPS - agl.getGroundLevel(context.varioState.latitude, context.varioState.longitude);
-		context.varioState.altitudeRef1 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef1;
-		context.varioState.altitudeRef2 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef2;
-		context.varioState.altitudeRef3 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef3;
-
-		context.varioState.longitudeLast = context.varioState.longitude;
-		context.varioState.latitudeLast = context.varioState.latitude;
-		context.varioState.headingLast = context.varioState.heading;
-
-		context.varioState.latitude = nmeaParser.getLatitude();
-		context.varioState.longitude = nmeaParser.getLongitude();
-		context.varioState.speedGround = nmeaParser.getSpeed();
-		context.varioState.heading = nmeaParser.getHeading();	
- 		context.varioState.timeCurrent = nmeaParser.getDateTime();
-
+		//
 		context.deviceState.statusGPS = nmeaParser.isFixed();
+
+		// update device-context
+		if (context.deviceState.statusGPS)
+		{
+			context.varioState.latitudeLast = context.varioState.latitude;
+			context.varioState.longitudeLast = context.varioState.longitude;
+			context.varioState.headingLast = context.varioState.heading;
+
+			context.varioState.latitude = nmeaParser.getLatitude();
+			context.varioState.longitude = nmeaParser.getLongitude();
+			context.varioState.speedGround = nmeaParser.getSpeed();
+			context.varioState.heading = nmeaParser.getHeading();	
+			context.varioState.timeCurrent = nmeaParser.getDateTime();
+			context.varioState.altitudeGPS = nmeaParser.getAltitude();
+			context.varioState.altitudeAGL = context.varioState.altitudeGPS - agl.getGroundLevel(context.varioState.latitude, context.varioState.longitude);
+			context.varioState.altitudeRef1 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef1;
+			context.varioState.altitudeRef2 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef2;
+			context.varioState.altitudeRef3 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef3;
+		}
 
 		// IGC sentence is available when it received a valid GGA. -> altitude is valid
 		if (varioMode == VARIO_MODE_INIT  && nmeaParser.availableIGC())
@@ -396,13 +399,16 @@ void loop()
 				context.resetFlightStats();
 
 				context.flightState.takeOffTime = nmeaParser.getDateTime();
-				context.flightState.takeOffPos.lon = context.varioState.longitude;
 				context.flightState.takeOffPos.lat = context.varioState.latitude;
+				context.flightState.takeOffPos.lon = context.varioState.longitude;
 				context.flightState.takeOffPos.alt = context.varioState.altitudeGPS;
-				context.flightState.flightTime = 0;
+//				context.flightState.flightTime = 0;
 				context.flightState.bearingTakeoff = -1;
+//				context.flightState.distTakeoff = 0.0;
+//				context.flightState.distFlight = 0.0;
 
 				context.flightStats.altitudeMax = context.flightStats.altitudeMin = context.varioState.altitudeGPS;
+//				context.flightStats.varioMax = context.flightStats.varioMin = 0.0;
 
 				// set mode-tick
 				modeTick = millis();
@@ -418,7 +424,7 @@ void loop()
 			context.flightState.distTakeoff = GET_DISTANCE(context.varioState.latitude, context.varioState.longitude, 
 					context.flightState.takeOffPos.lat, context.flightState.takeOffPos.lon);
 			// and update total flight distance
-			context.flightState.distFlight = GET_DISTANCE(context.varioState.latitude, context.varioState.longitude, 
+			context.flightState.distFlight += GET_DISTANCE(context.varioState.latitude, context.varioState.longitude, 
 					context.varioState.latitudeLast, context.varioState.longitudeLast);
 
 			// update flight statistics
@@ -894,6 +900,22 @@ void startVario()
 	deviceMode = DEVICE_MODE_VARIO;
 	varioMode = VARIO_MODE_INIT;
 	deviceTick = millis();
+
+
+	// TEST CODEs
+	#if 0
+	{
+		float lat1 = 37.565743;
+		float lon1 = 127.257282;
+
+		float lat2 = 37.562506;
+		float lon2 = 127.256840;
+
+		Serial.printf("dist: %.2f\n", GET_DISTANCE(lat1, lon1, lat2, lon2) / 1000.0);
+		Serial.printf("bearing: %d\n", GET_BEARING(lat1, lon1, lat2, lon2));
+		Serial.printf("altitude: %d\n", agl.getGroundLevel(lat1, lon1));
+	}
+	#endif
 }
 
 void loadPreferences()
