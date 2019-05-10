@@ -16,6 +16,8 @@
 #include "BluetoothMan.h"
 #include "HardReset.h"
 #include "Util.h"
+#include "AGL.h"
+
 
 #define USE_KALMAN_VARIO 	1
 
@@ -195,6 +197,12 @@ KalmanVario vario(baro);
 KalmanSkyDrop vario(baro);
 #endif
 
+//
+//
+//
+
+AGL agl;
+
 
 //
 //
@@ -329,7 +337,7 @@ void loop()
 	{
 		// update device-context
 		context.varioState.altitudeGPS = nmeaParser.getAltitude();
-		context.varioState.altitudeAGL = 0.0;
+		context.varioState.altitudeAGL = context.varioState.altitudeGPS - agl.getGroundLevel(context.varioState.latitude, context.varioState.longitude);
 		context.varioState.altitudeRef1 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef1;
 		context.varioState.altitudeRef2 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef2;
 		context.varioState.altitudeRef3 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef3;
@@ -719,7 +727,7 @@ void loadPages(VarioScreen * pages)
 	x = 0;
 	y += MIN_H;
 
-	pages[2].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Altitude_Baro);
+	pages[2].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Altitude_AGL);
 	pages[2].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
 	widget++;
 	x += TEXTBOX_S_WIDTH;
