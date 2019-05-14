@@ -4,6 +4,10 @@
 #ifndef __BLUETOOTHMAN_H__
 #define __BLUETOOTHMAN_H__
 
+#include "FS.h"
+#include "SD_MMC.h"
+
+
 #if 0
 #define BTMAN_BLOCK_NONE		(0)
 #define BTMAN_BLOCK_NMEA		(1<<0)
@@ -22,19 +26,25 @@ class BluetoothSerialEx;
 class BluetoothMan
 {
 public:
-	BluetoothMan(BluetoothSerialEx & serial, NmeaParserEx & nmea, VarioSentence & vario);
+	BluetoothMan(BluetoothSerialEx & serial, NmeaParserEx & nmea, VarioSentence & vario);	
 	
 public:
+	void				begin();
+	void				end();
+
 	void				update();
 	
 	int					available();
 	int					read();
 
-private:
-	void				writeVarioSentence();
-	void				writeGPSSentence();
+	virtual void		startLogging(const char * file) {}
+	virtual void		stopLogging() {}
+
+protected:
+	virtual void		writeVarioSentence();
+	virtual void		writeGPSSentence();
 	
-private:
+protected:
 	//
 	uint8_t				lockState;
 	#if 0
@@ -47,5 +57,26 @@ private:
 	NmeaParserEx &		nmeaParser;
 	VarioSentence &		varioSentence;
 };
+
+
+/////////////////////////////////////////////////////////////////////////////
+// class BluetoothManEx
+
+class BluetoothManEx : public BluetoothMan
+{
+public:
+	BluetoothManEx(BluetoothSerialEx & serial, NmeaParserEx & nmea, VarioSentence & vario);	
+
+	virtual void		startLogging(time_t date);
+	virtual void		stopLogging();
+
+protected:
+	virtual void		writeVarioSentence();
+	virtual void		writeGPSSentence();
+
+protected:
+	File				fileLog;
+};
+
 
 #endif // __BLUETOOTHMAN_H__

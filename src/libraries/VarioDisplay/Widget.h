@@ -114,6 +114,9 @@ typedef enum _WidgetContentType
 	WidgetContent_Altitude_Min,
 	WidgetContent_ClimbRate_Max,
 	WidgetContent_SinkRate_Max,
+
+	//
+	WidgetContent_Ground_Level,
 	
 
 	// Simple Text

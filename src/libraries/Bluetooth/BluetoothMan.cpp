@@ -5,6 +5,7 @@
 #include "NmeaParserEx.h"
 #include "VarioSentence.h"
 #include "BluetoothMan.h"
+#include "DeviceContext.h"
 
 /*
 #define CLEAR_STATE()		lockState = 0;
@@ -39,6 +40,15 @@ BluetoothMan::BluetoothMan(BluetoothSerialEx & serial, NmeaParserEx & nmea, Vari
 {
 }
 
+void BluetoothMan::begin()
+{
+	// nop
+}
+
+void BluetoothMan::end()
+{
+	// nop
+}
 
 void BluetoothMan::update()
 {
@@ -121,4 +131,89 @@ int BluetoothMan::available()
 int BluetoothMan::read()
 {
 	return serialBluetooth.read();
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// class BluetoothManEx
+
+BluetoothManEx::BluetoothManEx(BluetoothSerialEx & serial, NmeaParserEx & nmea, VarioSentence & vario) : BluetoothMan(serial, nmea, vario)
+{
+}
+
+void BluetoothManEx::writeVarioSentence()
+{
+	if (! fileLog)
+		return;
+
+	while (varioSentence.available())
+	{
+		//
+		int c = varioSentence.read();
+		//if (c < 0)
+		//	break;
+		
+		//serialBluetooth.writeEx(c);
+		fileLog.write((uint8_t)c);
+
+		//		
+		if (c == '\n') // last setence character : every sentence end with '\r\n'
+		{
+			lockState = BTMAN_UNLOCKED;
+			break;
+		}
+	}
+}
+
+void BluetoothManEx::writeGPSSentence()
+{
+	if (! fileLog)
+		return;
+
+	while (nmeaParser.available())
+	{
+		//
+		int c = nmeaParser.read();
+		//if (c < 0)
+		//	break;
+		
+		//serialBluetooth.writeEx(c);
+		fileLog.write((uint8_t)c);
+		
+		//
+		if (c == '\n') // last setence character : every sentence end with '\r\n'
+		{			
+			lockState = BTMAN_UNLOCKED;
+			break;
+		}
+	}
+}
+
+void BluetoothManEx::startLogging(time_t date)
+{
+	stopLogging();
+
+	// create new file // /TrackLogs/YYYYMMDD-hhmmss.log
+	char file[32];
+
+	int pos = 0;
+	int i, num;
+	const char * ptr;
+	struct tm * _tm;
+
+	date = date + (__DeviceContext.logger.timezone * 60 * 60); 
+	_tm = localtime(&date);
+
+	sprintf(file, "/TrackLogs/%04d%02d%02d-%02d%02d%02d.log", 
+						_tm->tm_year + 1900, _tm->tm_mon + 1, _tm->tm_mday,
+						_tm->tm_hour, _tm->tm_min, _tm->tm_sec);
+
+	fileLog = SD_MMC.open(file, FILE_WRITE);
+}
+
+void BluetoothManEx::stopLogging()
+{
+	if (fileLog)
+		fileLog.close();
 }

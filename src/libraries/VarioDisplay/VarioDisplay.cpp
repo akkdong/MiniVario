@@ -108,10 +108,10 @@ void VarioDisplay::TaskProc()
 		case _VARIO :
 			// update & refresh
 			update();
-			refresh(updateCount++);
+			refresh(updateCount++ > 0 ? true : false);
 
-			// periodic full refresh: update rate : 2.5 times per second ==> 10 min = 600 x 2.5 = 1500
-			if (updateCount > 1500)
+			// periodic full refresh: update rate : 2.5 times per second ==> 5 min = 300 x 2.5 = 750
+			if (updateCount > 750)
 				updateCount = 0; 
 			break;
 
@@ -675,6 +675,15 @@ const char * VarioDisplay::getLabel(WidgetContentType type)
 		return "T.Time";
 	case WidgetContent_Thermaling_Slope :
 		return "";
+
+	case WidgetContent_Altitude_Max :
+	case WidgetContent_Altitude_Min :
+	case WidgetContent_ClimbRate_Max :
+	case WidgetContent_SinkRate_Max :
+		break;
+
+	case WidgetContent_Ground_Level :
+		return "G.Lvl";
 	}
 	
 	return "";
@@ -735,6 +744,15 @@ const char * VarioDisplay::getUnit(WidgetContentType type)
 		return "m";
 	case WidgetContent_Thermaling_Time :
 		return "mm:ss";
+
+	case WidgetContent_Altitude_Max :
+	case WidgetContent_Altitude_Min :
+	case WidgetContent_ClimbRate_Max :
+	case WidgetContent_SinkRate_Max :
+		break;
+
+	case WidgetContent_Ground_Level :
+		return "m";
 	}
 	
 	return "";
@@ -827,6 +845,16 @@ const char * VarioDisplay::getString(WidgetContentType type)
 	case WidgetContent_Thermaling_Time :
 		sprintf(tempString, "%02d:%02d", context.flightState.circlingTime / 60, context.flightState.circlingTime % 60);
 		return tempString;
+
+	case WidgetContent_Altitude_Max :
+	case WidgetContent_Altitude_Min :
+	case WidgetContent_ClimbRate_Max :
+	case WidgetContent_SinkRate_Max :
+		break;
+
+	case WidgetContent_Ground_Level :
+		return itoa(context.varioState.altitudeGround + 0.5, tempString, 10);
+
 	case WidgetContent_Battery :
 		sprintf(tempString, "%.1fV", context.deviceState.batteryPower);
 		return tempString;

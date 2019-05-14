@@ -26,7 +26,9 @@ struct VarioState // VarioDeviceState
 	float			altitudeRef1;		// QFE (from take-off)
 	float			altitudeRef2;		// QFE (from landing)
 	float			altitudeRef3;		// QFE (from any-altitude)
+
 	float			altitudeStart;		// take-off altitude
+	float			altitudeGround;		// 
 	
 //	float			altitudeDrift;
 	
@@ -195,6 +197,8 @@ struct FlightState
 
 	int16_t			deltaHeading_AVG;
 	int16_t			deltaHeading_SUM;
+
+	int32_t			glidingCount;
 
 	//
 	float			glideRatio; // L/D(Lift to Drag)

@@ -17,7 +17,7 @@ AGL::~AGL()
 	closeFile();
 }
 
-int AGL::getGroundLevel(double _lat, double _lon)
+double AGL::getGroundLevel(double _lat, double _lon)
 {
 	if (! mFile || ((int)_lat != mLat && (int)_lon != mLon))
 	{
@@ -55,17 +55,16 @@ int AGL::getGroundLevel(double _lat, double _lon)
 	}
 
 	if (! mFile)
-		return 0;
+		return 0.0;
 
 	return getGroundLevel(&mFile, _lat, _lon);
 }
 
 
-int AGL::getGroundLevel(File * file, double lat, double lon)
+double AGL::getGroundLevel(File * file, double lat, double lon)
 {
 	uint16_t num_points_x;
 	uint16_t num_points_y;
-	int16_t alt;
 
 	lat = lat - (int)lat;
 	lon = lon - (int)lon;
@@ -116,8 +115,7 @@ int AGL::getGroundLevel(File * file, double lat, double lon)
 	double alt1 = alt11 + (alt12 - alt11) * lat_dr;
 	double alt2 = alt21 + (alt22 - alt21) * lat_dr;
 
-	alt = (int16_t)(alt1 + (alt2 - alt1) * lon_dr);
-
+#if 0
 	/* Find the minimum altitude: */
 	int16_t alt_min = min(alt11, alt12);
 	alt_min = min(alt_min, alt21);
@@ -127,8 +125,9 @@ int AGL::getGroundLevel(File * file, double lat, double lon)
 	int16_t alt_max = max(alt11, alt12);
 	alt_max = max(alt_max, alt21);
 	alt_max = max(alt_max, alt22);
+#endif
 
-	return alt;
+	return alt1 + (alt2 - alt1) * lon_dr;
 }
 
 int AGL::openFile(const char * name)

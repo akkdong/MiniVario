@@ -20,13 +20,13 @@ public:
 	~AGL();
 
 public:
-	int             getGroundLevel(double lat, double lon);
+	double			getGroundLevel(double lat, double lon);
 
 private:
 	int             openFile(const char * name);
 	void            closeFile();
 
-	int             getGroundLevel(File * file, double lat, double lon);
+	double			getGroundLevel(File * file, double lat, double lon);
 
 private:
 	int16_t	        mLat, mLon;

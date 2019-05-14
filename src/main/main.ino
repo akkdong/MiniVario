@@ -182,7 +182,7 @@ VarioLogger logger;
 //
 //
 
-BluetoothMan btMan(serialBluetooth, nmeaParser, varioNmea);
+BluetoothManEx btMan(serialBluetooth, nmeaParser, varioNmea);
 
 
 //
@@ -257,6 +257,9 @@ void setup()
 	toneGen.begin(SineGenerator::USE_DIFFERENTIAL, SineGenerator::SCALE_FULL, 0);
 	tonePlayer.setVolume(context.volume.vario);
 	//tonePlayer.setBeep(NOTE_C4, 800, 500, 2, 100);
+
+	//
+	btMan.begin();
 
 	// start right now or ...
 	if (deviceMode != DEVICE_WAKEUP_CONFIRM)
@@ -336,10 +339,10 @@ void loop()
 	if (nmeaParser.dataReady())
 	{
 		//
-		context.deviceState.statusGPS = nmeaParser.isFixed();
+		context.deviceState.statusGPS = nmeaParser.isFixed() ? 1 : 0;
 
 		// update device-context
-		if (context.deviceState.statusGPS)
+		if (nmeaParser.isFixed())
 		{
 			context.varioState.latitudeLast = context.varioState.latitude;
 			context.varioState.longitudeLast = context.varioState.longitude;
@@ -351,14 +354,15 @@ void loop()
 			context.varioState.heading = nmeaParser.getHeading();	
 			context.varioState.timeCurrent = nmeaParser.getDateTime();
 			context.varioState.altitudeGPS = nmeaParser.getAltitude();
-			context.varioState.altitudeAGL = context.varioState.altitudeGPS - agl.getGroundLevel(context.varioState.latitude, context.varioState.longitude);
+			context.varioState.altitudeGround = agl.getGroundLevel(context.varioState.latitude, context.varioState.longitude);
+			context.varioState.altitudeAGL = context.varioState.altitudeGPS - context.varioState.altitudeGround;
 			context.varioState.altitudeRef1 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef1;
 			context.varioState.altitudeRef2 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef2;
 			context.varioState.altitudeRef3 = context.varioState.altitudeGPS - context.varioSetting.altitudeRef3;
 		}
 
 		// IGC sentence is available when it received a valid GGA. -> altitude is valid
-		if (varioMode == VARIO_MODE_INIT  && nmeaParser.availableIGC())
+		if (varioMode == VARIO_MODE_INIT  && nmeaParser.isFixed())
 		{
 			// do position calibration
 			vario.calibrateAltitude(nmeaParser.getAltitude());
@@ -387,6 +391,9 @@ void loop()
 				
 				// play take-off melody
 				tonePlayer.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
+
+				//
+				btMan.startLogging(nmeaParser.getDateTime());
 				
 				// start logging & change mode
 				if (logger.begin(nmeaParser.getDateTime()))
@@ -451,11 +458,12 @@ void loop()
 			if (context.flightState.deltaHeading_SUM < -450)
 				context.flightState.deltaHeading_SUM = -450;
 
-			if (abs(context.flightState.deltaHeading_AVG) > THRESHOLD_CIRCLING_HEADING && abs(context.flightState.deltaHeading_SUM) > 360 && varioMode != VARIO_MODE_CIRCLING)
+			if (varioMode != VARIO_MODE_CIRCLING)
 			{
-				if (varioMode != VARIO_MODE_CIRCLING)
+				if (abs(context.flightState.deltaHeading_SUM) > 360)
 				{
-					varioMode == VARIO_MODE_CIRCLING;
+					// start of circling
+					varioMode = VARIO_MODE_CIRCLING;
 
 					// save circling state
 					context.flightState.circlingStartTime = nmeaParser.getDateTime();
@@ -464,8 +472,60 @@ void loop()
 					context.flightState.circlingStartPos.lat = nmeaParser.getLatitude();
 					context.flightState.circlingStartPos.alt = nmeaParser.getAltitude();
 
-					context.flightState.deltaHeading_AVG = 0;
-					context.flightState.deltaHeading_SUM = 0;
+					context.flightState.circlingTime = 0;
+					context.flightState.circlingGain = 0;
+
+					context.flightState.glidingCount = 0;
+				}
+			}
+			else
+			{
+				// update time & gain
+				context.flightState.circlingTime = nmeaParser.getDateTime() - context.flightState.circlingStartTime;
+				context.flightState.circlingGain = nmeaParser.getAltitude() - context.flightState.circlingStartPos.alt;
+
+				// check circling
+				if (abs(context.flightState.deltaHeading_AVG) < THRESHOLD_CIRCLING_HEADING)
+				{
+					context.flightState.glidingCount = _MIN(6, context.flightState.glidingCount + 1);
+
+					if (context.flightState.glidingCount >= 5)
+					{
+						varioMode = VARIO_MODE_FLYING;
+
+						// update flight-statistics : thermaling count, max-gain
+						if (context.flightState.circlingGain > 10 && context.flightState.circlingTime > 0)
+						{
+							context.flightStats.totalThermaling += 1;
+							context.flightStats.thermalingMaxGain = _MAX(context.flightStats.thermalingMaxGain, context.flightState.circlingGain);
+						}
+
+						context.flightState.deltaHeading_AVG = 0;
+						context.flightState.deltaHeading_SUM = 0;
+
+						context.flightState.glidingCount = 0;
+					}
+				}
+				else
+				{
+					// 
+					context.flightState.glidingCount = _MAX(0, context.flightState.glidingCount - 1);
+				}
+			}
+
+#if 0
+			if (abs(context.flightState.deltaHeading_AVG) > THRESHOLD_CIRCLING_HEADING && abs(context.flightState.deltaHeading_SUM) > 360 && varioMode != VARIO_MODE_CIRCLING)
+			{
+				if (varioMode != VARIO_MODE_CIRCLING)
+				{
+					varioMode = VARIO_MODE_CIRCLING;
+
+					// save circling state
+					context.flightState.circlingStartTime = nmeaParser.getDateTime();
+					context.flightState.circlingIncline = -1;
+					context.flightState.circlingStartPos.lon = nmeaParser.getLongitude();
+					context.flightState.circlingStartPos.lat = nmeaParser.getLatitude();
+					context.flightState.circlingStartPos.alt = nmeaParser.getAltitude();
 				}
 
 				context.flightState.circlingTime = nmeaParser.getDateTime() - context.flightState.circlingStartTime;
@@ -484,8 +544,13 @@ void loop()
 						context.flightStats.totalThermaling += 1;
 						context.flightStats.thermalingMaxGain = _MAX(context.flightStats.thermalingMaxGain, context.flightState.circlingGain);
 					}
+
+
+					context.flightState.deltaHeading_AVG = 0;
+					context.flightState.deltaHeading_SUM = 0;
 				}
 			}
+#endif
 
 			if (nmeaParser.getSpeed() < FLIGHT_START_MIN_SPEED)
 			{
@@ -499,6 +564,9 @@ void loop()
 					
 					// play landing melody
 					tonePlayer.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
+
+					//
+					btMan.stopLogging();
 					
 					// stop logging & change mode
 					if (logger.isLogging())
@@ -553,6 +621,10 @@ void loop()
 
 void goDeepSleep()
 {
+	//
+	btMan.stopLogging();
+	btMan.end();
+
 	// close logging-file
 	logger.end(nmeaParser.getDateTime());
 	//
@@ -565,6 +637,10 @@ void goDeepSleep()
 
 void resetDevice()
 {
+	//
+	btMan.stopLogging();
+	btMan.end();
+
 	// close logging-file
 	logger.end(nmeaParser.getDateTime());
 	//
@@ -733,7 +809,7 @@ void loadPages(VarioScreen * pages)
 	x = 0;
 	y += MIN_H;
 
-	pages[2].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Altitude_AGL);
+	pages[2].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Ground_Level);
 	pages[2].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
 	widget++;
 	x += TEXTBOX_S_WIDTH;
@@ -911,9 +987,23 @@ void startVario()
 		float lat2 = 37.562506;
 		float lon2 = 127.256840;
 
+		float lat3 = 37.423731;
+		float lon3 = 127.076370;
+
+		File test = SD_MMC.open("/TrackLogs/test.txt", FILE_WRITE);
+		if (test)
+			Serial.printf("create a file for write: /TrackLogs/test.txt\n");
+		else
+			Serial.printf("file creation failed: /TrackLogs/test.txt\n");
+
 		Serial.printf("dist: %.2f\n", GET_DISTANCE(lat1, lon1, lat2, lon2) / 1000.0);
 		Serial.printf("bearing: %d\n", GET_BEARING(lat1, lon1, lat2, lon2));
-		Serial.printf("altitude: %d\n", agl.getGroundLevel(lat1, lon1));
+		Serial.printf("altitude1: %f\n", agl.getGroundLevel(lat1, lon1));
+		Serial.printf("altitude2: %f\n", agl.getGroundLevel(lat2, lon2));
+		Serial.printf("altitude3: %f\n", agl.getGroundLevel(lat3, lon3));
+
+		if (test)
+			test.close();
 	}
 	#endif
 }
@@ -921,7 +1011,7 @@ void startVario()
 void loadPreferences()
 {
 	Preferences pref;
-	pref.begin("vario", true);
+	pref.begin("vario", false);
 	context.load(pref);
 	pref.end();
 }
@@ -929,7 +1019,7 @@ void loadPreferences()
 void savePreferences()
 {
 	Preferences pref;
-	pref.begin("vario", true);
+	pref.begin("vario", false);
 	context.save(pref);
 	pref.end();
 }
