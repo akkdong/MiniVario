@@ -37,7 +37,7 @@ public:
 	int					available();
 	int					read();
 
-	virtual void		startLogging(const char * file) {}
+	virtual void		startLogging(time_t date) {}
 	virtual void		stopLogging() {}
 
 protected:
