@@ -34,6 +34,15 @@ const char tagRMC[] PROGMEM = {"GPRMC"};
 const char tagGGA[] PROGMEM = {"GPGGA"};
 
 
+float nmeaToDecimal(float nmea)
+{
+	int dd = (int)(nmea / 100);
+	float ss = nmea - (float)(dd * 100.0);
+
+	return (float)dd + ss / 60.0;
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 // class NmeaParserEx
 
@@ -451,7 +460,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			break;
 		case 1 : // Latitude (DDMM.mmm)
 			// save latitude
-			mLatitude = strToFloat(startPos);
+			mLatitude = nmeaToDecimal(strToFloat(startPos));
 			
 			// update IGC sentence if it's unlocked
 			if (! IS_SET(IGC_LOCKED))
@@ -490,7 +499,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			break;
 		case 3 : // Longitude (DDDMM.mmmm)
 			// save longitude
-			mLongitude = strToFloat(startPos);
+			mLongitude = nmeaToDecimal(strToFloat(startPos));
 			
 			// update IGC sentence if it's unlocked
 			if (! IS_SET(IGC_LOCKED))
