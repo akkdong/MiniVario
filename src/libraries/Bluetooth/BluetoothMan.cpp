@@ -144,9 +144,6 @@ BluetoothManEx::BluetoothManEx(BluetoothSerialEx & serial, NmeaParserEx & nmea, 
 
 void BluetoothManEx::writeVarioSentence()
 {
-	if (! fileLog)
-		return;
-
 	while (varioSentence.available())
 	{
 		//
@@ -154,8 +151,10 @@ void BluetoothManEx::writeVarioSentence()
 		//if (c < 0)
 		//	break;
 		
-		//serialBluetooth.writeEx(c);
-		fileLog.write((uint8_t)c);
+		serialBluetooth.writeEx(c);
+
+		if (fileLog)
+			fileLog.write((uint8_t)c);
 
 		//		
 		if (c == '\n') // last setence character : every sentence end with '\r\n'
@@ -168,9 +167,6 @@ void BluetoothManEx::writeVarioSentence()
 
 void BluetoothManEx::writeGPSSentence()
 {
-	if (! fileLog)
-		return;
-
 	while (nmeaParser.available())
 	{
 		//
@@ -178,8 +174,10 @@ void BluetoothManEx::writeGPSSentence()
 		//if (c < 0)
 		//	break;
 		
-		//serialBluetooth.writeEx(c);
-		fileLog.write((uint8_t)c);
+		serialBluetooth.writeEx(c);
+
+		if (fileLog)
+			fileLog.write((uint8_t)c);
 		
 		//
 		if (c == '\n') // last setence character : every sentence end with '\r\n'
