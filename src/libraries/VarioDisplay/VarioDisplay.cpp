@@ -160,7 +160,7 @@ void VarioDisplay::sleepDevice()
     const uint64_t ext_wakeup_pin_2_mask = 1ULL << ext_wakeup_pin_2;
 
 	// Enabling EXT1 wakeup on pins GPIO34, GPIO35
-    esp_sleep_enable_ext1_wakeup(ext_wakeup_pin_1_mask | ext_wakeup_pin_2_mask, ESP_EXT1_WAKEUP_ANY_HIGH  );
+    esp_sleep_enable_ext1_wakeup(ext_wakeup_pin_1_mask /*| ext_wakeup_pin_2_mask*/, ESP_EXT1_WAKEUP_ANY_HIGH  );
 	// Entering deep sleep
 	esp_deep_sleep_start();
 	

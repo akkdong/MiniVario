@@ -142,7 +142,7 @@ uint32_t modeTick;		// mode-specific tick-count
 
 VarioScreen pages[3];
 PopupMenu	topMenu;
-uint8_t		activePage = 0;
+uint8_t		activePage = 1;
 
 
 DeviceContext & context = __DeviceContext;
@@ -262,7 +262,7 @@ void setup()
 	btMan.begin();
 
 	// start right now or ...
-	if (deviceMode != DEVICE_WAKEUP_CONFIRM)
+	if (deviceMode == DEVICE_MODE_VARIO)
 		startVario();
 
 	//
@@ -906,7 +906,7 @@ void processKey(int key)
 					varioBeeper.setVelocity(0);			
 					toneGen.setFrequency(0);
 				}
-				savePreferences();
+				//savePreferences();
 				break;
 				
 			case TMID_TOGGLE_BLUETOOTH : // toggle bluetooth
@@ -921,7 +921,7 @@ void processKey(int key)
 					serialBluetooth.register_callback(NULL);
 					serialBluetooth.end();
 				}
-				savePreferences();
+				//savePreferences();
 				break;
 				
 			case TMID_POWER_OFF : // turn-off device

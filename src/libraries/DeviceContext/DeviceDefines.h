@@ -111,11 +111,11 @@
 enum InputKeyType
 {
 	KEY_UP,
-	KEY_DOWN,
 	KEY_SEL,
+	KEY_DOWN,
 	KEY_UP_LONG,
-	KEY_DOWN_LONG,
 	KEY_SEL_LONG,
+	KEY_DOWN_LONG,
 	KEY_Count
 };
 

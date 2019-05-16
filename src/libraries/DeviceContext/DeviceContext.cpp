@@ -178,7 +178,7 @@ bool DeviceContext::save(Preferences & pref)
 
 void DeviceContext::updateVarioHistory()
 {
-	varioState.speedVertSumTotal += varioState.speedVertActive;
+	varioState.speedVertSumTotal += varioState.speedVertLazy; // varioState.speedVertActive;
 	varioState.speedVertSumCount += 1;
 
 	if (varioState.speedVertSumCount == 50 /*1000 / 20*/) // vario update every 20ms --> 50Hz
