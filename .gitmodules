@@ -19,3 +19,12 @@
 [submodule "ref/GxEPD2"]
 	path = ref/GxEPD2
 	url = https://github.com/ZinggJM/GxEPD2.git
+[submodule "src/libraries/ArduinoJson"]
+	path = src/libraries/ArduinoJson
+	url = https://github.com/bblanchon/ArduinoJson.git
+[submodule "src/libraries/PageBuilder"]
+	path = src/libraries/PageBuilder
+	url = https://github.com/Hieromon/PageBuilder.git
+[submodule "src/libraries/AutoConnect"]
+	path = src/libraries/AutoConnect
+	url = https://github.com/Hieromon/AutoConnect.git

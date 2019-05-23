@@ -117,7 +117,6 @@ typedef enum _WidgetContentType
 
 	//
 	WidgetContent_Ground_Level,
-	
 
 	// Simple Text
 	WidgetContent_Title,
@@ -138,7 +137,13 @@ typedef enum _WidgetContentType
 	WidgetContent_Vario_History,
 	
 	// Thermal Assist
-	WidgetContent_Thermal_Assist
+	WidgetContent_Thermal_Assist,
+
+	// for debugging
+	WidgetContenxt_FlightState_deltaHeading_AVG,
+	WidgetContenxt_FlightState_deltaHeading_SUM,
+	WidgetContenxt_FlightState_glidingCount,
+
 	
 } WidgetContentType;
 

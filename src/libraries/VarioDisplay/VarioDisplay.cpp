@@ -684,6 +684,13 @@ const char * VarioDisplay::getLabel(WidgetContentType type)
 
 	case WidgetContent_Ground_Level :
 		return "G.Lvl";
+
+	case WidgetContenxt_FlightState_deltaHeading_AVG :
+		return "HdgAVG";
+	case WidgetContenxt_FlightState_deltaHeading_SUM :
+		return "HdgSUM";
+	case WidgetContenxt_FlightState_glidingCount :
+		return "GldCnt";
 	}
 	
 	return "";
@@ -860,6 +867,13 @@ const char * VarioDisplay::getString(WidgetContentType type)
 		return tempString;
 	case WidgetContent_Title :
 		return "Rascal";
+
+	case WidgetContenxt_FlightState_deltaHeading_AVG :
+		return itoa(context.flightState.deltaHeading_AVG, tempString, 10);
+	case WidgetContenxt_FlightState_deltaHeading_SUM :
+		return itoa(context.flightState.deltaHeading_SUM, tempString, 10);
+	case WidgetContenxt_FlightState_glidingCount :
+		return itoa(context.flightState.glidingCount, tempString, 10);
 	}
 	
 	return "";

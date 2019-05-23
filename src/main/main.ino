@@ -28,7 +28,7 @@
 #endif
 
 #define DAMPING_FACTOR_DELTA_HEADING			0.1
-#define THRESHOLD_CIRCLING_HEADING		10
+#define THRESHOLD_CIRCLING_HEADING		6
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -140,7 +140,10 @@ uint8_t	varioMode; 		// sub-mode of vario-mode
 uint32_t deviceTick;	// global tick-count
 uint32_t modeTick;		// mode-specific tick-count
 
-VarioScreen pages[3];
+
+#define MAX_PAGES		(4)
+
+VarioScreen pages[MAX_PAGES];
 PopupMenu	topMenu;
 uint8_t		activePage = 1;
 
@@ -450,13 +453,9 @@ void loop()
 			if (deltaHeading < -180)
 				deltaHeading = deltaHeading + 360;
 
-			context.flightState.deltaHeading_AVG += (deltaHeading - context.flightState.deltaHeading_AVG) * DAMPING_FACTOR_DELTA_HEADING;
+			context.flightState.deltaHeading_AVG += (int16_t)((deltaHeading - context.flightState.deltaHeading_AVG) * DAMPING_FACTOR_DELTA_HEADING);
 			context.flightState.deltaHeading_SUM += context.flightState.deltaHeading_AVG;
-
-			if (context.flightState.deltaHeading_SUM > 450)
-				context.flightState.deltaHeading_SUM = 450;
-			if (context.flightState.deltaHeading_SUM < -450)
-				context.flightState.deltaHeading_SUM = -450;
+			context.flightState.deltaHeading_SUM = _CLAMP(context.flightState.deltaHeading_SUM, -450, 450); // one and a half turns
 
 			if (varioMode != VARIO_MODE_CIRCLING)
 			{
@@ -467,10 +466,10 @@ void loop()
 
 					// save circling state
 					context.flightState.circlingStartTime = nmeaParser.getDateTime();
-					context.flightState.circlingIncline = -1;
 					context.flightState.circlingStartPos.lon = nmeaParser.getLongitude();
 					context.flightState.circlingStartPos.lat = nmeaParser.getLatitude();
 					context.flightState.circlingStartPos.alt = nmeaParser.getAltitude();
+					context.flightState.circlingIncline = -1;
 
 					context.flightState.circlingTime = 0;
 					context.flightState.circlingGain = 0;
@@ -502,7 +501,7 @@ void loop()
 
 						context.flightState.deltaHeading_AVG = 0;
 						context.flightState.deltaHeading_SUM = 0;
-
+						context.flightState.circlingStartTime = 0;
 						context.flightState.glidingCount = 0;
 					}
 				}
@@ -852,6 +851,65 @@ void loadPages(VarioScreen * pages)
 	widget++;
 	x = 0;
 	y += MIN_H;
+
+	//
+	widget = 0;
+	x = 0, y = STATUS_TIME_HEIGHT;
+
+	pages[3].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Altitude_GPS);
+	pages[3].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[3].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Speed_Ground);
+	pages[3].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x = 0;
+	y += MIN_H;
+
+	pages[3].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Ground_Level);
+	pages[3].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[3].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Altitude_AGL);
+	pages[3].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x = 0;
+	y += MIN_H;
+
+	pages[3].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Heading);
+	pages[3].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[3].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContenxt_FlightState_glidingCount);
+	pages[3].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x = 0;
+	y += MIN_H;
+
+	pages[3].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContenxt_FlightState_deltaHeading_AVG);
+	pages[3].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[3].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContenxt_FlightState_deltaHeading_SUM);
+	pages[3].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x = 0;
+	y += MIN_H;
+
+	pages[3].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Thermaling_Gain);
+	pages[3].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[3].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Thermaling_Time);
+	pages[3].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x = 0;
+	y += MIN_H;	
 }
 
 void makeTopMenu()
@@ -877,11 +935,11 @@ void processKey(int key)
 		{
 		// from main scren
 		case CMD_SHOW_NEXT_PAGE :
-			activePage = (activePage + 1) % 3;
+			activePage = (activePage + 1) % MAX_PAGES;
 			display.attachScreen(&pages[activePage]);
 			break;
 		case CMD_SHOW_PREV_PAGE :
-			activePage = activePage == 0 ? 2 : activePage - 1;
+			activePage = activePage == 0 ? (MAX_PAGES - 1) : activePage - 1;
 			display.attachScreen(&pages[activePage]);
 			break;
 		case CMD_SHOW_TOP_MENU :
