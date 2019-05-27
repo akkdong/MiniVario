@@ -453,7 +453,8 @@ void loop()
 			if (deltaHeading < -180)
 				deltaHeading = deltaHeading + 360;
 
-			context.flightState.deltaHeading_AVG += (int16_t)((deltaHeading - context.flightState.deltaHeading_AVG) * DAMPING_FACTOR_DELTA_HEADING);
+			//context.flightState.deltaHeading_AVG += (int16_t)((deltaHeading - context.flightState.deltaHeading_AVG) * DAMPING_FACTOR_DELTA_HEADING);
+			context.flightState.deltaHeading_AVG = deltaHeading;
 			context.flightState.deltaHeading_SUM += context.flightState.deltaHeading_AVG;
 			context.flightState.deltaHeading_SUM = _CLAMP(context.flightState.deltaHeading_SUM, -450, 450); // one and a half turns
 

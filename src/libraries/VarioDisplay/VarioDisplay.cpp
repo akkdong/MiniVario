@@ -483,7 +483,7 @@ void VarioDisplay::drawVarioBar(Widget * widget)
 		}
 		else
 		{
-			fillRect(x, y + yy, w, BAR_H, COLOR_BLACK);
+			drawRect(x, y + yy, w, BAR_H, COLOR_BLACK);
 		}
 		
 		w -= 2;
