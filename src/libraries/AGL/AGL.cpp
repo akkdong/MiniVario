@@ -19,7 +19,7 @@ AGL::~AGL()
 
 double AGL::getGroundLevel(double _lat, double _lon)
 {
-	if (! mFile || ((int)_lat != mLat && (int)_lon != mLon))
+	if (! mFile || (int)_lat != mLat || (int)_lon != mLon)
 	{
 		mLat = (int16_t)_lat;
 		mLon = (int16_t)_lon;
