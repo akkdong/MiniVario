@@ -176,12 +176,16 @@ bool DeviceContext::save(Preferences & pref)
 	pref.putBytes("device", &deviceDefault, sizeof(deviceDefault));
 }
 
+#define VARIO_UPDATE_FREQ		(50)	// vario update every 20ms --> 50Hz
+#define VARIO_AVERAGE_INTERVAL	(2)		// average for 2 seconds
+
 void DeviceContext::updateVarioHistory()
 {
 	varioState.speedVertSumTotal += varioState.speedVertLazy; // varioState.speedVertActive;
 	varioState.speedVertSumCount += 1;
 
-	if (varioState.speedVertSumCount == 50 /*1000 / 20*/) // vario update every 20ms --> 50Hz
+	// 
+	if (varioState.speedVertSumCount == VARIO_UPDATE_FREQ * VARIO_AVERAGE_INTERVAL) 
 	{
 		varioState.speedVertHistory[varioState.speedVertNext] = varioState.speedVertSumTotal / varioState.speedVertSumCount;
 		//Serial.printf("#%d: %.1f -> %.1f\n", varioState.speedVertNext, varioState.speedVertSumTotal, varioState.speedVertHistory[varioState.speedVertNext]);

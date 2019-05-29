@@ -181,6 +181,14 @@ struct Position
 	float			alt;
 };
 
+enum FlightMode
+{
+	FMODE_READY,	// READY, LANDING
+	FMODE_FLYING,
+	FMODE_CIRCLING,
+	FMODE_GLIDING,
+};
+
 struct FlightState
 {
 	//
@@ -205,10 +213,15 @@ struct FlightState
 
 	//
 	int16_t			bearingTakeoff;
+	int16_t			bearingNextPoint;
 
 	//
 	float			distTakeoff;
 	float			distFlight;
+	float			distNextPoint;
+
+	//
+	FlightMode		flightMode;
 };
 
 
