@@ -26,6 +26,8 @@
 #else
 #include "KalmanSkyDrop.h"
 #endif
+#include "VerticalSpeedCalculator.h"
+
 
 #define DAMPING_FACTOR_DELTA_HEADING			0.1
 #define THRESHOLD_CIRCLING_HEADING		6
@@ -200,6 +202,7 @@ KalmanVario vario(baro);
 #else
 KalmanSkyDrop vario(baro);
 #endif
+VerticalSpeedCalculator varioCalculator;
 
 //
 //
@@ -310,21 +313,30 @@ void loop()
 	{
 		//
 		context.varioState.speedVertActive = vario.getVelocity();
-//		context.varioState.speedVertLazy = context.varioState.speedVertLazy * (1 - context.varioSetting.dampingFactor) + context.varioState.speedVertActive * context.varioSetting.dampingFactor;
-		context.varioState.speedVertLazy = context.varioState.speedVertLazy + (context.varioState.speedVertActive - context.varioState.speedVertLazy) * context.varioSetting.dampingFactor;
+		varioCalculator.add(context.varioState.speedVertActive);
+
+//		context.varioState.speedVertLazy = context.varioState.speedVertLazy + (context.varioState.speedVertActive - context.varioState.speedVertLazy) * context.varioSetting.dampingFactor;
+		context.varioState.speedVertLazy = varioCalculator.mVertSpeedAVG3; // 1s average
 		context.varioState.altitudeBaro = vario.getAltitude();
 		context.varioState.altitudeCalibrated = vario.getCalibratedAltitude();
 		context.varioState.pressure = vario.getPressure();
 		context.varioState.temperature = vario.getTemperature();
 
-		context.updateVarioHistory();
+		//context.updateVarioHistory();
+		context.varioState.speedVertSumCount = (context.varioState.speedVertSumCount + 1) % DEF_FREQUENCY;
+		if (context.varioState.speedVertSumCount == 0)
+		{
+			context.varioState.speedVertHistory[context.varioState.speedVertNext] = varioCalculator.mVertSpeedAVG2; // 2s average
+			context.varioState.speedVertNext = (context.varioState.speedVertNext + 1) % MAX_VARIO_HISTORY;
+		}
 
 		if (context.deviceDefault.enableSound)
 			varioBeeper.setVelocity(context.varioState.speedVertActive);
 
 		//
 		{
-			if (vario.getVelocity() < STABLE_SINKING_THRESHOLD || STABLE_CLIMBING_THRESHOLD < vario.getVelocity())
+			//if (vario.getVelocity() < STABLE_SINKING_THRESHOLD || STABLE_CLIMBING_THRESHOLD < vario.getVelocity())
+			if (context.varioState.speedVertLazy < STABLE_SINKING_THRESHOLD || STABLE_CLIMBING_THRESHOLD < context.varioState.speedVertLazy)
 				deviceTick = millis(); // reset tick because it's not quiet.
 			
 			// if (commandReceiveFlag)
