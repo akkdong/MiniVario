@@ -219,6 +219,11 @@ void readyFlight();
 void startFlight();
 void stopFlight();
 
+void startCircling();
+void startGliding();
+void stopCircling();
+void stopGliding();
+
 void updateVarioState();
 void updateFlightState();
 
@@ -562,64 +567,57 @@ void updateFlightState()
 	context.flightState.deltaHeading_SUM += context.flightState.deltaHeading_AVG;
 	context.flightState.deltaHeading_SUM = _CLAMP(context.flightState.deltaHeading_SUM, -450, 450); // one and a half turns
 
-	if (context.flightState.flightMode == FMODE_FLYING)
+	if (abs(context.flightState.deltaHeading_AVG) < THRESHOLD_CIRCLING_HEADING)	
+		context.flightState.glidingCount = _MIN(10, context.flightState.glidingCount + 1);
+	else
+		context.flightState.glidingCount = _MAX(0, context.flightState.glidingCount - 1);
+
+	switch (context.flightState.flightMode)
 	{
+	case FMODE_FLYING :
 		if (abs(context.flightState.deltaHeading_SUM) > 360)
 		{
-			// start of circling
-			context.flightState.flightMode = FMODE_CIRCLING;
-
-			// save circling state
-			context.flightState.circlingStartTime = nmeaParser.getDateTime();
-			context.flightState.circlingStartPos.lon = nmeaParser.getLongitude();
-			context.flightState.circlingStartPos.lat = nmeaParser.getLatitude();
-			context.flightState.circlingStartPos.alt = nmeaParser.getAltitude();
-			context.flightState.circlingIncline = -1;
-
-			context.flightState.circlingTime = 0;
-			context.flightState.circlingGain = 0;
-
-			context.flightState.glidingCount = 0;
+			startCircling();
 		}
-	}
-	else if (context.flightState.flightMode == FMODE_CIRCLING)
-	{
+		else if (context.flightState.glidingCount > 5)
+		{
+			startGliding();
+		}
+		break;
+
+	case FMODE_CIRCLING :
 		// update time & gain
 		context.flightState.circlingTime = nmeaParser.getDateTime() - context.flightState.circlingStartTime;
 		context.flightState.circlingGain = nmeaParser.getAltitude() - context.flightState.circlingStartPos.alt;
 
-		// check circling
-		if (abs(context.flightState.deltaHeading_AVG) < THRESHOLD_CIRCLING_HEADING)
+		// checking exit
+		if (context.flightState.glidingCount > 3)
 		{
-			context.flightState.glidingCount = _MIN(6, context.flightState.glidingCount + 1);
+			// CIRCLING --> FLYING(NORMAL)
+			stopCircling();
+		}
+		break;
 
-			if (context.flightState.glidingCount >= 5)
+	case FMODE_GLIDING :
+		// update gliding ratio(L/D)
+		{
+			float dist = GET_DISTANCE(context.flightState.glidingStartPos.lat, context.flightState.glidingStartPos.lon,
+				context.varioState.latitude, context.varioState.longitude);
+
+			if (dist > 100)
 			{
-				//
-				context.flightState.flightMode = FMODE_FLYING;
-
-				// update flight-statistics : thermaling count, max-gain
-				if (context.flightState.circlingGain > 10 && context.flightState.circlingTime > 0)
-				{
-					context.flightStats.totalThermaling += 1;
-					context.flightStats.thermalingMaxGain = _MAX(context.flightStats.thermalingMaxGain, context.flightState.circlingGain);
-				}
-
-				context.flightState.deltaHeading_AVG = 0;
-				context.flightState.deltaHeading_SUM = 0;
-				context.flightState.circlingStartTime = 0;
-				context.flightState.glidingCount = 0;
+				float diff = context.flightState.glidingStartPos.alt - context.varioState.altitudeGPS;
+				context.flightState.glideRatio = diff ? dist / diff : 0;
 			}
 		}
-		else
-		{
-			// 
-			context.flightState.glidingCount = _MAX(0, context.flightState.glidingCount - 1);
-		}					
-	}
-	else if (context.flightState.flightMode == FMODE_GLIDING)
-	{
 
+		// checking exit
+		if (context.flightState.glidingCount < 8)
+		{
+			// GLIDING --> FLYING(NORMAL)
+			stopGliding();
+		}
+		break;
 	}
 }
 
@@ -644,6 +642,63 @@ void stopFlight()
 		context.deviceState.statusSDCard = 1;
 	}	
 }
+
+void startCircling()
+{
+	// start of circling
+	context.flightState.flightMode = FMODE_CIRCLING;
+
+	// save circling state
+	context.flightState.circlingStartTime = nmeaParser.getDateTime();
+	context.flightState.circlingStartPos.lon = nmeaParser.getLongitude();
+	context.flightState.circlingStartPos.lat = nmeaParser.getLatitude();
+	context.flightState.circlingStartPos.alt = nmeaParser.getAltitude();
+	context.flightState.circlingIncline = -1;
+
+	context.flightState.circlingTime = 0;
+	context.flightState.circlingGain = 0;
+
+	context.flightState.glidingCount = 0;
+}
+
+void startGliding()
+{
+	// start of circling
+	context.flightState.flightMode = FMODE_GLIDING;
+
+	//
+	context.flightState.glidingStartPos.lon = nmeaParser.getLongitude();
+	context.flightState.glidingStartPos.lat = nmeaParser.getLatitude();
+	context.flightState.glidingStartPos.alt = nmeaParser.getAltitude();
+
+	context.flightState.glideRatio = 0;
+}
+
+void stopCircling()
+{
+	// now normal flying
+	context.flightState.flightMode = FMODE_FLYING;
+
+	// update flight-statistics : thermaling count, max-gain
+	if (context.flightState.circlingGain > 10 && context.flightState.circlingTime > 0)
+	{
+		context.flightStats.totalThermaling += 1;
+		context.flightStats.thermalingMaxGain = _MAX(context.flightStats.thermalingMaxGain, context.flightState.circlingGain);
+	}
+
+	context.flightState.deltaHeading_AVG = 0;
+	context.flightState.deltaHeading_SUM = 0;
+}
+
+void stopGliding()
+{
+	// now normal flying
+	context.flightState.flightMode = FMODE_FLYING;
+
+	//
+	context.flightState.glideRatio = 0;
+}
+
 
 void goDeepSleep()
 {
@@ -905,7 +960,7 @@ void loadPages(VarioScreen * pages)
 	x = 0;
 	y += MIN_H;
 
-	pages[3].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Heading);
+	pages[3].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Glide_Ratio);
 	pages[3].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
 	widget++;
 	x += TEXTBOX_S_WIDTH;

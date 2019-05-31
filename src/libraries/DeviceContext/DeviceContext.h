@@ -206,9 +206,10 @@ struct FlightState
 	int16_t			deltaHeading_AVG;
 	int16_t			deltaHeading_SUM;
 
-	int32_t			glidingCount;
 
 	//
+	Position		glidingStartPos;
+	int32_t			glidingCount;
 	float			glideRatio; // L/D(Lift to Drag)
 
 	//
