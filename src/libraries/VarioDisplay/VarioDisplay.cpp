@@ -58,6 +58,7 @@ VarioDisplay::VarioDisplay(EPaperDriver & _driver, DeviceContext & _context)
 	, activePopup(NULL)
 	, context(_context)
 	, displayMode(_VARIO)
+	, updateCount(0)
 {
 }
 
@@ -80,8 +81,6 @@ int VarioDisplay::begin(bool confirmWakeup)
 
 void VarioDisplay::TaskProc()
 {
-	uint32_t updateCount = 0;
-	
 	//
 	init();
 
@@ -141,6 +140,7 @@ void VarioDisplay::end()
 void VarioDisplay::attachScreen(VarioScreen * screen)
 {
 	activeScreen = screen;
+	updateCount = 0;
 }
 
 void VarioDisplay::attachPreference(VarioPreference * pref)

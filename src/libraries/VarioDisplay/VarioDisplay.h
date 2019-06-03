@@ -132,6 +132,7 @@ private:
 	};
 
 	volatile int		displayMode;
+	volatile uint32_t	updateCount;
 };
 
 

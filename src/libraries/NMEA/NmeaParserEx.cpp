@@ -651,8 +651,13 @@ long NmeaParserEx::strToNum(int startPos)
 long NmeaParserEx::floatToCoordi(float value)
 {
 	// DDDMM.mmmm -> DDDMMmmm (with round up)
+	#if 0
 	long coordi = (long)value;
-	float temp = (value - coordi) * 1000.0f + 0.5f;
+	float temp = (value - coordi) * 100000.0f;
 	
-	return coordi * 1000 + (long)temp;
+	return coordi * 100000 + (long)temp;
+	#else
+	float temp = value * 100000.0f;
+	return (long)temp;
+	#endif
 }
