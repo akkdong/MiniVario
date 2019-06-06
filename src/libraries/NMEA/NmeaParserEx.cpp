@@ -460,28 +460,31 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			break;
 		case 1 : // Latitude (DDMM.mmm)
 			// save latitude
-			mLatitude = nmeaToDecimal(strToFloat(startPos));
-			
-			// update IGC sentence if it's unlocked
-			if (! IS_SET(IGC_LOCKED))
 			{
-				#if 0
-				for(int i = 0, j = 0; i < IGC_SIZE_LATITUDE; i++, j++)
+				float nmeaLatitude = strToFloat(startPos);
+				mLatitude = nmeaToDecimal(nmeaLatitude);
+				
+				// update IGC sentence if it's unlocked
+				if (! IS_SET(IGC_LOCKED))
 				{
-					if ('0' <= mBuffer[startPos+j] && mBuffer[startPos+j] <= '9')
-						mIGCSentence[IGC_OFFSET_LATITUDE+i] = mBuffer[startPos+j];
-					else if (mBuffer[startPos+j] == '.')
-						i -= 1;
-					else
-						break;
+					#if 0
+					for(int i = 0, j = 0; i < IGC_SIZE_LATITUDE; i++, j++)
+					{
+						if ('0' <= mBuffer[startPos+j] && mBuffer[startPos+j] <= '9')
+							mIGCSentence[IGC_OFFSET_LATITUDE+i] = mBuffer[startPos+j];
+						else if (mBuffer[startPos+j] == '.')
+							i -= 1;
+						else
+							break;
+					}
+					#else
+					FixedLenDigit digit;
+				
+					digit.begin(floatToCoordi(nmeaLatitude), IGC_SIZE_LATITUDE);
+					for (int i = 0; i < IGC_SIZE_LATITUDE /*digit.available()*/; i++)
+						mIGCSentence[IGC_OFFSET_LATITUDE+i] = digit.read();
+					#endif
 				}
-				#else
-				FixedLenDigit digit;
-			
-				digit.begin(floatToCoordi(mLatitude), IGC_SIZE_LATITUDE);
-				for (int i = 0; i < IGC_SIZE_LATITUDE /*digit.available()*/; i++)
-					mIGCSentence[IGC_OFFSET_LATITUDE+i] = digit.read();
-				#endif
 			}
 			break;
 		case 2 : // Latitude (N or S)
@@ -499,28 +502,31 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			break;
 		case 3 : // Longitude (DDDMM.mmmm)
 			// save longitude
-			mLongitude = nmeaToDecimal(strToFloat(startPos));
-			
-			// update IGC sentence if it's unlocked
-			if (! IS_SET(IGC_LOCKED))
 			{
-				#if 0
-				for(int i = 0, j = 0; i < IGC_SIZE_LONGITUDE; i++, j++)
+				float nmeaLongitude = strToFloat(startPos);
+				mLongitude = nmeaToDecimal(nmeaLongitude);
+				
+				// update IGC sentence if it's unlocked
+				if (! IS_SET(IGC_LOCKED))
 				{
-					if ('0' <= mBuffer[startPos+j] && mBuffer[startPos+j] <= '9')
-						mIGCSentence[IGC_OFFSET_LONGITUDE+i] = mBuffer[startPos+j];
-					else if (mBuffer[startPos+j] == '.')
-						i -= 1;
-					else
-						break;
+					#if 0
+					for(int i = 0, j = 0; i < IGC_SIZE_LONGITUDE; i++, j++)
+					{
+						if ('0' <= mBuffer[startPos+j] && mBuffer[startPos+j] <= '9')
+							mIGCSentence[IGC_OFFSET_LONGITUDE+i] = mBuffer[startPos+j];
+						else if (mBuffer[startPos+j] == '.')
+							i -= 1;
+						else
+							break;
+					}
+					#else
+					FixedLenDigit digit;
+				
+					digit.begin(floatToCoordi(nmeaLongitude), IGC_SIZE_LONGITUDE);
+					for (int i = 0; i < IGC_SIZE_LONGITUDE /*digit.available()*/; i++)
+						mIGCSentence[IGC_OFFSET_LONGITUDE+i] = digit.read();
+					#endif
 				}
-				#else
-				FixedLenDigit digit;
-			
-				digit.begin(floatToCoordi(mLongitude), IGC_SIZE_LONGITUDE);
-				for (int i = 0; i < IGC_SIZE_LONGITUDE /*digit.available()*/; i++)
-					mIGCSentence[IGC_OFFSET_LONGITUDE+i] = digit.read();
-				#endif
 			}			
 			break;
 		case 4 : // Longitude (E or W)
@@ -653,11 +659,11 @@ long NmeaParserEx::floatToCoordi(float value)
 	// DDDMM.mmmm -> DDDMMmmm (with round up)
 	#if 0
 	long coordi = (long)value;
-	float temp = (value - coordi) * 100000.0f;
+	float temp = (value - coordi) * 1000.0f;
 	
-	return coordi * 100000 + (long)temp;
+	return coordi * 1000 + (long)temp;
 	#else
-	float temp = value * 100000.0f;
+	float temp = value * 1000.0f;
 	return (long)temp;
 	#endif
 }
