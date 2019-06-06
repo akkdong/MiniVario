@@ -14,7 +14,7 @@
 // class KalmanVario
 
 KalmanVario::KalmanVario(Sensor_MS5611 & _baro) 
-	: Task("Kalman", 2 * 1024, 3)
+	: Task("Kalman", 2 * 1024, configMAX_PRIORITIES - 1)
 	, baro(_baro)
 	, seaLevel(1013.25)
 	, mTimer(NULL)
@@ -169,8 +169,8 @@ void KalmanVario::update()
 		baroAltitude += (altitude - baroAltitude) * 0.06;
 
 		// delta time
-		unsigned long deltaTime = 20; // millis() - t_;
-//		unsigned long deltaTime = millis() - t_;
+//		unsigned long deltaTime = 20; // millis() - t_;
+		unsigned long deltaTime = millis() - t_;
 		float dt = ((float)deltaTime) / 1000.0;
 		t_ = millis();
 
