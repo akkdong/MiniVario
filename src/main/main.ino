@@ -1053,12 +1053,12 @@ void processKey(int key)
 				context.deviceDefault.enableBT = context.deviceState.statusBT = context.deviceState.statusBT ? 0 : 1;
 				if (context.deviceState.statusBT)
 				{
-					serialBluetooth.register_callback(bluetoothSPPCallback);
+					//serialBluetooth.register_callback(bluetoothSPPCallback);
 					serialBluetooth.begin("MiniVario");
 				}					
 				else
 				{
-					serialBluetooth.register_callback(NULL);
+					//serialBluetooth.register_callback(NULL);
 					serialBluetooth.end();
 				}
 				//savePreferences();
@@ -1101,7 +1101,7 @@ void startVario()
 	//
 	if (context.deviceDefault.enableBT)
 	{
-		serialBluetooth.register_callback(bluetoothSPPCallback);
+		//serialBluetooth.register_callback(bluetoothSPPCallback);
 		serialBluetooth.begin(context.deviceDefault.btName);
 	}
 	context.deviceState.statusBT = context.deviceDefault.enableBT ? 1 : 0;

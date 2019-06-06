@@ -83,7 +83,7 @@ int KalmanVario::begin(float zVariance, float zAccelVariance, float zAccelBiasVa
 	mActiveVario = this;
 	mTimer = timerBegin(0, 80, true); // ESP32 Counter: 80 MHz, Prescaler: 80 --> 1MHz timer
 	timerAttachInterrupt(mTimer, TimerProc, true);
-	timerAlarmWrite(mTimer, 1000000 / 100, true); // 100Hz -> alarm very 10msec, 118Hz -> 8.4746 msec  :  the measure period need to be greater than 8.22 msec
+	timerAlarmWrite(mTimer, 1000000 / 50, true); // 100Hz -> alarm very 10msec, 118Hz -> 8.4746 msec  :  the measure period need to be greater than 8.22 msec
 	timerAlarmEnable(mTimer);
 	
 	//

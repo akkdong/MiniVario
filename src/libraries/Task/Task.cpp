@@ -17,40 +17,6 @@ Task::Task(const char * name, uint32_t depth, UBaseType_t priority) : taskName(n
 {
 }
 
-/*
-int Task::begin()
-{
-	if (taskHandle != NULL)
-		return -1;
-	
-	#if 1
-	xTaskCreatePinnedToCore(
-		_TaskProc,  
-		taskName,     // A name just for humans
-		stackDepth,   // This stack size can be checked & adjusted by reading the Stack Highwater
-		this,  // Parameter
-		taskPriority,    // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
-		&taskHandle ,  
-		ARDUINO_RUNNING_CORE);
-	#else
-	xTaskCreate(
-		_TaskProc,  
-		taskName,     // A name just for humans
-		stackDepth,   // This stack size can be checked & adjusted by reading the Stack Highwater
-		this,  // Parameter
-		taskPriority,    // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
-		&taskHandle);
-	#endif
-
-	return 0;
-}
-
-void Task::end()
-{
-	vTaskDelete(taskHandle);
-}
-*/
-
 bool Task::create()
 {
 	if (taskHandle != NULL)
@@ -61,7 +27,7 @@ bool Task::create()
 		taskName,     // A name just for humans
 		stackDepth,   // This stack size can be checked & adjusted by reading the Stack Highwater
 		this,  // Parameter
-		taskPriority,    // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
+		taskPriority,    // Priority, with (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
 		&taskHandle);
 
 	return true;
@@ -77,7 +43,7 @@ bool Task::createPinnedToCore(const BaseType_t xCoreID)
 		taskName,     // A name just for humans
 		stackDepth,   // This stack size can be checked & adjusted by reading the Stack Highwater
 		this,  // Parameter
-		taskPriority,    // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
+		taskPriority,    // Priority, with (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
 		&taskHandle ,  
 		xCoreID);
 

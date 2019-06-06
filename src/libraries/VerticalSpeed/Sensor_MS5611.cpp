@@ -105,7 +105,7 @@ uint16_t Sensor_MS5611::getPROMValue(int address, uint32_t timeout)
 	mWire.requestFrom(MS5611_ADDRESS, sizeof(data));
 	
 	uint32_t tstart = millis();
-	while (! mWire.available() && (timeout == 0 || (millis() - tstart) < timeout)) {}
+	while (mWire.available() < sizeof(data) && (timeout == 0 || (millis() - tstart) < timeout)) {}
 	
 	for (int i = 0; i < sizeof(data); i++)
 		data[i] = mWire.read();	
@@ -125,7 +125,7 @@ uint32_t Sensor_MS5611::getDigitalValue(uint32_t timeout)
 	mWire.requestFrom(MS5611_ADDRESS, sizeof(data));
 
 	uint32_t tstart = millis();
-	while (! mWire.available() && (timeout == 0 || (millis() - tstart) < timeout)) {}
+	while (mWire.available() < sizeof(data) && (timeout == 0 || (millis() - tstart) < timeout)) {}
 	
 	for (int i = 0; i < sizeof(data); i++)
 		data[i] = mWire.read();	
@@ -264,7 +264,6 @@ void Sensor_MS5611::updateBaro()
 	// save result
 	compensatedTemperature = temp / 100.0;
 	compensatedPressure = (p / 32768.0) / 100.0;  //32768 = 2^15	
-	//Serial.print("p = "); Serial.print(compensatedPressure); Serial.print(", t = "); Serial.println(compensatedTemperature);
 
 	//
 	baroUpdated = true;
