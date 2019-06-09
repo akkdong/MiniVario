@@ -73,6 +73,8 @@ public:
 	float					getTemperature();
 	float					getPressure();
 	
+	void					convert();
+	
 	void					startConvert();
 	void					convertNext();
 	

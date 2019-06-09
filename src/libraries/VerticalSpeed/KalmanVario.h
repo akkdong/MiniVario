@@ -44,6 +44,8 @@ protected:
 	
 	void					TaskProc();
 	
+private:
+	void					init();
 	
 private:
 	// State being tracked

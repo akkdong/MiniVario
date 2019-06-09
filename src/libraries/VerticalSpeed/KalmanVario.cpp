@@ -54,6 +54,28 @@ int KalmanVario::begin(float zVariance, float zAccelVariance, float zAccelBiasVa
     zAccelBiasVariance_ = zAccelBiasVariance;
 	zVariance_ = zVariance;
 
+	init();
+	
+	//
+	varioUpdated = false;
+	t_ = millis();
+	
+	//
+	Task::createPinnedToCore(1);
+	
+	//
+	//mActiveVario = this;
+	//mTimer = timerBegin(0, 80, true); // ESP32 Counter: 80 MHz, Prescaler: 80 --> 1MHz timer
+	//timerAttachInterrupt(mTimer, TimerProc, true);
+	//timerAlarmWrite(mTimer, 1000000 / 50, true); // 100Hz -> alarm very 10msec, 118Hz -> 8.4746 msec  :  the measure period need to be greater than 8.22 msec
+	//timerAlarmEnable(mTimer);
+	
+	//
+	//baro.startConvert();
+}
+
+void KalmanVario::init()
+{
 	z_ = Sensor_MS5611::getAltitude(baro.getPressure(), seaLevel);
 	v_ = 0.0f; // vInitial;
 	aBias_ = 0.0f; // aBiasInitial;
@@ -70,24 +92,7 @@ int KalmanVario::begin(float zVariance, float zAccelVariance, float zAccelBiasVa
 	Paa_ = 100000.0f;	
 	
 	baroAltitude = z_;
-	altitudeDrift = 0.0;
-	
-	//
-	varioUpdated = false;
-	t_ = millis();
-	
-	//
-	Task::createPinnedToCore(1);
-	
-	//
-	mActiveVario = this;
-	mTimer = timerBegin(0, 80, true); // ESP32 Counter: 80 MHz, Prescaler: 80 --> 1MHz timer
-	timerAttachInterrupt(mTimer, TimerProc, true);
-	timerAlarmWrite(mTimer, 1000000 / 50, true); // 100Hz -> alarm very 10msec, 118Hz -> 8.4746 msec  :  the measure period need to be greater than 8.22 msec
-	timerAlarmEnable(mTimer);
-	
-	//
-	baro.startConvert();
+	altitudeDrift = 0.0;	
 }
 
 void IRAM_ATTR KalmanVario::TimerProc() 
@@ -105,6 +110,7 @@ void KalmanVario::TaskProc()
 {
 	while (1)
 	{
+		#if 0
 		//
 		xSemaphoreTake(mSemaphore, portMAX_DELAY);
 		
@@ -122,6 +128,10 @@ void KalmanVario::TaskProc()
 			// The operation is complete.  Restart the RTOS kernel.
 			//xTaskResumeAll();
 		}
+		#else
+		baro.convert();	
+		update();
+		#endif
 	}
 }
 
@@ -261,4 +271,6 @@ void KalmanVario::calculateSeaLevel(float altitude)
 {
 	// update seaLevel pressure
 	seaLevel = baro.getPressure() / pow(1.0 - (altitude / 44330.0), 5.255);
+	// reset variables
+	init();
 }

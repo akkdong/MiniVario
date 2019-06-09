@@ -3,6 +3,8 @@
 
 #include "Sensor_MS5611.h"
 
+#define CONVERT_TIME				(9)		// 9 ms: the measure period need to be greater than 8.22 ms
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // class Sensor_MS5611
@@ -31,7 +33,7 @@ void Sensor_MS5611::begin()
 	c5 = getPROMValue(4);
 	c6 = getPROMValue(5);
 	
-	#if 1
+	#if 0
 	Serial.println("MS5611 PROM...");
 	Serial.print("c1 = "); Serial.println(c1);
 	Serial.print("c2 = "); Serial.println(c2);
@@ -137,6 +139,24 @@ uint32_t Sensor_MS5611::getDigitalValue(uint32_t timeout)
 	value += data[2];
 	
 	return value;
+}
+
+void Sensor_MS5611::convert()
+{
+	const TickType_t xDelay = CONVERT_TIME / portTICK_PERIOD_MS;
+
+	//
+	convertD1();
+	vTaskDelay(xDelay);
+	d1i = getDigitalValue();
+
+	//
+	convertD2();
+	vTaskDelay(xDelay);
+	d2i = getDigitalValue();
+
+	//
+	updateBaro();
 }
 
 void Sensor_MS5611::startConvert()
