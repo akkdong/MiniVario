@@ -2,6 +2,8 @@
 //
 
 #include "KalmanVario.h"
+#include "TaskWatchdog.h"
+
 
 #if CONFIG_FREERTOS_UNICORE
 #define ARDUINO_RUNNING_CORE 0
@@ -44,6 +46,8 @@ int KalmanVario::begin(float zVariance, float zAccelVariance, float zAccelBiasVa
 		float p, t;
 		baro.read(&p, &t);
 		//Serial.printf("Pressure = %.2f, Temperature = %.1f\n", p, t);
+
+		TaskWatchdog::reset();
 	}
 	
 	//
@@ -108,8 +112,16 @@ void IRAM_ATTR KalmanVario::TimerProc()
 
 void KalmanVario::TaskProc() 
 {
+	//
+	TaskWatchdog::add(NULL);
+
+	//
 	while (1)
 	{
+		//
+		TaskWatchdog::reset();
+
+		//
 		#if 0
 		//
 		xSemaphoreTake(mSemaphore, portMAX_DELAY);

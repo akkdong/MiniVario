@@ -4,6 +4,7 @@
 #include "VarioDisplay.h"
 #include "Bitmap_StatusBar.h"
 #include "Bitmap_Paragliding.h"
+#include "TaskWatchdog.h"
 #include <math.h>
 
 #if CONFIG_FREERTOS_UNICORE
@@ -82,7 +83,11 @@ int VarioDisplay::begin(bool confirmWakeup)
 void VarioDisplay::TaskProc()
 {
 	//
+	//TaskWatchdog::add(NULL);
+
+	//
 	init();
+	//TaskWatchdog::reset();
 
 	//
 	if (displayMode == _CONFIRM)
@@ -98,6 +103,10 @@ void VarioDisplay::TaskProc()
 	//
 	while (1)
 	{
+		//
+		//TaskWatchdog::reset();
+
+		//
 		switch (displayMode)
 		{
 		case _CONFIRM :

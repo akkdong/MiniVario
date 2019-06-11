@@ -14,9 +14,9 @@
 #include "VarioSentence.h"
 #include "VarioLogger.h"
 #include "BluetoothMan.h"
-#include "HardReset.h"
 #include "Util.h"
 #include "AGL.h"
+#include "TaskWatchdog.h"
 
 
 #define USE_KALMAN_VARIO 	1
@@ -29,8 +29,16 @@
 #include "VerticalSpeedCalculator.h"
 
 
-#define DAMPING_FACTOR_DELTA_HEADING			0.1
-#define THRESHOLD_CIRCLING_HEADING		6
+#define DAMPING_FACTOR_DELTA_HEADING			(0.1)
+#define THRESHOLD_CIRCLING_HEADING				(6)
+
+#define MAX_GLIDING_COUNT						(10)
+#define MIN_GLIDING_COUNT						(0)
+#define GLIDING_START_COUNT						(6)
+#define GLIDING_EXIT_COUNT						(6)
+#define CIRCLING_EXIT_COUNT						(3)
+
+#define TASK_TIMEOUT_S							(1)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -138,7 +146,7 @@ static Tone melodyLanding[] =
 uint8_t deviceMode = DEVICE_MODE_UNDEF;
 //uint8_t	varioMode; 		// sub-mode of vario-mode
 
-static RTC_DATA_ATTR uint32_t bootCount = 0;
+RTC_DATA_ATTR uint32_t bootCount = 0;
 
 uint32_t deviceTick;	// global tick-count
 uint32_t modeTick;		// mode-specific tick-count
@@ -257,6 +265,10 @@ void setup()
 		break;
 	}
 
+	//
+	TaskWatchdog::begin(TASK_TIMEOUT_S);
+	TaskWatchdog::add(NULL);
+
 	// power on peripherals : default is power on
 	initPins(powerPins, sizeof(powerPins) / sizeof(powerPins[0]));
 	delay(20);
@@ -267,10 +279,10 @@ void setup()
 	Wire.begin();
 
 	Serial.println("Start MiniVario...\n");
-	Serial.printf( "  reboot: %d\n", ++bootCount);
 
 	// load last device-context
 	loadPreferences();
+	TaskWatchdog::reset();
 	
 	//
 	keybd.begin();
@@ -294,6 +306,9 @@ void setup()
 
 void loop()
 {
+	//
+	TaskWatchdog::reset();
+
 	// check key-input
 	keybd.update();
 	
@@ -568,9 +583,9 @@ void updateFlightState()
 	context.flightState.deltaHeading_SUM = _CLAMP(context.flightState.deltaHeading_SUM, -450, 450); // one and a half turns
 
 	if (abs(context.flightState.deltaHeading_AVG) < THRESHOLD_CIRCLING_HEADING)	
-		context.flightState.glidingCount = _MIN(10, context.flightState.glidingCount + 1);
+		context.flightState.glidingCount = _MIN(MAX_GLIDING_COUNT, context.flightState.glidingCount + 1);
 	else
-		context.flightState.glidingCount = _MAX(0, context.flightState.glidingCount - 1);
+		context.flightState.glidingCount = _MAX(MIN_GLIDING_COUNT, context.flightState.glidingCount - 1);
 
 	switch (context.flightState.flightMode)
 	{
@@ -579,7 +594,7 @@ void updateFlightState()
 		{
 			startCircling();
 		}
-		else if (context.flightState.glidingCount > 5)
+		else if (context.flightState.glidingCount > GLIDING_START_COUNT)
 		{
 			startGliding();
 		}
@@ -591,7 +606,7 @@ void updateFlightState()
 		context.flightState.circlingGain = nmeaParser.getAltitude() - context.flightState.circlingStartPos.alt;
 
 		// checking exit
-		if (context.flightState.glidingCount > 3)
+		if (context.flightState.glidingCount > CIRCLING_EXIT_COUNT)
 		{
 			// CIRCLING --> FLYING(NORMAL)
 			stopCircling();
@@ -612,7 +627,7 @@ void updateFlightState()
 		}
 
 		// checking exit
-		if (context.flightState.glidingCount < 8)
+		if (context.flightState.glidingCount < GLIDING_EXIT_COUNT)
 		{
 			// GLIDING --> FLYING(NORMAL)
 			stopGliding();
@@ -711,6 +726,10 @@ void goDeepSleep()
 	//
 	toneGen.end();
 
+	//
+	TaskWatchdog::remove(NULL);
+	TaskWatchdog::end();
+
 	// sleep display & device
 	display.deepSleep();
 	while(1);
@@ -730,14 +749,10 @@ void resetDevice()
 	// turn-off peripherals
 	setPinState(&powerPins[0], PIN_STATE_INACTIVE);
 	setPinState(&powerPins[1], PIN_STATE_INACTIVE);
-	delay(100);
+	delay(5000); // delay will trigger Task watchdog!
 
-	//
-	#if 1
+	// or manually reset
 	ESP.restart();
-	#else
-	HardReset();
-	#endif
 }
 
 void loadPages(VarioScreen * pages)
