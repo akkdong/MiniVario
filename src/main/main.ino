@@ -7,9 +7,8 @@
 #include "BatteryVoltage.h"
 #include "Keyboard.h"
 #include "DeviceDefines.h"
-#include "VarioBeeper.h"
+#include "Beeper.h"
 #include "BluetoothSerialEx.h"
-#include "BluetoothCallback.h"
 #include "NmeaParserEx.h"
 #include "VarioSentence.h"
 #include "VarioLogger.h"
@@ -173,10 +172,11 @@ BluetoothSerialEx  	serialBluetooth;
 //
 //
 
-SineGenerator toneGen;
-TonePlayer tonePlayer(toneGen);
-
-VarioBeeper varioBeeper(tonePlayer);
+//SineGenerator toneGen;
+//TonePlayer tonePlayer(toneGen);
+//
+//VarioBeeper varioBeeper(tonePlayer);
+Beeper beeper;
 
 VarioDisplayDriver driver(ePaperPins);
 VarioDisplay display(driver, context);
@@ -289,9 +289,11 @@ void setup()
 	//
 	display.begin(deviceMode == DEVICE_MODE_WAKEUP);
 	//
-	toneGen.begin(SineGenerator::USE_DIFFERENTIAL, SineGenerator::SCALE_FULL, 0);
-	tonePlayer.setVolume(context.volume.vario);
+	//toneGen.begin(SineGenerator::USE_DIFFERENTIAL, SineGenerator::SCALE_FULL, 0);
+	//tonePlayer.setVolume(context.volume.vario);
 	//tonePlayer.setBeep(NOTE_C4, 800, 500, 2, 100);
+	beeper.begin();
+	beeper.setBeep(NOTE_C4, 800, 500, 2, 100);
 
 	//
 	btMan.begin();
@@ -313,7 +315,8 @@ void loop()
 	keybd.update();
 	
 	// beep beep beep!
-	tonePlayer.update();
+	//tonePlayer.update();
+	// beeper update function is executed in task proc
 
 	if (deviceMode == DEVICE_MODE_WAKEUP)
 	{
@@ -351,7 +354,8 @@ void loop()
 		}
 
 		if (context.deviceDefault.enableSound)
-			varioBeeper.setVelocity(context.varioState.speedVertActive);
+			//varioBeeper.setVelocity(context.varioState.speedVertActive);
+			beeper.setVelocity(context.varioState.speedVertActive);
 
 		//
 		{
@@ -486,7 +490,8 @@ void readyFlight()
 	settimeofday(&now, NULL);
 
 	// play ready melody~~~
-	tonePlayer.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);				
+	//tonePlayer.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
+	beeper.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, context.volume.effect, PLAY_PREEMPTIVE);
 	
 	// now ready to fly~~~
 	deviceMode = DEVICE_MODE_VARIO_AND_GPS;
@@ -501,7 +506,8 @@ void startFlight()
 		context.deviceDefault.enableSound = 1;
 	
 	// play take-off melody
-	tonePlayer.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
+	//tonePlayer.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
+	beeper.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, context.volume.effect, PLAY_PREEMPTIVE);
 
 	//
 	btMan.startLogging(nmeaParser.getDateTime());
@@ -645,7 +651,8 @@ void stopFlight()
 	context.flightState.bearingTakeoff = -1;
 	
 	// play landing melody
-	tonePlayer.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
+	//tonePlayer.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
+	beeper.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, context.volume.effect, PLAY_PREEMPTIVE);
 
 	//
 	btMan.stopLogging();
@@ -724,7 +731,8 @@ void goDeepSleep()
 	// close logging-file
 	logger.end(nmeaParser.getDateTime());
 	//
-	toneGen.end();
+	//toneGen.end();
+	beeper.end();
 
 	//
 	TaskWatchdog::remove(NULL);
@@ -744,7 +752,8 @@ void resetDevice()
 	// close logging-file
 	logger.end(nmeaParser.getDateTime());
 	//
-	toneGen.end();
+	//toneGen.end();
+	beeper.end();
 
 	// turn-off peripherals
 	setPinState(&powerPins[0], PIN_STATE_INACTIVE);
@@ -1058,8 +1067,9 @@ void processKey(int key)
 				context.deviceDefault.enableSound = context.deviceDefault.enableSound ? 0 : 1;
 				if (! context.deviceDefault.enableSound)
 				{
-					varioBeeper.setVelocity(0);			
-					toneGen.setFrequency(0);
+					//varioBeeper.setVelocity(0);			
+					//toneGen.setFrequency(0);
+					beeper.setVelocity(0);
 				}
 				//savePreferences();
 				break;
@@ -1067,15 +1077,9 @@ void processKey(int key)
 			case TMID_TOGGLE_BLUETOOTH : // toggle bluetooth
 				context.deviceDefault.enableBT = context.deviceState.statusBT = context.deviceState.statusBT ? 0 : 1;
 				if (context.deviceState.statusBT)
-				{
-					//serialBluetooth.register_callback(bluetoothSPPCallback);
 					serialBluetooth.begin("MiniVario");
-				}					
 				else
-				{
-					//serialBluetooth.register_callback(NULL);
 					serialBluetooth.end();
-				}
 				//savePreferences();
 				break;
 				
@@ -1115,10 +1119,7 @@ void startVario()
 	context.deviceState.batteryPower = battery.getVoltage();
 	//
 	if (context.deviceDefault.enableBT)
-	{
-		//serialBluetooth.register_callback(bluetoothSPPCallback);
 		serialBluetooth.begin(context.deviceDefault.btName);
-	}
 	context.deviceState.statusBT = context.deviceDefault.enableBT ? 1 : 0;
 
 	//
