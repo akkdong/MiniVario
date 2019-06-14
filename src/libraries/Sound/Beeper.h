@@ -24,18 +24,16 @@ struct Tone
 	int			length;
 };
 
-struct PlayContext
+struct PlayTones
 {
-	//
-	Tone *			tonePtr;
-	int				toneCount;
-	
-	//
-	int				playVolume;
-	int				playType;
-	
-	//
-	int				repeatCount;
+	Tone *		tonePtr;
+	int			toneCount;
+
+	int			volume;
+	int			repeatCount;
+
+	int			activeTone;
+	int			playCount;
 };
 
 
@@ -61,27 +59,25 @@ protected:
 
 private:
     void                findTone(float velocity, int & freq, int & period, int & duty);
+    void                playTone(int freq, int volume = -1);
 
+	#if 0
     int                 playCheck();
     void                playNext();
-    void                playTone(int freq, int volume = -1);
+	#endif
 
     void                init();
 
 private:
 	//
-	PlayContext		    tonePlay;
-	PlayContext		    toneNext;
+	PlayTones			playTones[2];		// active & candidate
+	int					activeTones;	// 0 or 1
+
+	Tone				muteTone[1];
+	Tone 				beepTone[2];
+	Tone				beepToneNext[2];
 
 	//
-	int				    toneIndex;
-	unsigned long	    toneStartTick;
-
-	//
-	int				    playCount;
-	int				    playVolume;
-
-    
     uint8_t             beepType; // sinking, silent, (gliding), climbing
 	
 	//

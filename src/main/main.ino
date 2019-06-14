@@ -101,39 +101,39 @@ static PinSetting keybdPins[] =
 
 static Tone melodyVarioReady[] =
 {
-	{ 262, 1000 / 4 }, 
-	{ 196, 1000 / 8 }, 
-	{ 196, 1000 / 8 }, 
-	{ 220, 1000 / 4 }, 
-	{ 196, 1000 / 4 }, 
+	{ -262, 1000 / 4 }, 
+	{ -196, 1000 / 8 }, 
+	{ -196, 1000 / 8 }, 
+	{ -220, 1000 / 4 }, 
+	{ -196, 1000 / 4 }, 
 	{   0, 1000 / 4 }, 
-	{ 247, 1000 / 4 }, 
-	{ 262, 1000 / 4 },
+	{ -247, 1000 / 4 }, 
+	{ -262, 1000 / 4 },
 	{   0, 1000 / 8 }, 
 };
 static Tone melodyTakeOff[] =
 {
-	{ 262, 1000 / 4 }, 
-	{ 196, 1000 / 8 }, 
-	{ 196, 1000 / 8 }, 
-	{ 220, 1000 / 4 }, 
-	{ 196, 1000 / 4 }, 
+	{ -262, 1000 / 4 }, 
+	{ -196, 1000 / 8 }, 
+	{ -196, 1000 / 8 }, 
+	{ -220, 1000 / 4 }, 
+	{ -196, 1000 / 4 }, 
 	{   0, 1000 / 4 }, 
-	{ 247, 1000 / 4 }, 
-	{ 262, 1000 / 4 },
+	{ -247, 1000 / 4 }, 
+	{ -262, 1000 / 4 },
 	{   0, 1000 / 8 }, 
 };
 
 static Tone melodyLanding[] =
 {
-	{ 262, 1000 / 4 }, 
-	{ 196, 1000 / 8 }, 
-	{ 196, 1000 / 8 }, 
-	{ 220, 1000 / 4 }, 
-	{ 196, 1000 / 4 }, 
+	{ -262, 1000 / 4 }, 
+	{ -196, 1000 / 8 }, 
+	{ -196, 1000 / 8 }, 
+	{ -220, 1000 / 4 }, 
+	{ -196, 1000 / 4 }, 
 	{   0, 1000 / 4 }, 
-	{ 247, 1000 / 4 }, 
-	{ 262, 1000 / 4 },
+	{ -247, 1000 / 4 }, 
+	{ -262, 1000 / 4 },
 	{   0, 1000 / 8 }, 
 };
 
@@ -289,11 +289,9 @@ void setup()
 	//
 	display.begin(deviceMode == DEVICE_MODE_WAKEUP);
 	//
-	//toneGen.begin(SineGenerator::USE_DIFFERENTIAL, SineGenerator::SCALE_FULL, 0);
-	//tonePlayer.setVolume(context.volume.vario);
-	//tonePlayer.setBeep(NOTE_C4, 800, 500, 2, 100);
 	beeper.begin();
-	beeper.setBeep(NOTE_C4, 800, 500, 2, 100);
+	//beeper.setBeep(NOTE_C4, 600, 400, 2, 100);
+	beeper.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, context.volume.effect);
 
 	//
 	btMan.begin();
@@ -731,8 +729,7 @@ void goDeepSleep()
 	// close logging-file
 	logger.end(nmeaParser.getDateTime());
 	//
-	//toneGen.end();
-	beeper.end();
+	beeper.setBeep(NOTE_B2, 400, 200, 3, 100);
 
 	//
 	TaskWatchdog::remove(NULL);
@@ -751,9 +748,6 @@ void resetDevice()
 
 	// close logging-file
 	logger.end(nmeaParser.getDateTime());
-	//
-	//toneGen.end();
-	beeper.end();
 
 	// turn-off peripherals
 	setPinState(&powerPins[0], PIN_STATE_INACTIVE);
