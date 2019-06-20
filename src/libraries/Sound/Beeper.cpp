@@ -182,7 +182,7 @@ void Beeper::setMute(int preemptive)
 
 void Beeper::TaskProc()
 {
-    const TickType_t xDelay10 = 10 / portTICK_PERIOD_MS;
+    const TickType_t xDelay10 = 30 / portTICK_PERIOD_MS;
 	const TickType_t xDelay100 = 100 / portTICK_PERIOD_MS;
 
     while (! exitTask)
@@ -202,7 +202,10 @@ void Beeper::TaskProc()
 				if (tones->tonePtr == &beepTone[0] && tones->activeTone == 0)
 					memcpy(&beepTone[0], &beepToneNext[0], sizeof(beepTone));
 				if (tones->activeTone > 0 && tone->freq < 0)
+				{
+					playTone(0);
 					vTaskDelay(xDelay10); // negative freqency means play with a stacato
+				}
 
 				// check if has playable tone
 				if (tones->activeTone < tones->toneCount)

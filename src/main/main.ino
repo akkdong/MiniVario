@@ -290,8 +290,7 @@ void setup()
 	display.begin(deviceMode == DEVICE_MODE_WAKEUP);
 	//
 	beeper.begin();
-	//beeper.setBeep(NOTE_C4, 600, 400, 2, 100);
-	beeper.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, context.volume.effect);
+	beeper.setBeep(NOTE_C4, 600, 400, 2, 100);
 
 	//
 	btMan.begin();
@@ -489,7 +488,8 @@ void readyFlight()
 
 	// play ready melody~~~
 	//tonePlayer.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
-	beeper.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, context.volume.effect, PLAY_PREEMPTIVE);
+	//beeper.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, context.volume.effect/*, PLAY_PREEMPTIVE*/);
+	beeper.setBeep(NOTE_C4, 400, 200, 3, 100);
 	
 	// now ready to fly~~~
 	deviceMode = DEVICE_MODE_VARIO_AND_GPS;
@@ -505,7 +505,8 @@ void startFlight()
 	
 	// play take-off melody
 	//tonePlayer.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
-	beeper.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, context.volume.effect, PLAY_PREEMPTIVE);
+	//beeper.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, context.volume.effect/*, PLAY_PREEMPTIVE*/);
+	beeper.setBeep(NOTE_C4, 1000, 800, 1, 100);
 
 	//
 	btMan.startLogging(nmeaParser.getDateTime());
@@ -650,7 +651,8 @@ void stopFlight()
 	
 	// play landing melody
 	//tonePlayer.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
-	beeper.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, context.volume.effect, PLAY_PREEMPTIVE);
+	//beeper.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, context.volume.effect/*, PLAY_PREEMPTIVE*/);
+	beeper.setBeep(NOTE_C3, 1000, 800, 1, 100);
 
 	//
 	btMan.stopLogging();
