@@ -1020,21 +1020,22 @@ void loadPages(VarioScreen * pages)
 
 	//
 #define TRACK_W SCREEN_WIDTH // 176
-#define TRACK_H 168
+#define TRACK_H (SCREEN_HEIGHT - STATUS_TIME_HEIGHT - MIN_H - MIN_H)
 	widget = 0;
 	x = 0, y = STATUS_TIME_HEIGHT;
 
 	pages[4].getWidget(widget)->setStyle(Widget_TrackHistory, NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Track_History);
 	pages[4].getWidget(widget)->setPosition(x, y, TRACK_W, TRACK_H);
+	widget++;
 	x = 0;
 	y += TRACK_H;
 
-	pages[4].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Altitude_GPS);
+	pages[4].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX, WidgetContent_Altitude_GPS);
 	pages[4].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
 	widget++;
 	x += TEXTBOX_S_WIDTH;
 
-	pages[4].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Speed_Ground);
+	pages[4].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Speed_Ground);
 	pages[4].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
 	widget++;
 	x = 0;

@@ -460,6 +460,10 @@ void VarioDisplay::drawTrackHistory(Widget * widget)
 {
 #define ZOOM_FACTOR			(0.6)
 
+	//
+	drawBorder(widget);
+
+	//
 	for (int i = context.flightState.rearPoint; i != context.flightState.frontPoint; )
 	{
 		int16_t x = widget->x + widget->w / 2;
