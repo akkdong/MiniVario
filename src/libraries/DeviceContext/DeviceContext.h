@@ -12,6 +12,8 @@
 #define MAX_VARIO_HISTORY				(30)
 #define MAX_VARIO_TONE					(12)
 
+#define MAX_TRACK_HISTORY				(30)
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // 
@@ -181,6 +183,19 @@ struct Position
 	float			alt;
 };
 
+struct TrackPoint
+{
+	float			lat;
+	float			lon;
+	float			vario;
+};
+
+struct TrackDistance
+{
+	float			dx;
+	float			dy;
+};
+
 enum FlightMode
 {
 	FMODE_READY,	// READY, LANDING
@@ -206,6 +221,11 @@ struct FlightState
 	int16_t			deltaHeading_AVG;
 	int16_t			deltaHeading_SUM;
 
+	//
+	TrackPoint		trackPoints[MAX_TRACK_HISTORY];
+	TrackDistance	trackDistance[MAX_TRACK_HISTORY];
+	int16_t			frontPoint;
+	int16_t			rearPoint;
 
 	//
 	Position		glidingStartPos;
@@ -241,6 +261,7 @@ public:
 	bool				save(Preferences & pref);
 
 	void				updateVarioHistory();
+	void				updateTrackHistory(float lat, float lon, float vario);
 
 	void				resetFlightState() { memset(&flightState, 0, sizeof(flightState)); }
 	void				resetFlightStats() { memset(&flightStats, 0, sizeof(flightStats)); }

@@ -83,6 +83,7 @@ protected:
 	void 				drawIcon(Widget * widget);
 	void 				drawStatusBar(Widget * widget);
 	void 				drawVarioHistory(Widget * widget);
+	void				drawTrackHistory(Widget * widget);
 	void 				drawVarioBar(Widget * widget);
 	void 				drawCompass(Widget * widget);
 	void				drawTriangle(int16_t cx, int16_t cy, int16_t r, int16_t heading);

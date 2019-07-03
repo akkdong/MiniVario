@@ -321,6 +321,10 @@ void VarioDisplay::draw(Widget * widget)
 	case Widget_VarioHistory:
 		drawVarioHistory(widget);
 		break;
+
+	case Widget_TrackHistory:
+		drawTrackHistory(widget);
+		break;
 		
 	case Widget_VarioBar:
 		drawVarioBar(widget);
@@ -449,6 +453,32 @@ void VarioDisplay::drawVarioHistory(Widget * widget)
 		}
 
 		xs += bw;
+	}
+}
+
+void VarioDisplay::drawTrackHistory(Widget * widget)
+{
+#define ZOOM_FACTOR			(0.6)
+
+	for (int i = context.flightState.rearPoint; i != context.flightState.frontPoint; )
+	{
+		int16_t x = widget->x + widget->w / 2;
+		int16_t y = widget->y + widget->h / 2;
+
+		x -= context.flightState.trackDistance[i].dx * ZOOM_FACTOR;
+		y += context.flightState.trackDistance[i].dy * ZOOM_FACTOR;
+
+		if (widget->x + 2 < x && widget->y + 2 < y && x < widget->x + widget->w - 2 && y < widget->y + widget->h - 2)
+		{
+			int16_t r = 2;
+
+			if (context.flightState.trackPoints[i].vario > 1)
+				r = (context.flightState.trackPoints[i].vario > 2) ? 4 : 2;
+
+			drawCircle(x, y, r, COLOR_BLACK);
+		}
+
+		i = (i + 1) % MAX_TRACK_HISTORY;
 	}
 }
 

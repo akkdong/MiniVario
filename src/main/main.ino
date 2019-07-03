@@ -151,7 +151,7 @@ uint32_t deviceTick;	// global tick-count
 uint32_t modeTick;		// mode-specific tick-count
 
 
-#define MAX_PAGES		(4)
+#define MAX_PAGES		(5)
 
 VarioScreen pages[MAX_PAGES];
 PopupMenu	topMenu;
@@ -527,6 +527,7 @@ void startFlight()
 	context.flightState.takeOffPos.alt = context.varioState.altitudeGPS;
 	context.flightState.bearingTakeoff = -1;
 	context.flightState.flightMode = FMODE_FLYING;
+	context.flightState.frontPoint = context.flightState.rearPoint = 0;
 
 	context.flightStats.altitudeMax = context.flightStats.altitudeMin = context.varioState.altitudeGPS;
 
@@ -565,6 +566,8 @@ void updateFlightState()
 	// and update total flight distance
 	context.flightState.distFlight += GET_DISTANCE(context.varioState.latitude, context.varioState.longitude, 
 			context.varioState.latitudeLast, context.varioState.longitudeLast);
+	// add new track point & calculate relative distance
+	context.updateTrackHistory(context.varioState.latitude, context.varioState.longitude, context.varioState.speedVertLazy);
 
 	// update flight statistics
 	context.flightStats.altitudeMax = _MAX(context.flightStats.altitudeMax, context.varioState.altitudeGPS);
@@ -1012,6 +1015,41 @@ void loadPages(VarioScreen * pages)
 	widget++;
 	x = 0;
 	y += MIN_H;	
+
+
+
+	//
+#define TRACK_W SCREEN_WIDTH // 176
+#define TRACK_H 168
+	widget = 0;
+	x = 0, y = STATUS_TIME_HEIGHT;
+
+	pages[4].getWidget(widget)->setStyle(Widget_TrackHistory, NORMAL_BOX | WS_BORDER_RIGHT, WidgetContent_Track_History);
+	pages[4].getWidget(widget)->setPosition(x, y, TRACK_W, TRACK_H);
+	x = 0;
+	y += TRACK_H;
+
+	pages[4].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Altitude_GPS);
+	pages[4].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[4].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Speed_Ground);
+	pages[4].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x = 0;
+	y += MIN_H;
+
+	pages[4].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_BOTTOM, WidgetContent_Altitude_AGL);
+	pages[4].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x += TEXTBOX_S_WIDTH;
+
+	pages[4].getWidget(widget)->setStyle(Widget_TextBox, NORMAL_TEXT | NORMAL_BOX | WS_BORDER_RIGHT | WS_BORDER_BOTTOM, WidgetContent_Vario_Active);
+	pages[4].getWidget(widget)->setPosition(x, y, TEXTBOX_S_WIDTH, MIN_H);
+	widget++;
+	x = 0;
+	y += MIN_H;
 }
 
 void makeTopMenu()

@@ -60,6 +60,7 @@ typedef enum _WidgetStyle
 	Widget_StatusBar,
 	Widget_VarioBar,
 	Widget_VarioHistory,
+	Widget_TrackHistory,
 	Widget_Compass,
 	
 } WidgetStyle;
@@ -135,6 +136,8 @@ typedef enum _WidgetContentType
 	
 	// Vario History
 	WidgetContent_Vario_History,
+	// Track History
+	WidgetContent_Track_History,
 	
 	// Thermal Assist
 	WidgetContent_Thermal_Assist,

@@ -3,6 +3,13 @@
 
 #include "DeviceContext.h"
 
+#define RADIUS 					(6371000) // 6371e3
+
+#define TO_RADIAN(x)			((x)*(PI/180))
+#define GET_DISTANCE(angle)		(2.0 * RADIUS * sin(TO_RADIAN((angle) / 2)))
+
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -194,4 +201,33 @@ void DeviceContext::updateVarioHistory()
 		varioState.speedVertSumCount = 0;
 		varioState.speedVertNext = (varioState.speedVertNext + 1) % MAX_VARIO_HISTORY;
 	}
+}
+
+void DeviceContext::updateTrackHistory(float lat, float lon, float vario)
+{
+	// add new track point
+	int nextPoint = (flightState.frontPoint + 1) % MAX_TRACK_HISTORY;
+
+	if (nextPoint == flightState.rearPoint) // is full ?
+		flightState.rearPoint = (flightState.rearPoint + 1) % MAX_TRACK_HISTORY;
+
+	flightState.trackPoints[flightState.frontPoint].lat = lat;
+	flightState.trackPoints[flightState.frontPoint].lon = lon;
+	flightState.trackPoints[flightState.frontPoint].vario = vario;
+
+	flightState.frontPoint = nextPoint;
+
+	// calculate relative distance : distance from lastest point to each point
+	int lastest = (flightState.frontPoint + MAX_TRACK_HISTORY - 1) % MAX_TRACK_HISTORY;
+
+	for (int i = flightState.rearPoint; i != lastest; )
+	{
+		flightState.trackDistance[i].dx = GET_DISTANCE(flightState.trackPoints[lastest].lon - flightState.trackPoints[i].lon);
+		flightState.trackDistance[i].dy = GET_DISTANCE(flightState.trackPoints[lastest].lat - flightState.trackPoints[i].lat);
+
+		i = (i + 1) % MAX_TRACK_HISTORY;
+	}
+
+	flightState.trackDistance[lastest].dx = 0;
+	flightState.trackDistance[lastest].dy = 0;	
 }
