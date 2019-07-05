@@ -1,12 +1,16 @@
 // DisplayObjects.h
 //
 
+#ifndef __DISPLAYOBJECTS_H__
+#define __DISPLAYOBJECTS_H__
+
 #include <Arduino.h>
 #include "Widget.h"
 #include "PrefItem.h"
 #include "MenuItem.h"
 
 #define MAX_WIDGETS				(16)
+#define MAX_SCREENS				(5)
 #define MAX_PREFITEMS			(16)
 #define MAX_MEUITEMS			(16)
 
@@ -74,9 +78,16 @@ public:
 	virtual uint32_t	processKey(uint8_t key);
 
 	Widget *			getWidget(size_t index);
+	int					addWidget(WidgetData * data);
+
+	void				setID(uint32_t _id) { id = _id; }
+	uint32_t			getID() { return id; }
 	
 protected:
+	uint32_t			id; //
+
 	Widget				widget[MAX_WIDGETS];
+	int					activeWidget;
 };
 
 
@@ -191,3 +202,5 @@ public:
 	PopupRadioBox();
 };
 
+
+#endif // __DISPLAYOBJECTS_H__

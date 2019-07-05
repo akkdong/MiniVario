@@ -159,16 +159,30 @@ class Widget;
 class VarioDisplay;
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+// struct WidgetStruct
+
+struct WidgetData
+{
+	//
+	WidgetStyle			style;
+	uint32_t			extraStyle;
+	WidgetContentType	type;
+
+	//
+	uint16_t			x, y, w, h;
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class Widget
 
-class Widget
+class Widget : protected WidgetData
 {
 	friend class VarioDisplay;
 	
 public:
-	Widget() : style(Widget_Empty) {}
+	Widget() { style = Widget_Empty; }
 	
 public:
 	void				setStyle(WidgetStyle _style, uint32_t _extraStyle, WidgetContentType _type);
@@ -182,13 +196,13 @@ public:
 	uint16_t			getY();
 	uint16_t			getWidth();
 	uint16_t			getHeight();
-	
+
 protected:
-	WidgetStyle			style;
-	uint32_t			extraStyle;
-	WidgetContentType	type;
-	
-	uint16_t			x, y, w, h;
+//	WidgetStyle			style;
+//	uint32_t			extraStyle;
+//	WidgetContentType	type;
+//	
+//	uint16_t			x, y, w, h;
 };
 
 inline void Widget::setStyle(WidgetStyle _style, uint32_t _extraStyle, WidgetContentType _type)

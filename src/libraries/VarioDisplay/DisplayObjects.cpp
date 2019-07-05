@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class VarioScreen
 
-VarioScreen::VarioScreen() : DisplayObject(DispObject_Screen)
+VarioScreen::VarioScreen() : DisplayObject(DispObject_Screen), activeWidget(0)
 {
 }
 
@@ -32,10 +32,25 @@ uint32_t VarioScreen::processKey(uint8_t key)
 
 Widget * VarioScreen::getWidget(size_t index)
 {
-	if (index < MAX_WIDGETS)
+	if (index < activeWidget)
 		return &widget[index];
 
 	return NULL;
+}
+
+int VarioScreen::addWidget(WidgetData * data)
+{
+	if (activeWidget < MAX_WIDGETS)
+	{
+		Widget * _widget = &widget[activeWidget];
+
+		_widget->setStyle(data->style, data->extraStyle, data->type);
+		_widget->setPosition(data->x, data->y, data->w, data->h);
+
+		return ++activeWidget;
+	}
+
+	return -1;
 }
 
 

@@ -209,8 +209,10 @@ void VarioDisplay::draw(VarioScreen * screen)
 	// draw active page --> draw each widget of active page
 	for (int i = 0; i < MAX_WIDGETS; i++)
 	{
-		Widget * widget = &screen->widget[i];
-		
+		Widget * widget = screen->getWidget(i);
+		if (! widget)
+			break;
+
 		if (widget->style == Widget_Empty)
 			break;
 		
