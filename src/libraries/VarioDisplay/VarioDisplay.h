@@ -107,6 +107,8 @@ protected:
 protected:
 	void 				TaskProc();
 
+private:
+	const char *		makeTimeString(char * str, time_t sec);
 	
 protected:
 	static GFXfontPtr 	__FontStack[MAX_FONTS];

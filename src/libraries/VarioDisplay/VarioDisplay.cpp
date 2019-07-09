@@ -706,6 +706,8 @@ const char * VarioDisplay::getLabel(WidgetContentType type)
 		return "Time";
 	case WidgetContent_Time_Flight :
 		return "FTime";
+	case WidgetContent_Time_Takeoff :
+		return "TTime";
 	case WidgetContent_Pressure :
 		return "Prs";
 	case WidgetContent_Temperature :
@@ -722,10 +724,17 @@ const char * VarioDisplay::getLabel(WidgetContentType type)
 		return "";
 
 	case WidgetContent_Altitude_Max :
+		return "Alt.Max";
 	case WidgetContent_Altitude_Min :
+		return "Alt.Min";
 	case WidgetContent_ClimbRate_Max :
+		return "Clm.Max";
 	case WidgetContent_SinkRate_Max :
-		break;
+		return "Snk.Max";
+	case WidgetContent_Total_Thermaling :
+		return "Tot.Thm";
+	case WidgetContent_Max_ThermalingGain :
+		return "Max.Thm";
 
 	case WidgetContent_Ground_Level :
 		return "G.Lvl";
@@ -785,6 +794,8 @@ const char * VarioDisplay::getUnit(WidgetContentType type)
 		return "";
 	case WidgetContent_Time_Flight :
 		return (context.flightState.flightTime < 3600) ? "mm/ss" : "hh/mm";
+	case WidgetContent_Time_Takeoff :
+		return (context.flightState.takeOffTime < 3600) ? "mm/ss" : "hh/mm";
 	case WidgetContent_Pressure :
 		return "hPa";
 	case WidgetContent_Temperature :
@@ -798,10 +809,17 @@ const char * VarioDisplay::getUnit(WidgetContentType type)
 		return "mm:ss";
 
 	case WidgetContent_Altitude_Max :
+		return "m";
 	case WidgetContent_Altitude_Min :
+		return "m";
 	case WidgetContent_ClimbRate_Max :
+		return "m/s";
 	case WidgetContent_SinkRate_Max :
-		break;
+		return "m/s";
+	case WidgetContent_Total_Thermaling :
+		return "";
+	case WidgetContent_Max_ThermalingGain :		
+		return "m";
 
 	case WidgetContent_Ground_Level :
 		return "m";
@@ -871,15 +889,13 @@ const char * VarioDisplay::getString(WidgetContentType type)
 		#endif
 		return tempString;
 	case WidgetContent_Time_Flight :
-		{
-			time_t flightTime = context.flightState.flightTime;
-			
-			if (flightTime < 3600)
-				sprintf(tempString, "%02d:%02d", flightTime / 60, flightTime % 60);
-			else 
-				sprintf(tempString, "%02d:%02d", flightTime / 3600, (flightTime / 60) % 60);
-		}
+		makeTimeString(tempString, context.flightState.flightTime);
 		return tempString;
+	case WidgetContent_Time_Takeoff :
+		makeTimeString(tempString, context.flightState.takeOffTime);
+		return tempString;
+		break;
+
 	case WidgetContent_Pressure :
 		sprintf(tempString, "%.2f", context.varioState.pressure);
 		return tempString;
@@ -899,10 +915,19 @@ const char * VarioDisplay::getString(WidgetContentType type)
 		return tempString;
 
 	case WidgetContent_Altitude_Max :
+		return itoa(context.flightStats.altitudeMax + 0.5, tempString, 10);
 	case WidgetContent_Altitude_Min :
+		return itoa(context.flightStats.altitudeMin + 0.5, tempString, 10);
 	case WidgetContent_ClimbRate_Max :
+		sprintf(tempString, "%.1f", context.flightStats.varioMax);
+		return tempString;
 	case WidgetContent_SinkRate_Max :
-		break;
+		sprintf(tempString, "%.1f", context.flightStats.varioMin);
+		return tempString;
+	case WidgetContent_Total_Thermaling :
+		return itoa(context.flightStats.totalThermaling, tempString, 10);
+	case WidgetContent_Max_ThermalingGain :
+		return itoa(context.flightStats.thermalingMaxGain, tempString, 10);
 
 	case WidgetContent_Ground_Level :
 		return itoa(context.varioState.altitudeGround + 0.5, tempString, 10);
@@ -936,4 +961,12 @@ DisplayObject * VarioDisplay::getActiveObject()
 		return activeScreen;
 	
 	return NULL;
+}
+
+const char * VarioDisplay::makeTimeString(char * str, time_t sec)
+{
+	if (sec < 3600)
+		sprintf(str, "%02d:%02d", sec / 60, sec % 60);
+	else 
+		sprintf(str, "%02d:%02d", sec / 3600, (sec / 60) % 60);
 }

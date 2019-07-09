@@ -98,6 +98,7 @@ typedef enum _WidgetContentType
 	WidgetContent_DateTime,
 	WidgetContent_Time_Current,
 	WidgetContent_Time_Flight,
+	WidgetContent_Time_Takeoff,
 	
 	WidgetContent_Pressure,
 	WidgetContent_Temperature,
@@ -110,11 +111,14 @@ typedef enum _WidgetContentType
 	WidgetContent_Thermaling_Time,
 	WidgetContent_Thermaling_Slope, // thermal incline (degree)
 
-	//
+	// flight statistics
 	WidgetContent_Altitude_Max,
 	WidgetContent_Altitude_Min,
 	WidgetContent_ClimbRate_Max,
 	WidgetContent_SinkRate_Max,
+
+	WidgetContent_Total_Thermaling,
+	WidgetContent_Max_ThermalingGain,
 
 	//
 	WidgetContent_Ground_Level,
