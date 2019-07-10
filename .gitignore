@@ -1,3 +1,9 @@
 .vscode
+.vs
 bin
 test
+Debug
+Release
+_Intermediate
+_Output
+*.user
