@@ -279,6 +279,7 @@ void VarioDisplay::draw(PopupMenu * menu)
 		case TMID_TOGGLE_BLUETOOTH : sprintf(str, "Bluetooth %s", context.deviceState.statusBT ? "Off" : "On"); break;
 		case TMID_RESET_DEVICE : strcpy(str, "Restart Device"); break;
 		case TMID_POWER_OFF : strcpy(str, "Power Off"); break;
+		case TMID_SIMULATION_MODE : sprintf(str, "Simulation %s", context.deviceDefault.enableSimulation ? "Off" : "On"); break;
 		}
 		
 		if (i == menu->itemSelect)

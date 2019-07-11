@@ -185,7 +185,7 @@ Keyboard keybd(keybdPins, sizeof(keybdPins) / sizeof(keybdPins[0]));
 //
 //
 
-NmeaParserEx nmeaParser(Serial2);
+NmeaParserEx nmeaParser(Serial2, Serial);
 VarioSentence varioNmea(VARIOMETER_DEFAULT_NMEA_SENTENCE);
 VarioLogger logger;
 
@@ -332,7 +332,7 @@ void loop()
 		varioCalculator.add(context.varioState.speedVertActive);
 
 //		context.varioState.speedVertLazy = context.varioState.speedVertLazy + (context.varioState.speedVertActive - context.varioState.speedVertLazy) * context.varioSetting.dampingFactor;
-		context.varioState.speedVertLazy = varioCalculator.mVertSpeedAVG3; // 1s average
+		context.varioState.speedVertLazy = varioCalculator.mVertSpeedAVG2; // 2s average
 		context.varioState.altitudeBaro = vario.getAltitude();
 		context.varioState.altitudeCalibrated = vario.getCalibratedAltitude();
 		context.varioState.pressure = vario.getPressure();
@@ -766,6 +766,7 @@ void makeTopMenu()
 	topMenu.addItem(TMID_TOGGLE_BLUETOOTH, 0 /* IDS_BLUETOOTH_ONOFF */);
 	topMenu.addItem(TMID_RESET_DEVICE, 0 /* IDS_RESET_DEVICE */);
 	topMenu.addItem(TMID_POWER_OFF, 0 /* IDS_POWER_OFF */);
+	topMenu.addItem(TMID_SIMULATION_MODE, 0 /* IDS_SIMULATION_MODE */);
 }
 
 void processKey(int key)
@@ -831,6 +832,11 @@ void processKey(int key)
 				// and then go to deep sleep
 				goDeepSleep();
 				while(1);
+
+			case TMID_SIMULATION_MODE : // toggle simulation mode
+				context.deviceDefault.enableSimulation = context.deviceDefault.enableSimulation ? 0 : 1;
+				nmeaParser.enableSimulation(context.deviceDefault.enableSimulation);
+				break;
 				
 			case TMID_RESET_DEVICE : // restart(reset) device
 				resetDevice();

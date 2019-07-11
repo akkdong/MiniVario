@@ -17,7 +17,7 @@
 class NmeaParserEx
 {
 public:
-	NmeaParserEx(Stream & stm);
+	NmeaParserEx(Stream & stm, Stream & dgb);
 	
 public:
 	void				update(/*float baroAlt*/);
@@ -46,6 +46,8 @@ public:
 	int16_t				getHeading();
 
 	bool				isFixed()	{ return mFixed; }
+
+	void				enableSimulation(bool enable);
 	
 private:
 	int					isFull() 	{ return ((mWrite + 1) % MAX_NMEA_PARSER_BUFFER) == mTail; }
@@ -61,6 +63,10 @@ private:
 private:
 	//
 	Stream &			mStream;
+	Stream &			mStreamDbg;
+
+	bool				mSimulMode;
+
 	char				mBuffer[MAX_NMEA_PARSER_BUFFER];
 	volatile int		mHead;
 	volatile int		mTail;

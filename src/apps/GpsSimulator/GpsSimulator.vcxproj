@@ -196,12 +196,14 @@
     <ClInclude Include="GpsSimulator.h" />
     <ClInclude Include="GpsSimulatorDlg.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SerialHelper.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GpsSimulator.cpp" />
     <ClCompile Include="GpsSimulatorDlg.cpp" />
+    <ClCompile Include="SerialHelper.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -217,6 +219,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\GpsSimulator.ico" />
+    <Image Include="res\refresh.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

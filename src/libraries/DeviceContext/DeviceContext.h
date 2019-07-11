@@ -160,6 +160,7 @@ struct DeviceDefault
 {
 	uint8_t			enableBT;
 	uint8_t			enableSound;
+	uint8_t			enableSimulation;
 
 	char			btName[MAX_STRING_SIZE];
 };

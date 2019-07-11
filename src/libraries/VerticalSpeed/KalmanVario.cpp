@@ -141,7 +141,10 @@ void KalmanVario::TaskProc()
 			//xTaskResumeAll();
 		}
 		#else
+		// read P & T
 		baro.convert();	
+		
+		// update Vario
 		update();
 		#endif
 	}
