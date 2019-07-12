@@ -193,16 +193,20 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ActionTrigger.h" />
     <ClInclude Include="GpsSimulator.h" />
     <ClInclude Include="GpsSimulatorDlg.h" />
+    <ClInclude Include="NmeaLoader.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SerialHelper.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ActionTrigger.cpp" />
     <ClCompile Include="GpsSimulator.cpp" />
     <ClCompile Include="GpsSimulatorDlg.cpp" />
+    <ClCompile Include="NmeaLoader.cpp" />
     <ClCompile Include="SerialHelper.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
