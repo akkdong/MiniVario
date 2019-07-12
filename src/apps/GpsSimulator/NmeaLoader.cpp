@@ -11,6 +11,20 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //
 
+void TrimRight(char * str)
+{
+	int len = strlen(str);
+
+	if (len > 0)
+	{
+		do
+		{
+			str[len] = NULL;
+			--len;
+		} while (len >= 0 && isspace(str[len]));
+	}
+}
+
 int Tokenizer(char * tok[], int tokLen, char * str, const char * delimiter)
 {
 	char * ptr = str;
@@ -84,6 +98,8 @@ int LoadNmea(LPCTSTR lpszFile, CPositionList & list)
 
 			memset(line, 0, sizeof(line));
 			fgets(line, sizeof(line), fp);
+			TrimRight(line);
+			strcat_s(line, sizeof(line), "\r\n");
 
 			memset(temp, 0, sizeof(temp));
 			strcpy_s(temp, sizeof(temp), line);

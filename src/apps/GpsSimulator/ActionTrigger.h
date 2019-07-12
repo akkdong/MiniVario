@@ -18,6 +18,8 @@ public:
 	BOOL			Create(CWnd * pNotifyWnd, UINT nNotifyMsg = WM_ACTION_TRIGGER);
 	void			Destroy();
 
+	void			SetPeriod(UINT nPeriod) { m_nPeriod = nPeriod; }
+
 protected:
 	static UINT		ThreadProc(LPVOID lpParam);
 	UINT			ThreadProc();

@@ -194,6 +194,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ActionTrigger.h" />
+    <ClInclude Include="TrackWnd.h" />
     <ClInclude Include="GpsSimulator.h" />
     <ClInclude Include="GpsSimulatorDlg.h" />
     <ClInclude Include="NmeaLoader.h" />
@@ -201,9 +202,11 @@
     <ClInclude Include="SerialHelper.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TrackDialog.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ActionTrigger.cpp" />
+    <ClCompile Include="TrackWnd.cpp" />
     <ClCompile Include="GpsSimulator.cpp" />
     <ClCompile Include="GpsSimulatorDlg.cpp" />
     <ClCompile Include="NmeaLoader.cpp" />
@@ -214,6 +217,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TrackDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GpsSimulator.rc" />
