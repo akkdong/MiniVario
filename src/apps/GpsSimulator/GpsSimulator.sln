@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GpsSimulator", "GpsSimulator.vcxproj", "{6CFC70D5-B3DC-4BA1-AF2D-E343BAF2E4C5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BDCD0825-F7AC-4B44-B9D0-B013E7BF64CF} = {BDCD0825-F7AC-4B44-B9D0-B013E7BF64CF}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Serial", "..\Serial\Serial.vcxproj", "{BDCD0825-F7AC-4B44-B9D0-B013E7BF64CF}"
 EndProject
