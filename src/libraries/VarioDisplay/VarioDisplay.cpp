@@ -13,6 +13,8 @@
 #define ARDUINO_RUNNING_CORE 1
 #endif
 
+#define TO_RADIAN(x)			((x)*(PI/180))
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -467,22 +469,39 @@ void VarioDisplay::drawTrackHistory(Widget * widget)
 	drawBorder(widget);
 
 	//
+	float theta = TO_RADIAN(180 - context.varioState.heading);
+
 	for (int i = context.flightState.rearPoint; i != context.flightState.frontPoint; )
 	{
+#if 1 // 0 clock is heading
+		float x0 = context.flightState.trackDistance[i].dx * ZOOM_FACTOR;
+		float y0 = context.flightState.trackDistance[i].dy * ZOOM_FACTOR;
+
+		int16_t x = (widget->x + widget->w / 2) + (int16_t)(x0 * cos(theta) - y0 * sin(theta));
+		int16_t y = (widget->y + widget->h / 2) - (int16_t)(x0 * sin(theta) + y0 * cos(theta));
+#else // 0 clock is north
 		int16_t x = widget->x + widget->w / 2;
 		int16_t y = widget->y + widget->h / 2;
 
 		x -= context.flightState.trackDistance[i].dx * ZOOM_FACTOR;
 		y += context.flightState.trackDistance[i].dy * ZOOM_FACTOR;
+#endif
 
 		if (widget->x + 2 < x && widget->y + 2 < y && x < widget->x + widget->w - 2 && y < widget->y + widget->h - 2)
 		{
-			int16_t r = 2;
+			if (context.flightState.trackPoints[i].vario < 0)
+			{
+				drawRect(x - 2, y - 2, 4, 4, COLOR_BLACK);
+			}
+			else
+			{
+				int16_t r = 2;
 
-			if (context.flightState.trackPoints[i].vario > 1)
-				r = (context.flightState.trackPoints[i].vario > 2) ? 4 : 2;
+				if (context.flightState.trackPoints[i].vario > 1)
+					r = (context.flightState.trackPoints[i].vario > 2) ? 4 : 3;
 
-			drawCircle(x, y, r, COLOR_BLACK);
+				drawCircle(x, y, r, COLOR_BLACK);
+			}
 		}
 
 		i = (i + 1) % MAX_TRACK_HISTORY;
@@ -864,9 +883,9 @@ const char * VarioDisplay::getString(WidgetContentType type)
 	case WidgetContent_Altitude_Ref3 :	// QFE
 		return itoa(context.varioState.altitudeRef3 + 0.5, tempString, 10);
 	case WidgetContent_Glide_Ratio :
-		if (context.varioState.glideRatio == 0.0)
+		if (context.flightState.glideRatio == 0.0)
 			return "--";
-		sprintf(tempString, "%.1f", context.varioState.glideRatio + 0.05);
+		sprintf(tempString, "%.1f", context.flightState.glideRatio + 0.05);
 		return tempString;
 	case WidgetContent_Vario_Active :
 		sprintf(tempString, "%.1f", context.varioState.speedVertActive);

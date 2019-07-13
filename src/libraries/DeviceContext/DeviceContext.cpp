@@ -125,6 +125,7 @@ void DeviceContext::reset()
 	//
 	deviceDefault.enableBT = 1;
 	deviceDefault.enableSound = 0;
+	deviceDefault.enableSimulation = 0;
 
 	strcpy(deviceDefault.btName, "MiniVario");
 
@@ -222,7 +223,7 @@ void DeviceContext::updateTrackHistory(float lat, float lon, float vario)
 
 	for (int i = flightState.rearPoint; i != lastest; )
 	{
-		flightState.trackDistance[i].dx = GET_DISTANCE(flightState.trackPoints[lastest].lon - flightState.trackPoints[i].lon);
+		flightState.trackDistance[i].dx = -GET_DISTANCE(flightState.trackPoints[lastest].lon - flightState.trackPoints[i].lon);
 		flightState.trackDistance[i].dy = GET_DISTANCE(flightState.trackPoints[lastest].lat - flightState.trackPoints[i].lat);
 
 		i = (i + 1) % MAX_TRACK_HISTORY;

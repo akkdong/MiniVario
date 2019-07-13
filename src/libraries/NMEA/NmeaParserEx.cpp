@@ -46,7 +46,7 @@ float nmeaToDecimal(float nmea)
 /////////////////////////////////////////////////////////////////////////////
 // class NmeaParserEx
 
-NmeaParserEx::NmeaParserEx(Stream & stm, Stream & dgb) : mStream(stm), mStreamDbg(dgb)
+NmeaParserEx::NmeaParserEx(Stream & stm, Stream & dgb) : mStream(stm), mStreamDbg(dgb), mSimulMode(false)
 {
 	//
 	reset();
@@ -72,7 +72,9 @@ void NmeaParserEx::update(/*float baroAlt*/)
 	{
 		//
 		int c = strm.read();
-		//Serial.write(c);
+
+		//if (mSimulMode)
+		//	mStreamDbg.write(c);
 		
 		if (isFull())
 			break;
@@ -364,9 +366,6 @@ void NmeaParserEx::reset()
 	//	
 	mIGCSize = 0;
 	mIGCNext = 0;
-
-	//
-	mSimulMode = false;
 }
 
 void timeStr2TmStruct(struct tm * _tm, const char * str)
@@ -675,6 +674,9 @@ long NmeaParserEx::floatToCoordi(float value)
 void NmeaParserEx::enableSimulation(bool enable)
 {
 	mSimulMode = enable;
+
+	Stream & stm = mStreamDbg;
+	stm.printf("Simulation %s\n", mSimulMode ? "On" : "Off");
 
 	reset();
 }

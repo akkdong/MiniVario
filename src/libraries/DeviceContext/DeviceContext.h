@@ -38,7 +38,7 @@ struct VarioState // VarioDeviceState
 //	float			altitudeAbtain;
 	float			thermalTime;
 	float			thermalGain;
-	float			glideRatio;	
+//	float			glideRatio;	
 	
 	//
 	float			speedGround;

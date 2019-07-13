@@ -193,8 +193,11 @@ VarioLogger logger;
 //
 //
 
+#if 1 // Normal Bluetooth manager
+BluetoothMan btMan(serialBluetooth, nmeaParser, varioNmea);
+#else // Logging raw NMEA sentence
 BluetoothManEx btMan(serialBluetooth, nmeaParser, varioNmea);
-
+#endif
 
 //
 //
@@ -764,20 +767,20 @@ void makeTopMenu()
 	topMenu.addItem(TMID_SHOW_PREFERENCE, 0 /* IDS_BASIC_SETTINGS */);
 	topMenu.addItem(TMID_TOGGLE_SOUND, 0 /* IDS_SOUND_ONOFF */);
 	topMenu.addItem(TMID_TOGGLE_BLUETOOTH, 0 /* IDS_BLUETOOTH_ONOFF */);
+	topMenu.addItem(TMID_SIMULATION_MODE, 0 /* IDS_SIMULATION_MODE */);
 	topMenu.addItem(TMID_RESET_DEVICE, 0 /* IDS_RESET_DEVICE */);
 	topMenu.addItem(TMID_POWER_OFF, 0 /* IDS_POWER_OFF */);
-	topMenu.addItem(TMID_SIMULATION_MODE, 0 /* IDS_SIMULATION_MODE */);
 }
 
 void processKey(int key)
 {
-	Serial.print("key = "); Serial.println(key);
+	//Serial.print("key = "); Serial.println(key);
 	DisplayObject * dispObject = display.getActiveObject();
 	if (dispObject)
 	{
 		uint32_t ret = dispObject->processKey(key);
 		uint32_t cmd = GET_COMMAND(ret);
-		Serial.print("cmd = "); Serial.println(cmd);
+		//Serial.print("cmd = "); Serial.println(cmd);
 		
 		switch (cmd)
 		{
@@ -835,7 +838,7 @@ void processKey(int key)
 
 			case TMID_SIMULATION_MODE : // toggle simulation mode
 				context.deviceDefault.enableSimulation = context.deviceDefault.enableSimulation ? 0 : 1;
-				nmeaParser.enableSimulation(context.deviceDefault.enableSimulation);
+				nmeaParser.enableSimulation(context.deviceDefault.enableSimulation ? true : false);
 				break;
 				
 			case TMID_RESET_DEVICE : // restart(reset) device
