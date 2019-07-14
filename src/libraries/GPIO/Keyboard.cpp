@@ -44,7 +44,7 @@ void Keyboard::update()
 	switch (inputMode)
 	{
 	case _RELEASED :
-		if (keyState != 0) // any key is pressed
+		if (keyState != 0) // any key was pressed
 		{
 			lastKeyState = keyState;
 			lastTick = millis();
@@ -57,41 +57,50 @@ void Keyboard::update()
 		{
 			if (lastKeyState == keyState)
 			{
-				// key is unchanged until debounce period
+				// key was unchanged until debounce period
 				lastTick = millis();
 				inputMode = _PRESSED;
 			}
 			else
 			{
-				// key is changed...
+				// key was changed...
 				inputMode = _IGNORE;
 			}
 		}
 		else if (lastKeyState != keyState)
 		{
-			// key is changed...
+			// key was changed...
 			inputMode = _IGNORE;
 		}
 		break;
 		
 	case _PRESSED :
-		if (keyState != 0 && keyState != lastKeyState)
+		if (keyState != 0)
 		{
-			// key is changed...
-			inputMode = _IGNORE;
+			if (keyState != lastKeyState)
+			{
+				// key was changed...
+				inputMode = _IGNORE;
+			}
+			else if (millis() - lastTick > DELAY_LONG_KEY)
+			{
+				int key = findKey(lastKeyState);
+
+				if (key >= 0)
+					pushKey(key + pinCount);
+				// else multiple key were pressed
+
+				// wait until released : 
+				inputMode = _IGNORE;
+			}
 		}
-		else if (keyState == 0)
+		else // if (keyState == 0)
 		{
 			int key = findKey(lastKeyState);
 			
 			if (key >= 0)
-			{
-				if (millis() - lastTick > DELAY_LONG_KEY)
-					key += pinCount;
-				
 				pushKey(key);
-			}
-			// else multiple key is pressed
+			// else multiple key were pressed
 			
 			inputMode = _RELEASED;
 		}
