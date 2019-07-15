@@ -140,7 +140,7 @@ int AGL::openFile(const char * name)
 	strcpy(file, "/agl/");
 	strcat(file, name);
 
-    mFile = SD_MMC.open(file, FILE_READ);
+    mFile = SD_CARD.open(file, FILE_READ);
 	if (mFile)
         return 0;
 

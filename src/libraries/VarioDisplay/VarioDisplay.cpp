@@ -82,6 +82,15 @@ int VarioDisplay::begin(bool confirmWakeup)
 	return Task::createPinnedToCore(1) ? 0 : -1;
 }
 
+int VarioDisplay::beginFirmwareUpdate()
+{
+	// ...
+	displayMode = _UPDATE;
+	
+	//
+	return Task::createPinnedToCore(1) ? 0 : -1;
+}
+
 void VarioDisplay::TaskProc()
 {
 	//
@@ -92,14 +101,18 @@ void VarioDisplay::TaskProc()
 	//TaskWatchdog::reset();
 
 	//
-	if (displayMode == _CONFIRM)
+	switch (displayMode)
 	{
+	case _CONFIRM :
 		//
 		drawLogoScreen();
 		drawConfirmMessage();
 
 		//
 		refresh(false);
+		break;
+	case _UPDATE :
+		break;
 	}
 	
 	//
@@ -113,6 +126,11 @@ void VarioDisplay::TaskProc()
 		{
 		case _CONFIRM :
 			// nop
+			break;
+
+		case _UPDATE :
+			updateFirmwareUpdate();
+			refresh(updateCount++ > 0 ? true : false);
 			break;
 
 		case _VARIO :
@@ -177,6 +195,15 @@ void VarioDisplay::sleepDevice()
 	
 	// never comes here
 	// ...
+}
+
+void VarioDisplay::updateFirmwareUpdate()
+{
+	fillScreen(COLOR_WHITE);
+	setFont(__FontStack[WS_FONT_NORMAL_2]);
+	setTextColor(COLOR_BLACK, COLOR_WHITE);
+	setCursor(10, 10);
+	print("Update in progressing...");
 }
 
 void VarioDisplay::update()
@@ -651,7 +678,7 @@ void VarioDisplay::drawLogoScreen()
 	setTextColor(COLOR_BLACK, COLOR_WHITE);
 	drawBitmapBM(Bitmap_Paragliding, 6, 24, 164, 166, COLOR_WHITE, bm_invert);
 	setCursor(0, 240);
-	print("Fly high~");
+	print("Fly High~");
 	setFont(__FontStack[WS_FONT_NORMAL_1]);
 	setCursor(0, 260);
 	print("Notorious Rascal 2019");
@@ -815,7 +842,7 @@ const char * VarioDisplay::getUnit(WidgetContentType type)
 	case WidgetContent_Time_Flight :
 		return (context.flightState.flightTime < 3600) ? "mm/ss" : "hh/mm";
 	case WidgetContent_Time_Takeoff :
-		return (context.flightState.takeOffTime < 3600) ? "mm/ss" : "hh/mm";
+		return "hh/mm";
 	case WidgetContent_Pressure :
 		return "hPa";
 	case WidgetContent_Temperature :
@@ -985,6 +1012,8 @@ DisplayObject * VarioDisplay::getActiveObject()
 
 const char * VarioDisplay::makeTimeString(char * str, time_t sec)
 {
+	sec = sec % (24 * 60 * 60); // trim date
+
 	if (sec < 3600)
 		sprintf(str, "%02d:%02d", sec / 60, sec % 60);
 	else 

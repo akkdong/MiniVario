@@ -126,6 +126,7 @@ void DeviceContext::reset()
 	deviceDefault.enableBT = 1;
 	deviceDefault.enableSound = 0;
 	deviceDefault.enableSimulation = 0;
+	deviceDefault.enableNmeaLogging = 0;
 
 	strcpy(deviceDefault.btName, "MiniVario");
 
@@ -231,4 +232,32 @@ void DeviceContext::updateTrackHistory(float lat, float lon, float vario)
 
 	flightState.trackDistance[lastest].dx = 0;
 	flightState.trackDistance[lastest].dy = 0;	
+}
+
+void DeviceContext::dump()
+{
+	Serial.printf("DeviceDefault.enableBT = %d\n", deviceDefault.enableBT);
+	Serial.printf("DeviceDefault.enableSound = %d\n", deviceDefault.enableSound);
+	Serial.printf("DeviceDefault.enableSimulation = %d\n", deviceDefault.enableSimulation);
+	Serial.printf("DeviceDefault.btName = %s\n", deviceDefault.btName);
+
+	Serial.printf("VarioSettings.sinkThreshold = %f\n", varioSetting.sinkThreshold);
+	Serial.printf("VarioSettings.climbThreshold = %f\n", varioSetting.climbThreshold);
+	Serial.printf("VarioSettings.sensitivity = %f\n", varioSetting.sensitivity);
+	Serial.printf("VarioSettings.sentence = %d\n", varioSetting.sentence);
+	Serial.printf("VarioSettings.altitudeRef1 = %f\n", varioSetting.altitudeRef1);
+	Serial.printf("VarioSettings.altitudeRef2 = %f\n", varioSetting.altitudeRef2);
+	Serial.printf("VarioSettings.altitudeRef3 = %f\n", varioSetting.altitudeRef3);
+	Serial.printf("VarioSettings.dampingFactor = %f\n", varioSetting.dampingFactor);
+
+	Serial.printf("GliderInfo.type = %d\n", gliderInfo.type);
+	Serial.printf("GliderInfo.manufacture = %s\n", gliderInfo.manufacture);
+	Serial.printf("GliderInfo.model = %s\n", gliderInfo.model);
+
+	Serial.printf("IGCLogger.enable = %d\n", logger.enable);
+	Serial.printf("IGCLogger.takeoffSpeed = %d\n", logger.takeoffSpeed);
+	Serial.printf("IGCLogger.landingTimeout = %d\n", logger.landingTimeout);
+	Serial.printf("IGCLogger.loggingInterval = %d\n", logger.loggingInterval);
+	Serial.printf("IGCLogger.pilot = %s\n", logger.pilot);
+	Serial.printf("IGCLogger.timezone = %d\n", logger.timezone);
 }

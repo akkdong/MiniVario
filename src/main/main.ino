@@ -17,6 +17,7 @@
 #include "AGL.h"
 #include "TaskWatchdog.h"
 #include "ScreenManager.h"
+#include "FirmwareUpdater.h"
 
 
 #define USE_KALMAN_VARIO 	1
@@ -52,6 +53,7 @@ enum _DeviceMode
 	DEVICE_MODE_VARIO,			// (2)
 	DEVICE_MODE_VARIO_AND_GPS,	// (3)
 	DEVICE_MODE_PREFERENCE,		// (4)
+	DEVICE_MODE_UPDATE,
 };
 
 enum _VarioMode
@@ -193,7 +195,7 @@ VarioLogger logger;
 //
 //
 
-#if 1 // Normal Bluetooth manager
+#if 0 // Normal Bluetooth manager
 BluetoothMan btMan(serialBluetooth, nmeaParser, varioNmea);
 #else // Logging raw NMEA sentence
 BluetoothManEx btMan(serialBluetooth, nmeaParser, varioNmea);
@@ -266,7 +268,6 @@ void setup()
 
 	//
 	TaskWatchdog::begin(TASK_TIMEOUT_S);
-	TaskWatchdog::add(NULL);
 
 	// power on peripherals : default is power on
 	initPins(powerPins, sizeof(powerPins) / sizeof(powerPins[0]));
@@ -279,9 +280,30 @@ void setup()
 
 	Serial.println("Start MiniVario...\n");
 
+	// check sd-card & ready for use
+	SD_CARD.begin();
+
+	if (SD_CARD.valid())
+	{
+		FirmwareUpdater fu;
+
+		if (fu.checkUpdate())
+		{
+			//
+			fu.performUpdate(display);
+			//
+			ESP.restart();
+		}
+		
+		// else go down
+	}
+	else
+	{
+		Serial.printf("SD_CARD is invalid!!\n");
+	}
+
 	// load last device-context
-	loadPreferences();
-	TaskWatchdog::reset();
+	//loadPreferences();
 	
 	//
 	keybd.begin();
@@ -300,6 +322,9 @@ void setup()
 
 	//
 	deviceTick = millis();
+
+	//
+	TaskWatchdog::add(NULL);
 }
 
 void loop()
@@ -411,20 +436,20 @@ void loop()
 				{
 					updateFlightState();
 
-					deviceTick = millis();
-				}
-
-				if (nmeaParser.getSpeed() < FLIGHT_START_MIN_SPEED)
-				{
-					if ((millis() - modeTick) > FLIGHT_LANDING_THRESHOLD)
+					if (nmeaParser.getSpeed() < FLIGHT_START_MIN_SPEED)
 					{
-						stopFlight();
+						if ((millis() - modeTick) > FLIGHT_LANDING_THRESHOLD)
+						{
+							stopFlight();
+						}
 					}
-				}
-				else
-				{
-					// reset modeTick
-					modeTick = millis();
+					else
+					{
+						// reset modeTick
+						modeTick = millis();
+					}
+					
+					deviceTick = millis();
 				}
 			}
 		}
@@ -510,7 +535,8 @@ void startFlight()
 	beeper.setBeep(NOTE_C4, 1000, 800, 1, 100);
 
 	//
-	btMan.startLogging(nmeaParser.getDateTime());
+	if (context.deviceDefault.enableNmeaLogging)
+		btMan.startLogging(nmeaParser.getDateTime());
 	
 	// start logging & change mode
 	if (logger.begin(nmeaParser.getDateTime()))
@@ -533,7 +559,11 @@ void startFlight()
 	context.flightStats.altitudeMax = context.flightStats.altitudeMin = context.varioState.altitudeGPS;
 
 	// set mode-tick
-	modeTick = millis();	
+	modeTick = millis();
+
+	//
+	//display.attachScreen(scrnMan.getActiveScreen());
+	scrnMan.showActiveScreen(display);
 }
 
 void updateVarioState()
@@ -666,7 +696,11 @@ void stopFlight()
 	{
 		logger.end(nmeaParser.getDateTime());
 		context.deviceState.statusSDCard = 1;
-	}	
+	}
+
+	//
+	//display.attachScreen(scrnMan.getStatisticScreen());	
+	scrnMan.showStatisticScreen(display);
 }
 
 void startCircling()
@@ -685,6 +719,10 @@ void startCircling()
 	context.flightState.circlingGain = 0;
 
 	context.flightState.glidingCount = 0;
+
+	//
+	//display.attachScreen(scrnMan.getCirclingScreen());
+	scrnMan.showCirclingScreen(display);
 }
 
 void startGliding()
@@ -714,6 +752,10 @@ void stopCircling()
 
 	context.flightState.deltaHeading_AVG = 0;
 	context.flightState.deltaHeading_SUM = 0;
+
+	//
+	//display.attachScreen(scrnMan.getActiveScreen());
+	scrnMan.showActiveScreen(display);
 }
 
 void stopGliding()
@@ -788,10 +830,12 @@ void processKey(int key)
 		{
 		// from main scren
 		case CMD_SHOW_NEXT_PAGE :
-			display.attachScreen(scrnMan.getNextScreen());
+			//display.attachScreen(scrnMan.getNextScreen());
+			scrnMan.showNextActiveScreen(display);
 			break;
 		case CMD_SHOW_PREV_PAGE :
-			display.attachScreen(scrnMan.getPrevScreen());
+			//display.attachScreen(scrnMan.getPrevScreen());
+			scrnMan.showPrevActiveScreen(display);
 			break;
 		case CMD_SHOW_TOP_MENU :
 			// enter menu
@@ -855,15 +899,19 @@ void processKey(int key)
 void startVario()
 {
 	//
-	scrnMan.loadScreens();
 	makeTopMenu();
 
-	display.attachScreen(scrnMan.getActiveScreen());
+	//display.attachScreen(scrnMan.getActiveScreen());
 	display.wakeupConfirmed();
 
+	scrnMan.loadScreens();
+	scrnMan.showActiveScreen(display);
+
 	//
-	logger.init();
-	context.deviceState.statusSDCard = logger.isInitialized() ? 1 : 0;
+	//logger.init();
+	//context.deviceState.statusSDCard = logger.isInitialized() ? 1 : 0;
+	context.deviceState.statusSDCard = SD_CARD.valid() ? 1 : 0;
+
 	//
 	battery.begin();
 	context.deviceState.batteryPower = battery.getVoltage();
@@ -888,6 +936,7 @@ void loadPreferences()
 	Preferences pref;
 	pref.begin("vario", false);
 	context.load(pref);
+	context.dump();
 	pref.end();
 }
 

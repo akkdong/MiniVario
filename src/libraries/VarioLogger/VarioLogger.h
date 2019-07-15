@@ -10,7 +10,7 @@
 #include "DeviceDefines.h"
 #include "FixedLenDigit.h"
 #include "FS.h"
-#include "SD_MMC.h"
+#include "SdCard.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -22,9 +22,7 @@ public:
 	VarioLogger();
 	
 public:
-	int					init();
-	
-	int					begin(time_t date); // date = seconds since 1900
+	bool				begin(time_t date); // date = seconds since 1900
 	void				end(time_t date);
 	
 	int					write(uint8_t ch);

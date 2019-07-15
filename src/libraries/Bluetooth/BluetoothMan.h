@@ -5,7 +5,7 @@
 #define __BLUETOOTHMAN_H__
 
 #include "FS.h"
-#include "SD_MMC.h"
+#include "SdCard.h"
 
 
 #if 0
