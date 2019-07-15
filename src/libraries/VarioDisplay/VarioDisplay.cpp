@@ -651,7 +651,7 @@ void VarioDisplay::drawLogoScreen()
 	setTextColor(COLOR_BLACK, COLOR_WHITE);
 	drawBitmapBM(Bitmap_Paragliding, 6, 24, 164, 166, COLOR_WHITE, bm_invert);
 	setCursor(0, 240);
-	print("Fly high~");
+	print("Fly High~");
 	setFont(__FontStack[WS_FONT_NORMAL_1]);
 	setCursor(0, 260);
 	print("Notorious Rascal 2019");
@@ -815,7 +815,7 @@ const char * VarioDisplay::getUnit(WidgetContentType type)
 	case WidgetContent_Time_Flight :
 		return (context.flightState.flightTime < 3600) ? "mm/ss" : "hh/mm";
 	case WidgetContent_Time_Takeoff :
-		return (context.flightState.takeOffTime < 3600) ? "mm/ss" : "hh/mm";
+		return "hh/mm";
 	case WidgetContent_Pressure :
 		return "hPa";
 	case WidgetContent_Temperature :
@@ -985,6 +985,8 @@ DisplayObject * VarioDisplay::getActiveObject()
 
 const char * VarioDisplay::makeTimeString(char * str, time_t sec)
 {
+	sec = sec % (24 * 60 * 60); // trim date
+
 	if (sec < 3600)
 		sprintf(str, "%02d:%02d", sec / 60, sec % 60);
 	else 

@@ -4,6 +4,10 @@
 #include <Arduino.h>
 #include "ScreenManager.h"
 
+#define SID_DEFAULT_1		(0x8001)
+#define SID_DEFAULT_2		(0x8002)
+#define SID_CIRCLING		(0x8003)
+#define SID_STATISTIC		(0x8004)
 
 #define STATUS_TIME_HEIGHT	24
 #define STATUS_TIME_WIDTH	40
@@ -191,7 +195,7 @@ static WidgetData _default_FlightStatistic[] =
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class ScreenManager
 
-ScreenManager::ScreenManager() : maxScreen(0), curScreen(0)
+ScreenManager::ScreenManager() : maxScreen(0), curScreen(0), actScreen(0)
 {
 
 }
@@ -199,38 +203,68 @@ ScreenManager::ScreenManager() : maxScreen(0), curScreen(0)
 void ScreenManager::loadScreens()
 {
 	// reset
-	maxScreen = curScreen = 0;
+	maxScreen = actScreen = curScreen = 0;
 
 	// load stock screens
-	loadScreen(&screens[maxScreen++], 0x8001, _default_1);
-	loadScreen(&screens[maxScreen++], 0x8001, _default_2);
-	loadScreen(&screens[maxScreen++], 0x8002, _default_Circling);
-	loadScreen(&screens[maxScreen++], 0x8003, _default_FlightStatistic);
+	loadScreen(&screens[maxScreen++], SID_DEFAULT_1, _default_1);
+	loadScreen(&screens[maxScreen++], SID_DEFAULT_2, _default_2);
+	loadScreen(&screens[maxScreen++], SID_CIRCLING, _default_Circling);
+	loadScreen(&screens[maxScreen++], SID_STATISTIC, _default_FlightStatistic);
 
 	// load user defined screen from storage
 	// ...
 }
 
-VarioScreen * ScreenManager::getNextScreen() 
+void ScreenManager::showScreen(VarioDisplay & display, int screen)
 {
-	curScreen = (curScreen + 1) % maxScreen;
-
-	return &screens[curScreen];
+	if (0 <= screen && screen < maxScreen)
+		display.attachScreen(&screens[screen]);
 }
 
-VarioScreen * ScreenManager::getPrevScreen() 
-{ 
-	curScreen = ((curScreen == 0) ? maxScreen - 1 : (curScreen - 1));
-
-	return &screens[curScreen];
+void ScreenManager::showActiveScreen(VarioDisplay & display)
+{
+	// change current to active & attach screen to display
+	showScreen(display, (curScreen = actScreen));
 }
 
-VarioScreen * ScreenManager::getActiveScreen()
+void ScreenManager::showCirclingScreen(VarioDisplay & display)
 {
-	if (curScreen < maxScreen)
-		return &screens[curScreen];
+	// find circling screen
+	int scrn = findScreen(SID_CIRCLING);
+	if (scrn < 0)
+		return;
+	
+	// change current to circling screen
+	showScreen(display, (curScreen = scrn));
+}
 
-	return NULL;
+void ScreenManager::showStatisticScreen(VarioDisplay & display)
+{
+	// find statistic screen
+	int scrn = findScreen(SID_STATISTIC);
+	if (scrn < 0)
+		return;
+
+	// change current to statistic screen
+	showScreen(display, (curScreen = scrn));
+}
+
+void ScreenManager::showNextActiveScreen(VarioDisplay & display)
+{
+	// change acctive screen to next screen
+	actScreen = (actScreen + 1) % maxScreen;
+
+	// attach screen to display
+	showScreen(display, (curScreen = actScreen));
+}
+
+void ScreenManager::showPrevActiveScreen(VarioDisplay & display)
+{
+	// change acctive screen to previous screen
+	actScreen = (actScreen + (maxScreen - 1)) % maxScreen;
+
+	// attach screen to display
+	showScreen(display, (curScreen = actScreen));
 }
 
 void ScreenManager::loadScreen(VarioScreen * screen, uint32_t id, WidgetData * widgets)
@@ -239,4 +273,15 @@ void ScreenManager::loadScreen(VarioScreen * screen, uint32_t id, WidgetData * w
 		screen->addWidget(&widgets[i]);
 
 	screen->setID(id);
+}
+
+int ScreenManager::findScreen(uint32_t id)
+{
+	for (int i = 0; i < maxScreen; i++)
+	{
+		if (screens[i].getID() == id)
+			return i;
+	}
+
+	return -1;
 }

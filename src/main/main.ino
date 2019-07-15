@@ -193,7 +193,7 @@ VarioLogger logger;
 //
 //
 
-#if 1 // Normal Bluetooth manager
+#if 0 // Normal Bluetooth manager
 BluetoothMan btMan(serialBluetooth, nmeaParser, varioNmea);
 #else // Logging raw NMEA sentence
 BluetoothManEx btMan(serialBluetooth, nmeaParser, varioNmea);
@@ -410,19 +410,19 @@ void loop()
 				else
 				{
 					updateFlightState();
-				}
 
-				if (nmeaParser.getSpeed() < FLIGHT_START_MIN_SPEED)
-				{
-					if ((millis() - modeTick) > FLIGHT_LANDING_THRESHOLD)
+					if (nmeaParser.getSpeed() < FLIGHT_START_MIN_SPEED)
 					{
-						stopFlight();
+						if ((millis() - modeTick) > FLIGHT_LANDING_THRESHOLD)
+						{
+							stopFlight();
+						}
 					}
-				}
-				else
-				{
-					// reset modeTick
-					modeTick = millis();
+					else
+					{
+						// reset modeTick
+						modeTick = millis();
+					}
 				}
 			}
 		}
@@ -508,7 +508,8 @@ void startFlight()
 	beeper.setBeep(NOTE_C4, 1000, 800, 1, 100);
 
 	//
-	btMan.startLogging(nmeaParser.getDateTime());
+	if (context.deviceDefault.enableNmeaLogging)
+		btMan.startLogging(nmeaParser.getDateTime());
 	
 	// start logging & change mode
 	if (logger.begin(nmeaParser.getDateTime()))
@@ -531,7 +532,11 @@ void startFlight()
 	context.flightStats.altitudeMax = context.flightStats.altitudeMin = context.varioState.altitudeGPS;
 
 	// set mode-tick
-	modeTick = millis();	
+	modeTick = millis();
+
+	//
+	//display.attachScreen(scrnMan.getActiveScreen());
+	scrnMan.showActiveScreen(display);
 }
 
 void updateVarioState()
@@ -664,7 +669,11 @@ void stopFlight()
 	{
 		logger.end(nmeaParser.getDateTime());
 		context.deviceState.statusSDCard = 1;
-	}	
+	}
+
+	//
+	//display.attachScreen(scrnMan.getStatisticScreen());	
+	scrnMan.showStatisticScreen(display);
 }
 
 void startCircling()
@@ -683,6 +692,10 @@ void startCircling()
 	context.flightState.circlingGain = 0;
 
 	context.flightState.glidingCount = 0;
+
+	//
+	//display.attachScreen(scrnMan.getCirclingScreen());
+	scrnMan.showCirclingScreen(display);
 }
 
 void startGliding()
@@ -712,6 +725,10 @@ void stopCircling()
 
 	context.flightState.deltaHeading_AVG = 0;
 	context.flightState.deltaHeading_SUM = 0;
+
+	//
+	//display.attachScreen(scrnMan.getActiveScreen());
+	scrnMan.showActiveScreen(display);
 }
 
 void stopGliding()
@@ -786,10 +803,12 @@ void processKey(int key)
 		{
 		// from main scren
 		case CMD_SHOW_NEXT_PAGE :
-			display.attachScreen(scrnMan.getNextScreen());
+			//display.attachScreen(scrnMan.getNextScreen());
+			scrnMan.showNextActiveScreen(display);
 			break;
 		case CMD_SHOW_PREV_PAGE :
-			display.attachScreen(scrnMan.getPrevScreen());
+			//display.attachScreen(scrnMan.getPrevScreen());
+			scrnMan.showPrevActiveScreen(display);
 			break;
 		case CMD_SHOW_TOP_MENU :
 			// enter menu
@@ -853,11 +872,13 @@ void processKey(int key)
 void startVario()
 {
 	//
-	scrnMan.loadScreens();
 	makeTopMenu();
 
-	display.attachScreen(scrnMan.getActiveScreen());
+	//display.attachScreen(scrnMan.getActiveScreen());
 	display.wakeupConfirmed();
+
+	scrnMan.loadScreens();
+	scrnMan.showActiveScreen(display);
 
 	//
 	logger.init();
@@ -886,6 +907,7 @@ void loadPreferences()
 	Preferences pref;
 	pref.begin("vario", false);
 	context.load(pref);
+	context.dump();
 	pref.end();
 }
 
