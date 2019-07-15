@@ -63,46 +63,23 @@ VarioLogger::VarioLogger()
 	reset();
 }
 
-
-int VarioLogger::init()
+bool VarioLogger::begin(time_t date)
 {
-	//
-	reset();
-	
-	//
-	if (! SD_MMC.begin() || SD_MMC.cardType() == CARD_NONE)
+	if (! SD_CARD.valid())
 	{
 		SET_STATE(LOGGER_INIT_FAILED);
 		return false;
 	}
-	
+
 	// 
-	if (! SD_MMC.exists(logsFolder))
+	if (! SD_CARD.exists(logsFolder))
 	{
-		if (! SD_MMC.mkdir(logsFolder))
+		if (! SD_CARD.mkdir(logsFolder))
 		{
 			SET_STATE(LOGGER_INIT_FAILED);
-		
 			return false;
 		}
-	}
-	
-	#if 0
-	if (! SD_MMC.chdir(logsFolder))
-	{
-			SET_STATE(LOGGER_INIT_FAILED);
-		
-			return false;		
-	}
-	#endif
-
-	return true;
-}
-
-int	VarioLogger::begin(time_t date)
-{
-	if (IS_SET(LOGGER_INIT_FAILED))
-		return false;
+	}	
 	
 	// create new file // YYYY-MM-DD-NRC-STM-nn.igc
 	char name[26];
@@ -118,7 +95,7 @@ int	VarioLogger::begin(time_t date)
 	strcat(pathBuf, "/");
 	strcat(pathBuf, name);
 
-	if ((file = SD_MMC.open(pathBuf, FILE_WRITE)))
+	if ((file = SD_CARD.open(pathBuf, FILE_WRITE)))
 	{
 		//
 		SET_STATE(LOGGER_WORKING);
@@ -255,7 +232,7 @@ const char * VarioLogger::makeFileName(char * buf, time_t date)
 		strcat(pathBuf, "/");
 		strcat(pathBuf, buf);
 
-		if (! SD_MMC.exists(pathBuf))
+		if (! SD_CARD.exists(pathBuf))
 			return buf;
 		
 		buf[19] = (i / 10) + '0';

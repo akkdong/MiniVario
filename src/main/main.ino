@@ -17,6 +17,7 @@
 #include "AGL.h"
 #include "TaskWatchdog.h"
 #include "ScreenManager.h"
+#include "FirmwareUpdater.h"
 
 
 #define USE_KALMAN_VARIO 	1
@@ -52,6 +53,7 @@ enum _DeviceMode
 	DEVICE_MODE_VARIO,			// (2)
 	DEVICE_MODE_VARIO_AND_GPS,	// (3)
 	DEVICE_MODE_PREFERENCE,		// (4)
+	DEVICE_MODE_UPDATE,
 };
 
 enum _VarioMode
@@ -266,7 +268,6 @@ void setup()
 
 	//
 	TaskWatchdog::begin(TASK_TIMEOUT_S);
-	TaskWatchdog::add(NULL);
 
 	// power on peripherals : default is power on
 	initPins(powerPins, sizeof(powerPins) / sizeof(powerPins[0]));
@@ -279,9 +280,30 @@ void setup()
 
 	Serial.println("Start MiniVario...\n");
 
+	// check sd-card & ready for use
+	SD_CARD.begin();
+
+	if (SD_CARD.valid())
+	{
+		FirmwareUpdater fu;
+
+		if (fu.checkUpdate())
+		{
+			//
+			fu.performUpdate(display);
+			//
+			ESP.restart();
+		}
+		
+		// else go down
+	}
+	else
+	{
+		Serial.printf("SD_CARD is invalid!!\n");
+	}
+
 	// load last device-context
-	loadPreferences();
-	TaskWatchdog::reset();
+	//loadPreferences();
 	
 	//
 	keybd.begin();
@@ -300,6 +322,9 @@ void setup()
 
 	//
 	deviceTick = millis();
+
+	//
+	TaskWatchdog::add(NULL);
 }
 
 void loop()
@@ -881,8 +906,10 @@ void startVario()
 	scrnMan.showActiveScreen(display);
 
 	//
-	logger.init();
-	context.deviceState.statusSDCard = logger.isInitialized() ? 1 : 0;
+	//logger.init();
+	//context.deviceState.statusSDCard = logger.isInitialized() ? 1 : 0;
+	context.deviceState.statusSDCard = SD_CARD.valid() ? 1 : 0;
+
 	//
 	battery.begin();
 	context.deviceState.batteryPower = battery.getVoltage();

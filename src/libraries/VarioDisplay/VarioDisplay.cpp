@@ -82,6 +82,15 @@ int VarioDisplay::begin(bool confirmWakeup)
 	return Task::createPinnedToCore(1) ? 0 : -1;
 }
 
+int VarioDisplay::beginFirmwareUpdate()
+{
+	// ...
+	displayMode = _UPDATE;
+	
+	//
+	return Task::createPinnedToCore(1) ? 0 : -1;
+}
+
 void VarioDisplay::TaskProc()
 {
 	//
@@ -92,14 +101,18 @@ void VarioDisplay::TaskProc()
 	//TaskWatchdog::reset();
 
 	//
-	if (displayMode == _CONFIRM)
+	switch (displayMode)
 	{
+	case _CONFIRM :
 		//
 		drawLogoScreen();
 		drawConfirmMessage();
 
 		//
 		refresh(false);
+		break;
+	case _UPDATE :
+		break;
 	}
 	
 	//
@@ -113,6 +126,11 @@ void VarioDisplay::TaskProc()
 		{
 		case _CONFIRM :
 			// nop
+			break;
+
+		case _UPDATE :
+			updateFirmwareUpdate();
+			refresh(updateCount++ > 0 ? true : false);
 			break;
 
 		case _VARIO :
@@ -177,6 +195,15 @@ void VarioDisplay::sleepDevice()
 	
 	// never comes here
 	// ...
+}
+
+void VarioDisplay::updateFirmwareUpdate()
+{
+	fillScreen(COLOR_WHITE);
+	setFont(__FontStack[WS_FONT_NORMAL_2]);
+	setTextColor(COLOR_BLACK, COLOR_WHITE);
+	setCursor(10, 10);
+	print("Update in progressing...");
 }
 
 void VarioDisplay::update()

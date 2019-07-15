@@ -54,6 +54,7 @@ public:
 
 public:
 	int 				begin(bool confirmWakeup);
+	int					beginFirmwareUpdate();
 	void				end();
 	
 	void				attachScreen(VarioScreen * screen);
@@ -68,7 +69,9 @@ public:
 protected:	
 	// 	
 	void				init();	
+	
 	void 				update();
+	void				updateFirmwareUpdate();
 
 	//	
 	void				draw(VarioScreen * screen);
@@ -131,7 +134,8 @@ private:
 	{
 		_CONFIRM,
 		_VARIO,
-		_DEEPSLEEP
+		_DEEPSLEEP,
+		_UPDATE
 	};
 
 	volatile int		displayMode;
