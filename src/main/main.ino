@@ -410,6 +410,8 @@ void loop()
 				else
 				{
 					updateFlightState();
+
+					deviceTick = millis();
 				}
 
 				if (nmeaParser.getSpeed() < FLIGHT_START_MIN_SPEED)
