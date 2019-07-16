@@ -28,3 +28,9 @@
 [submodule "src/libraries/AutoConnect"]
 	path = src/libraries/AutoConnect
 	url = https://github.com/Hieromon/AutoConnect.git
+[submodule "src/libraries/AsyncTCP"]
+	path = src/libraries/AsyncTCP
+	url = https://github.com/me-no-dev/AsyncTCP.git
+[submodule "src/libraries/ESPAsyncWebServer"]
+	path = src/libraries/ESPAsyncWebServer
+	url = https://github.com/me-no-dev/ESPAsyncWebServer.git

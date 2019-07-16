@@ -1,0 +1,65 @@
+{
+    "vario": {
+        "climbThreshold": 0.2,
+        "sinkThreshold": -3,
+        "sensitivity": 0.12,
+        "sentence": 2,
+        "altitudeRef1": 0.0,
+        "altitudeRef2": 0.0,
+        "altitudeRef3": 0.0,
+        "dampingFactor": 0.05
+    },
+    "glider": {
+        "type": 0,
+        "typeList": [
+            "Parglider",
+            "Hanglider Flex",
+            "Hanglider Rigid",
+            "Sailplane",
+            "PPG Foot",
+            "PPG Wheel"
+        ],
+        "manufacture": "OZone",
+        "model": "Zeno"
+    },
+    "IGCLogger": {
+        "enable": true,
+        "takeoffSpeed": 6,
+        "landingTimeout": 30000,
+        "loggingInterval": 1000,
+        "pilot": "akkdong",
+        "timezone": 9
+    },
+    "ToneTable": [
+        {
+            "velocity": 0,
+            "freq": 100,
+            "period": 100,
+            "duty": 0
+        }
+    ],
+    "volume": {
+        "vario": 100,
+        "effect": 100,
+        "autoTurnOn": true
+    },
+    "threshold": {
+        "lowBattery": 2.9,
+        "shutdownHoldtime": 2000,
+        "autoShutdownVario": 600000
+    },
+    "kalman": {
+        "zmeas": 400.0,
+        "zaccel": 1000.0,
+        "abias": 1.0
+    },
+    "device": {
+        "enableBT": 1,
+        "enableSound": 0,
+        "enableNmeaLogging": 1,
+        "btName": "MiniVario",
+        "SSID": "MiniVario",
+        "password": "1234567890",
+        "host": "mini-vario"
+    }
+}
