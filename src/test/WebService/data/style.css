@@ -1,0 +1,29 @@
+html {
+    font-family: Helvetica;
+    text-align: center;
+}
+
+h1 {
+    color: #0F3376;
+    padding: 0px;
+    font-size: 3rem;
+}
+
+p {
+    font-size: 2.5rem;
+    padding: 6px 0px;
+    margin: 0px;
+}
+
+.button {
+    display: inline-block;
+    background-color: #008CBA;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    padding: 16px 40px;
+    text-decoration: none;
+    font-size: 30px;
+    margin: 0px;
+    width: 100%;
+}

@@ -910,9 +910,11 @@ const char * VarioDisplay::getString(WidgetContentType type)
 	case WidgetContent_Altitude_Ref3 :	// QFE
 		return itoa(context.varioState.altitudeRef3 + 0.5, tempString, 10);
 	case WidgetContent_Glide_Ratio :
-		if (context.flightState.glideRatio == 0.0)
-			return "--";
-		sprintf(tempString, "%.1f", context.flightState.glideRatio + 0.05);
+		if (context.flightState.glideRatio < 0.0)
+			return "-/-";
+		else if (context.flightState.glideRatio == 0)
+			return "INF";
+		sprintf(tempString, "%.1f", context.flightState.glideRatio);
 		return tempString;
 	case WidgetContent_Vario_Active :
 		sprintf(tempString, "%.1f", context.varioState.speedVertActive);
@@ -1018,4 +1020,70 @@ const char * VarioDisplay::makeTimeString(char * str, time_t sec)
 		sprintf(str, "%02d:%02d", sec / 60, sec % 60);
 	else 
 		sprintf(str, "%02d:%02d", sec / 3600, (sec / 60) % 60);
+}
+
+
+#include "SdCard.h"
+
+static unsigned char BMP_Header[] = 
+{
+	// BMP Header
+	0x42, 0x4D,				// ID field
+	0xFE, 0x18, 0x00, 0x00, // Size of BMP file : (176+16)*264/8 + 54 + 8 = 6398 = 0x18FE
+	0x00, 0x00, 0x00, 0x00,	// unused
+	0x36, 0x00, 0x00, 0x00,	// Offset where bitmap data
+	// DIB Header
+	0x28, 0x00, 0x00, 0x00, // IDB Header size
+	0xB0, 0x00, 0x00, 0x00,	// Width in pixels : 176
+	0x08, 0x01, 0x00, 0x00, // Height in pixels : 264
+	0x01, 0x00,				// Number of color planes
+	0x01, 0x00,				// Number of bits per pixel
+	0x00, 0x00, 0x00, 0x00,	// BI_RGB
+	0xC0, 0x18, 0x00, 0x00, // Size of bitmap data : (176+16)*264/8 = 6336 = 0x18C0
+	0x00, 0x00, 0x00, 0x00,	// Print resolution : horizontal
+	0x00, 0x00, 0x00, 0x00,	// Print resolution : vertical
+	0x00, 0x00, 0x00, 0x00,	// Number of colors in the palette
+	0x00, 0x00, 0x00, 0x00,	// Number of important colors
+
+	0x00, 0x00, 0x00, 0x00,	// BLACK
+	0xFF, 0xFF, 0xFF, 0x00,	// WHITE
+};
+
+void VarioDisplay::saveScreenShot()
+{
+	//
+	char name[32];
+
+	for (int i = 1; i < 50; i++)
+	{
+		//
+		sprintf(name, "/screen%02d.bmp", i);
+		if (! SD_CARD.exists(name))
+			break;
+	}
+
+	//
+	File file = SD_CARD.open(name, FILE_WRITE);
+	if (file)
+	{
+		//
+		file.write(BMP_Header, sizeof(BMP_Header));
+
+		//
+		int x, y, row = (WIDTH / 8 + 3) / 4 * 4; // (176/8+3)/4*4
+		unsigned char * ptr = _buffer;
+
+		for (y = 0; y < HEIGHT; y++)
+		{
+			for (x = 0; x < WIDTH / 8; x++)
+				file.write(*ptr++);
+			for (; x < row; x++)
+				file.write(0x00);
+		}
+
+		//
+		file.close();
+
+		Serial.printf("Save screenshot: %s\n", name);
+	}
 }

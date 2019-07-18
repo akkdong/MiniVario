@@ -1,0 +1,43 @@
+boot sequence
+
+initialize serial(debug), key
+
+check weakup reason
+    case of weekup from deep-sleep
+        wait long-select key for 1(~ 2) seconds
+        go deep-sleep again if timeout
+
+power on peripherals
+wait for a while : for peripheral bootup
+
+initialize sd-card
+check firmware update: from sd
+    perform update: if firmware exists
+    reboot
+
+initialize global variables& load last device context
+
+initialize others
+    watchdog
+    serial for GPS
+    i2c for sensors
+    display
+    beeper
+    bluetooth serial : if is enabled
+    bluetooth manager
+
+start vario
+    make top-menu
+    load screen
+    set active screen
+    intialize battery
+    intialize vario
+    update device state flag
+
+    reset device-tick
+
+starting beep
+reset device-tick
+
+loop
+

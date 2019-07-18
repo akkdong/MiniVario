@@ -26,6 +26,7 @@
 #define CMD_LEAVE_TOPMENU		(0x00040000)
 #define CMD_LEAVE_PREFERENCE	(0x00050000)
 
+#define CMD_SAVE_SCREENSHOT		(0xFFFC0000)
 #define CMD_SHUTDOWN			(0xFFFE0000)
 
 typedef enum _DispObjectType

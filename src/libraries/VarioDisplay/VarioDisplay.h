@@ -61,6 +61,8 @@ public:
 	void				attachPreference(VarioPreference * pref);
 	void				showPopup(VarioPopup * popupPtr);
 
+	void				saveScreenShot();
+
 	void				deepSleep() { displayMode = _DEEPSLEEP; }
 	void				wakeupConfirmed() { displayMode = _VARIO; }
 	

@@ -18,9 +18,10 @@
 #include "TaskWatchdog.h"
 #include "ScreenManager.h"
 #include "FirmwareUpdater.h"
+#include "WiFi.h"
+#include "WiFiServer.h"
 
-
-#define USE_KALMAN_VARIO 	1
+#define USE_KALMAN_VARIO 						(1)
 
 #if USE_KALMAN_VARIO
 #include "KalmanVario.h"
@@ -29,6 +30,9 @@
 #endif
 #include "VerticalSpeedCalculator.h"
 
+
+#define WEBSERVER_PORT							(80)
+#define HOST_NAME								"mini-vario"
 
 #define DAMPING_FACTOR_DELTA_HEADING			(0.1)
 #define THRESHOLD_CIRCLING_HEADING				(6)
@@ -40,6 +44,8 @@
 #define CIRCLING_EXIT_COUNT						(3)
 
 #define TASK_TIMEOUT_S							(1)
+
+#define BOOT_CHECKING_TIMOUT					(1200)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -266,19 +272,54 @@ void setup()
 		break;
 	}
 
+	// initialize serial(debug) & input key
+	Serial.begin(115200);
+	Serial.printf("Start MiniVario...\n\n");	
 	//
-	TaskWatchdog::begin(TASK_TIMEOUT_S);
+	keybd.begin();
+
+	// wakeup from deep-sleep
+	//  --> check long key (sel)
+	//  --> if not go deep-sleep again
+	if (deviceMode == DEVICE_MODE_WAKEUP)
+	{
+		Serial.println("Wakeup from deepsleep: check long-ley input for delayed boot-up!");	
+		uint32_t tick = millis();
+
+		while (1)
+		{
+			keybd.update();
+
+			if (keybd.getch() == KEY_SEL_LONG)
+			{
+				// wakeup confirmed!!
+				break;
+			}
+
+			if ((millis() - tick) > BOOT_CHECKING_TIMOUT)
+			{
+				// deep-sleep again~
+				Serial.println("go deep-sleep again~");
+				delay(100);
+
+				const int ext_wakeup_pin_1 = 34;
+				const uint64_t ext_wakeup_pin_1_mask = 1ULL << ext_wakeup_pin_1;
+
+				// Enabling EXT1 wakeup on pins GPIO34
+				esp_sleep_enable_ext1_wakeup(ext_wakeup_pin_1_mask, ESP_EXT1_WAKEUP_ANY_HIGH);
+				// Entering deep sleep
+				esp_deep_sleep_start();
+
+				while(1);
+			}
+		}
+
+		deviceMode = DEVICE_MODE_VARIO;
+	}
 
 	// power on peripherals : default is power on
 	initPins(powerPins, sizeof(powerPins) / sizeof(powerPins[0]));
-	delay(20);
-	
-	// initialize communication channels
-	Serial.begin(115200);
-	Serial2.begin(9600);
-	Wire.begin();
-
-	Serial.println("Start MiniVario...\n");
+	delay(100);
 
 	// check sd-card & ready for use
 	SD_CARD.begin();
@@ -293,9 +334,10 @@ void setup()
 			fu.performUpdate(display);
 			//
 			ESP.restart();
-		}
-		
+		}		
 		// else go down
+
+
 	}
 	else
 	{
@@ -306,25 +348,24 @@ void setup()
 	//loadPreferences();
 	
 	//
-	keybd.begin();
-	//
-	display.begin(deviceMode == DEVICE_MODE_WAKEUP);
-	//
-	beeper.begin();
-	beeper.setBeep(NOTE_C4, 600, 400, 2, 100);
+	TaskWatchdog::begin(TASK_TIMEOUT_S);
+	TaskWatchdog::add(NULL);
 
-	//
+	Serial2.begin(9600);
+	Wire.begin();	
+	display.begin(deviceMode == DEVICE_MODE_WAKEUP);
+	beeper.begin();
 	btMan.begin();
+//	battery.begin();
+//	vario.begin();
 
 	// start right now or ...
 	if (deviceMode == DEVICE_MODE_VARIO)
 		startVario();
 
 	//
+	beeper.setBeep(NOTE_C4, 600, 400, 2, 100);
 	deviceTick = millis();
-
-	//
-	TaskWatchdog::add(NULL);
 }
 
 void loop()
@@ -660,8 +701,15 @@ void updateFlightState()
 
 			if (dist > 100)
 			{
-				float diff = context.flightState.glidingStartPos.alt - context.varioState.altitudeGPS;
-				context.flightState.glideRatio = diff ? dist / diff : 0;
+				if (context.flightState.glidingStartPos.alt < context.varioState.altitudeGPS)
+				{
+					float diff = context.flightState.glidingStartPos.alt - context.varioState.altitudeGPS;
+					context.flightState.glideRatio = diff ? dist / diff : 0;
+				}
+				else
+				{
+					context.flightState.glideRatio = 0; // INF
+				}
 			}
 		}
 
@@ -735,7 +783,7 @@ void startGliding()
 	context.flightState.glidingStartPos.lat = nmeaParser.getLatitude();
 	context.flightState.glidingStartPos.alt = nmeaParser.getAltitude();
 
-	context.flightState.glideRatio = 0;
+	context.flightState.glideRatio = -1;
 }
 
 void stopCircling()
@@ -764,7 +812,7 @@ void stopGliding()
 	context.flightState.flightMode = FMODE_FLYING;
 
 	//
-	context.flightState.glideRatio = 0;
+	context.flightState.glideRatio = -1;
 }
 
 
@@ -840,6 +888,11 @@ void processKey(int key)
 		case CMD_SHOW_TOP_MENU :
 			// enter menu
 			display.showPopup(&topMenu);
+			break;
+
+		case CMD_SAVE_SCREENSHOT :
+			// save current screen to file
+			display.saveScreenShot();
 			break;
 			
 		// from top-menu

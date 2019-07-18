@@ -23,6 +23,9 @@ uint32_t VarioScreen::processKey(uint8_t key)
 		// move to next page
 		return CMD_SHOW_NEXT_PAGE;
 	
+	case KEY_SEL :
+		return CMD_SAVE_SCREENSHOT;
+		
 	case KEY_SEL_LONG :
 		return CMD_SHOW_TOP_MENU;
 	}

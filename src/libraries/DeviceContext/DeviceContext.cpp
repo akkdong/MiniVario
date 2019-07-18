@@ -135,6 +135,7 @@ void DeviceContext::reset()
 
 	//
 	flightState.bearingTakeoff = -1;
+	flightState.glideRatio = -1;
 }
 
 bool DeviceContext::load(Preferences & pref)
