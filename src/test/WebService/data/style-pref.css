@@ -1,0 +1,47 @@
+body, p, h1, div, span, hr {
+    margin: 0px;
+    padding: 0px 2px;
+}
+
+.page_title {
+    color: rgb(4, 20, 49); 
+    font-size: 3em;
+    padding-top: 4px;
+}
+
+.pref-group {
+    color: rgb(62, 15, 100); 
+    font-size: 2.6em;
+    margin-top: 6px;
+}
+
+.pref-separator {
+    margin: 4px 2px;
+    color: rgb(44, 31, 31);
+    border: 0;
+    height: 1px;
+    background: #333;
+    background-image: -webkit-linear-gradient(left, #ccc, #333, #ccc);
+    background-image: -moz-linear-gradient(left, #ccc, #333, #ccc);
+    background-image: -ms-linear-gradient(left, #ccc, #333, #ccc);
+    background-image: -o-linear-gradient(left, #ccc, #333, #ccc);				
+}
+
+hr.style-two {
+    border: 0;
+    height: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}			
+
+.pref-title {
+    color: rgb(4, 53, 4);
+    font-size: 2em;
+    margin-bottom: 4px
+}
+
+.pref-value {
+    color: rgb(97, 92, 92);
+    font-size: 1.8em;
+    cursor: pointer;
+}

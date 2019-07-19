@@ -1,0 +1,11 @@
+{
+    "vario_climb_threshold": 0.2,
+    "vario_sink_threshold" : -3,
+    "vario_damping_factor" : 0.05,
+    "glider_type": 0,
+    "glider_manufacture": "Ozone",
+    "glider_model": "Zeno",
+    "device_enable_bt": true,
+    "device_enable_sound": false,
+    "device_bt_name": "MiniVario"
+}

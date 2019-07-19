@@ -1,0 +1,76 @@
+{
+    "g_vario": {
+        "title": "Vario",
+        "items": [
+            {
+                "type": "number",
+                "name": "Climb Threshold",
+                "desc": "",
+                "key": "vario_climb_threshold"
+            },
+            {
+                "type": "number",
+                "name": "Climb Threshold",
+                "desc": "",
+                "key": "vario_sink_threshold"
+            },
+            {
+                "type": "number",
+                "name": "Damping Factor",
+                "desc": "",
+                "key": "vario_damping_factor"
+            }
+        ]
+    },
+    "g_glider": {
+        "title": "Glider",
+        "items": [
+            {
+                "type": "select",
+                "name": "Type",
+                "desc": "",
+                "key": "glider_type",
+                "list": [
+                    "Paraglider",
+                    "Hanglider",
+                    "Powered PG"
+                ]
+            },
+            {
+                "type": "string",
+                "name": "Manufacture",
+                "desc": "",
+                "key": "glider_manufacture"
+            },
+            {
+                "type": "string",
+                "name": "Model",
+                "desc": "",
+                "key": "glider_model"
+            }
+        ]
+    },
+    "g_device": {
+        "title": "Device Default",
+        "items": [
+            {
+                "type": "boolean",
+                "name": "Enable BT",
+                "desc": "Enable Bluetooth when device started",
+                "key": "device_enable_bt"
+            },
+            {
+                "type": "boolean",
+                "name": "Enable Sound",
+                "desc": "Turn on sound when device started",
+                "key": "device_enable_sound"
+            },
+            {
+                "type": "string",
+                "name": "BT Name",
+                "desc": "",
+                "key": "device_bt_name"
+            }
+        ]
+    }
+}

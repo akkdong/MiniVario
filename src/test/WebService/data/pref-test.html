@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<title>Device Settings</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+        <link2 rel="stylesheet" type="text/css" href="style.css"/>
+        <script src="jquery-3.4.1.min.js"></script>
+		<style>
+			body, p, h1, div, span, hr {
+				margin: 0px;
+				padding: 0px 2px;
+			}
+			
+			.page_title {
+				color: #0F3376; 
+				font-size: 3em;
+				padding-top: 4px;
+			}
+			
+			.pref-group {
+				color: red; 
+				font-size: 2.6em;
+				margin-top: 6px;
+			}
+			
+			.pref-separator {
+				margin: 4px 2px;
+				color: #0F0F0F;
+				border: 0;
+				height: 1px;
+				background: #333;
+				background-image: -webkit-linear-gradient(left, #ccc, #333, #ccc);
+				background-image: -moz-linear-gradient(left, #ccc, #333, #ccc);
+				background-image: -ms-linear-gradient(left, #ccc, #333, #ccc);
+				background-image: -o-linear-gradient(left, #ccc, #333, #ccc);				
+			}
+			
+			hr.style-two {
+				border: 0;
+				height: 0;
+				border-top: 1px solid rgba(0, 0, 0, 0.1);
+				border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+			}			
+			
+			.pref-title {
+				color: green;
+				font-size: 2em;
+				margin-bottom: 4px
+			}
+			
+			.pref-value {
+				color: gray;
+				font-size: 1.8em;
+				cursor: pointer;
+			}
+		</style>
+		<style>
+			body {font-family: Arial, Helvetica, sans-serif;}
+
+			.modal {
+				display: none; /* Hidden by default */
+				position: fixed; /* Stay in place */
+				z-index: 1; /* Sit on top */
+				padding-top: 100px; /* Location of the box */
+				left: 0;
+				top: 0;
+				width: 100%; /* Full width */
+				height: 100%; /* Full height */
+				overflow: auto; /* Enable scroll if needed */
+				background-color: rgb(0,0,0); /* Fallback color */
+				background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+			}
+
+			/* Modal Header */
+			.modal-header {
+				padding: 2px 16px;
+				background-color: #5cb85c;
+				color: white;
+			}
+
+			/* Modal Body */
+			.modal-body {
+				padding: 2px 16px;
+			}
+
+			/* Modal Footer */
+			.modal-footer {
+				padding: 2px 16px;
+				background-color: #5cb85c;
+				color: white;
+			}			
+
+			/* Modal Content/Box */
+			.modal-content {
+				position: relative;
+				background-color: #fefefe;
+				margin: auto;
+				padding: 0;
+				border: 1px solid #888;
+				width: 80%;
+				box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+				-webkit-animation-name: animatetop;
+  				-webkit-animation-duration: 0.4s;				
+				animation-name: animatetop;
+				animation-duration: 0.4s			
+			}
+			
+			/* Add Animation */
+			@-webkit-keyframes animatetop {
+				from { top: -300px; opacity: 0 }
+				to { top: 0; opacity: 1 }
+			}			
+			
+			/* Add Animation */
+			@keyframes animatetop {
+				from { top: -300px; opacity: 0 }
+				to { top: 0; opacity: 1 }
+			}
+
+			/* The Close Button */
+			.close {
+				color: #aaa;
+				float: right;
+				font-size: 28px;
+				font-weight: bold;
+			}			
+
+			.close:hover, .close:focus {
+				color: #000;
+				text-decoration: none;
+				cursor: pointer;
+			}	
+					
+			/* Style the input */
+			.input_number {
+				margin: 0;
+				border: none;
+				border-radius: 0;
+				width: 100%;
+				padding: 10px;
+				float: left;
+				font-size: 16px;
+			}			
+		</style>
+	<script>
+		function onEditNumber (x, title, value) {
+			var data = JSON.parse(x.getAttribute('value'));
+			console.log(data);
+
+			document.getElementById("edit-number").setAttribute("ref", data.key);
+			document.getElementById("modal-number-title").innerText = data.name;
+			document.getElementById("modal-number-input-value").value = x.innerText;
+			//$("#myModel").css({"display": "block"});
+			document.getElementById("edit-number").style.display = "block";
+		}
+
+		function onCancelEdit () {
+			document.getElementById("edit-number").style.display = "none";
+		}
+
+		function onAcceptEdit () {
+			document.getElementById("edit-number").style.display = "none";
+
+			var value = document.getElementById("modal-number-input-value").value;
+			var key = document.getElementById("edit-number").getAttribute("ref");
+			console.log("edit key = ", key, ", value = ", value);
+	
+			document.getElementById(key).innerText = value;
+		}
+	</script>
+    </head>
+    <body style="text-align:left">
+        <h1 class="page_title">Device Settings</h1>
+		<div>
+			<h1 class="pref-group">Vario</h1>
+			<div>
+				<hr class="pref-separator"/>
+				<div class="pref-title">Climb Threshold</div>
+				<div id="vario_climb_threshold" class="pref-value" onClick="onEditNumber(this)" value='{"name":"Climb Threshold", "key": "vario_climb_threshold"}'>0.2</div>
+			</div>
+			<div>
+				<hr class="pref-separator"/>
+				<div class="pref-title">Sink Threshold</div>
+				<div id="vario_sink_threshold" class="pref-value" onClick="onEditNumber(this)" value='{"name":"Sink Threshold", "key": "vario_sink_threshold"}'>-3</div>			
+			</div>
+		</div>
+		<div>
+			<h1 class="pref-group">Glider</h1>
+			<div>
+				<hr class="pref-separator"/>
+				<div class="pref-title">Type</div>
+				<div id="glider_type" class="pref-value" onClick="onEditNumber(this)" value='{"name":"Type", "key": "glider_type"}'>Paraglider</div>			
+			</div>
+			<div>
+				<hr class="pref-separator"/>
+				<div class="pref-title">Manufacture</div>
+				<div id="glider_manufacture" class="pref-value" onClick="onEditNumber(this)" value='{"name":"Manufacture", "key": "glider_manufacture"}'>OZone</div>			
+			</div>
+			<div>
+				<hr class="pref-separator"/>
+				<div class="pref-title">Model</div>
+				<div id="glider_model" class="pref-value" onClick='onEditNumber(this)' onClick="onEditNumber(this)" value='{"name":"Model", "key": "glider_model"}'>Zeno</div>			
+			</div>
+		</div>
+
+		<!-- The Modal -->
+		<div id="edit-number" class="modal">
+			<!-- Modal content -->
+			<div class="modal-content">
+				<div class="modal-header">
+					<span class="close" onClick='onCancelEdit()'>&times;</span>
+					<h2 id="modal-number-title">Modal Header</h2>
+				</div>
+				<div class="modal-body" style="font-size:2em; height: 40px">
+					<input type="number" id="modal-number-input-value" class="input_number">
+				</div>	
+				<div class="modal-footer">
+					<h3 onClick="onAcceptEdit()" style="cursor: pointer">OK</h3>
+				</div>
+			</div>
+		</div>
+    </body>
+</html>

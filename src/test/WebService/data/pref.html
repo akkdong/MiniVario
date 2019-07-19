@@ -1,95 +1,31 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Device Settings</title>
-        <link rel="stylesheet" type="text/css" href="style.css"/>
-        <script src="jquery-3.4.1.min.js"></script>
-		<style>
-			body, p, h1, div, span, hr {
-				margin: 0px;
-				padding: 0px 2px;
-			}
-			
-			.page_title {
-				color: #0F3376; 
-				font-size: 3em;
-				padding-top: 4px;
-			}
-			
-			.pref-group {
-				color: red; 
-				font-size: 2.6em;
-				margin-top: 6px;
-			}
-			
-			.pref-separator {
-				margin: 4px 2px;
-				color: #0F0F0F;
-				border: 0;
-				height: 1px;
-				background: #333;
-				background-image: -webkit-linear-gradient(left, #ccc, #333, #ccc);
-				background-image: -moz-linear-gradient(left, #ccc, #333, #ccc);
-				background-image: -ms-linear-gradient(left, #ccc, #333, #ccc);
-				background-image: -o-linear-gradient(left, #ccc, #333, #ccc);				
-			}
-			
-			hr.style-two {
-				border: 0;
-				height: 0;
-				border-top: 1px solid rgba(0, 0, 0, 0.1);
-				border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-			}			
-			
-			.pref-title {
-				color: green;
-				font-size: 2em;
-				margin-bottom: 4px
-			}
-			
-			.pref-value {
-				color: gray;
-				font-size: 1.8em;
-			}
-		</style>
-    </head>
-    <body style="text-align:left">
-        <h1 class="page_title">Device Settings</h1>
-		<p>
-			<h1 class="pref-group">Vario</h1>
-			<div>
-				<hr class="pref-separator"/>
-				<div class="pref-title">Climb Threshold</div>
-				<div class="pref-value">0.2</div>			
+<head>
+<title>Test</title>
+<link rel="stylesheet" type="text/css" href="style-pref.css"/>
+<link rel="stylesheet" type="text/css" href="style-popup.css"/>
+<script src="jquery-3.4.1.min.js"></script>
+<script src="preferences.js"></script>
+<script>
+	window.onload = function() {
+		refreshPage();
+	}
+</script>
+</head>
+<body>
+	<h1 class="page_title">Device Settings</h1>
+	<p id="vario_pref"></p>
+
+	<!-- Popups -->
+	<div id="id-popup-edit-number" class="popup-modal">
+		<div class="popup-content">
+			<div class="popup-body">
+				<span id="id-popup-number-close" class="popup-close-button">&times</span>
+				<h2>Popup contents</h2>
+				<input id="id-popup-number-input" type="text">&nbsp;
+				<span id="id-popup-number-accept" class="popup-accept-button">OK</span>
 			</div>
-			<div>
-				<hr class="pref-separator"/>
-				<div class="pref-title">Sink Threshold</div>
-				<div class="pref-value">-3</div>			
-			</div>
-			<div>
-				<hr class="pref-separator"/>
-				<div class="pref-title">Sensitivity</div>
-				<div class="pref-value">0.12</div>			
-			</div>
-		</p>
-		<p>
-			<h1 class="pref-group">Glider</h1>
-			<div>
-				<hr class="pref-separator"/>
-				<div class="pref-title">Type</div>
-				<div class="pref-value">Paraglider</div>			
-			</div>
-			<div>
-				<hr class="pref-separator"/>
-				<div class="pref-title">Manufacture</div>
-				<div class="pref-value">OZone</div>			
-			</div>
-			<div>
-				<hr class="pref-separator"/>
-				<div class="pref-title">Model</div>
-				<div class="pref-value">Zeno</div>			
-			</div>
-		</p>
-    </body>
+		</div>
+	</div>
+</body>
 </html>
