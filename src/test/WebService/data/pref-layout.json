@@ -40,13 +40,15 @@
                 "type": "string",
                 "name": "Manufacture",
                 "desc": "",
-                "key": "glider_manufacture"
+                "key": "glider_manufacture",
+                "max": 16
             },
             {
                 "type": "string",
                 "name": "Model",
                 "desc": "",
-                "key": "glider_model"
+                "key": "glider_model",
+                "max": 16
             }
         ]
     },
@@ -69,7 +71,8 @@
                 "type": "string",
                 "name": "BT Name",
                 "desc": "",
-                "key": "device_bt_name"
+                "key": "device_bt_name",
+                "max": 16
             }
         ]
     }

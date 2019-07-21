@@ -1,22 +1,22 @@
 body, p, h1, div, span, hr {
     margin: 0px;
     padding: 0px 2px;
+    font-family: Helvetica;
 }
 
 .page_title {
     color: rgb(4, 20, 49); 
     font-size: 3em;
-    padding-top: 4px;
 }
 
 .pref-group {
     color: rgb(62, 15, 100); 
     font-size: 2.6em;
-    margin-top: 6px;
+    padding-top: 6px;
 }
 
 .pref-separator {
-    margin: 4px 2px;
+    margin: 5px 2px;
     color: rgb(44, 31, 31);
     border: 0;
     height: 1px;
@@ -43,5 +43,16 @@ hr.style-two {
 .pref-value {
     color: rgb(97, 92, 92);
     font-size: 1.8em;
+    cursor: pointer;
+}
+
+.pref-title-button {
+    color: rgb(75, 70, 70);
+}
+
+.pref-title-button:hover, 
+.pref-title-button:focus {
+    color: #000;
+    text-decoration: none;
     cursor: pointer;
 }

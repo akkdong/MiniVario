@@ -1,27 +1,74 @@
 var pref_layout, pref_data;
 
 
-function editNumber(context, value) {
-    $('#id-popup-edit-number').css('display', 'block');
-    $('#id-popup-number-input').value = value;
+function onClosePopup (popup) {
+    $(popup).css('display', 'none'); 
+}
 
+function onAcceptPopup (popup, input, key) {
+    $('#' + key).text($(input).val());
+
+    onClosePopup(popup);
+}
+
+function editNumber(context, value) {
+    $('#id-popup-number-title').text(context.name);
+    $('#id-popup-number-input').val(value);
+    $('#id-popup-number-close').attr('onclick', 'onClosePopup("#id-popup-number-edit")');
+    $('#id-popup-number-accept').attr('onclick', 'onAcceptPopup("#id-popup-number-edit", "#id-popup-number-input","' + context.key + '")');
+
+
+    $('#id-popup-number-edit').css('display', 'block');
+
+    /*
     $('#id-popup-number-close').click(function() {
-        $('#id-popup-edit-number').css('display', 'none');    
+        $('#id-popup-number-edit').css('display', 'none');    
     });
 
     $('#id-popup-number-accept').click(function() {
-        $('#id-popup-edit-number').css('display', 'none');    
+        $('#id-popup-number-edit').css('display', 'none');    
 
-
-    });    
+        $('#' + context.key).text($('#id-popup-number-input').val());
+        console.log('update value of ', context.key);
+    }); 
+    */   
 }
 
 function editString(context, value) {
+    $('#id-popup-string-title').text(context.name);
+    $('#id-popup-string-input').val(value);
+    $('#id-popup-string-input').attr('maxlength', context.max);
+    $('#id-popup-string-close').attr('onclick', 'onClosePopup("#id-popup-string-edit")');
+    $('#id-popup-string-accept').attr('onclick', 'onAcceptPopup("#id-popup-string-edit", "#id-popup-string-input","' + context.key + '")');
 
+
+    $('#id-popup-string-edit').css('display', 'block');
 }
 
 function editSelect(context, value) {
+    $('#id-popup-select-title').text(context.name);
 
+    var _group = $('#id-popup-select-group');
+    
+    _group.text('');
+    $.each(context.list, function (idx, name) {
+        var _input = $('<input>')
+            .attr('id', 'id-popup-radio-' + context.key)
+            .addClass('popup-radio')
+            .attr('type', 'radio')
+            .attr('name', 'group');
+        var _span = $('<span>').text(name);
+        
+        _group.append(_input);
+        _group.append(_span);
+        _group.append($('<br>'));
+    });  
+
+
+    $('#id-popup-select-close').attr('onclick', 'onClosePopup("#id-popup-select")');
+    $('#id-popup-select-accept').attr('onclick', 'onAcceptPopup("#id-popup-select", "#id-popup-select-input","' + context.key + '")');
+
+    $('#id-popup-select').css('display', 'block');
 }
 
 function editPrefItem(item) {
@@ -50,13 +97,18 @@ function makePrefItem (item) {
     var _value = $('<div>')
         .addClass('pref-value')
         .attr('id', item.key)
-        .attr('context', JSON.stringify(item))
-        .attr('onclick', 'editPrefItem(this)')
-        .text(pref_data[item.key]);
+        .attr('context', JSON.stringify(item));
 
-    if (item.type == "select") {
-        //_value.text(item.list[pref_data[item.key]]);
-        _value.text(item.list[_value.text()]);
+    if (item.type === "boolean") {
+        _value.append($('<span>').text(item.desc));
+        _value.append($('<span>').append($('<i>').addClass('fas fa-toggle-on').attr('style','position: absolute; right:0px; width:60px')));
+    } else {
+        _value.attr('onclick', 'editPrefItem(this)').text(pref_data[item.key]);
+
+        if (item.type == "select") {
+            //_value.text(item.list[pref_data[item.key]]);
+            _value.text(item.list[_value.text()]);
+        }
     }
 
     return $('<div>')
@@ -124,6 +176,8 @@ function makePreference () {
         $("#vario_pref").html(pref);
         */
 
+       $("#vario_pref").text("");
+
        console.log("makePreference: ", pref_layout);
        $.each(pref_layout, function(key, value) {
             $("#vario_pref").append(makePrefGroup (value.title, value.items));
@@ -148,4 +202,8 @@ function refreshPage () {
         console.log("pref-data.json: ", data);
         makePreference();
     });	    
+}
+
+function savePref () {
+    console.log("save preferences...");
 }

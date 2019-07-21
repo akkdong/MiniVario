@@ -12,22 +12,6 @@
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
-.popup-header {
-    padding: 2px 16px;
-    background-color: #5cb85c;
-    color: white;
-}
-
-.popup-body {
-    padding: 2px 16px;
-}
-
-.popup-footer {
-    padding: 2px 16px;
-    background-color: #5cb85c;
-    color: white;
-}			
-
 .popup-content {
     position: relative;
     background-color: #fefefe;
@@ -39,8 +23,44 @@
     -webkit-animation-name: animatetop;
     -webkit-animation-duration: 0.4s;				
     animation-name: animatetop;
-    animation-duration: 0.4s			
+    animation-duration: 0.4s;		
 }
+
+.popup-header {
+    padding: 6px 12px;
+    background-color: #5cb85c;
+    color: white;
+}
+
+.popup-title {
+    font-size: 1.8em;
+}
+
+.popup-body {
+    padding: 6px 12px;
+    font-size: 1.6em;
+}
+
+.popup-input {
+    width: 100%;
+    border: none;
+    font-size: 1.2em;
+    color: rgb(122, 118, 118); 
+}
+
+.popup-input-line {
+    width: 100%; 
+    margin: 0px; 
+    border: 0; 
+    height: 1px; 
+    background: rgb(122, 118, 118); 
+}
+
+.popup-footer {
+    padding: 6px 12px;
+    background-color: #5cb85c;
+    color: white;
+}			
 
 @-webkit-keyframes animatetop {
     from { top: -300px; opacity: 0 }
@@ -53,8 +73,8 @@
 }
 
 .popup-accept-button {
-    color: #aaa;
-    font-size: 28px;
+    color: rgb(209, 204, 204);
+    font-size: 1.6em;
     font-weight: bold;
 }
 
@@ -66,9 +86,9 @@
 }
 
 .popup-close-button {
-    color: #aaa;
+    color: rgb(209, 204, 204);
     float: right;
-    font-size: 28px;
+    font-size: 1.6em;
     font-weight: bold;
 }
 
@@ -87,4 +107,4 @@
     padding: 10px;
     float: left;
     font-size: 16px;
-}	
+}

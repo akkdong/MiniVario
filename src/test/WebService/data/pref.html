@@ -4,28 +4,98 @@
 <title>Test</title>
 <link rel="stylesheet" type="text/css" href="style-pref.css"/>
 <link rel="stylesheet" type="text/css" href="style-popup.css"/>
+<script src="https://kit.fontawesome.com/be430f8e49.js"></script>
 <script src="jquery-3.4.1.min.js"></script>
 <script src="preferences.js"></script>
 <script>
 	window.onload = function() {
 		refreshPage();
+
+		$("#id-download").click(function () {
+			savePref();
+		});
+
+		$("#id-reload").click(function () {
+			refreshPage();
+		});
 	}
 </script>
 </head>
 <body>
-	<h1 class="page_title">Device Settings</h1>
-	<p id="vario_pref"></p>
+	<div class="page_title">
+		<span>Device Settings</span>
+		<span style="position: absolute; right:0px;">
+			<i id="id-download" class="pref-title-button fas fa-download"></i>
+			<i id="id-reload" class="pref-title-button fas fa-redo-alt"></i>
+		</span>
+	</div>
+	<div id="vario_pref"></div>
 
 	<!-- Popups -->
-	<div id="id-popup-edit-number" class="popup-modal">
+	<!-- Number modal -->
+	<div id="id-popup-number-edit" class="popup-modal">
 		<div class="popup-content">
+			<div class="popup-header">
+				<div>
+					<span id="id-popup-number-title" class="popup-title"></span>
+					<!--<span id="id-popup-number-close" class="popup-close-button">&times</span>-->
+				</div>		
+			</div>
 			<div class="popup-body">
-				<span id="id-popup-number-close" class="popup-close-button">&times</span>
-				<h2>Popup contents</h2>
-				<input id="id-popup-number-input" type="text">&nbsp;
-				<span id="id-popup-number-accept" class="popup-accept-button">OK</span>
+				<input id="id-popup-number-input" class="popup-input" type="number">
+				<hr class="popup-input-line">
+			</div>
+			<div class="popup-footer">
+				<div style="text-align: right">
+					<span id="id-popup-number-accept" class="popup-accept-button">OK</span>
+					<span>&nbsp;&nbsp;</span>
+					<span id="id-popup-number-close" class="popup-close-button">Cancel</span>
+				</div>
 			</div>
 		</div>
 	</div>
-</body>
+	<!-- String modal -->
+	<div id="id-popup-string-edit" class="popup-modal">
+			<div class="popup-content">
+				<div class="popup-header">
+					<div>
+						<span id="id-popup-string-title" class="popup-title"></span>
+						<!--<span id="id-popup-string-close" class="popup-close-button">&times</span>-->
+					</div>		
+				</div>
+				<div class="popup-body">
+					<input id="id-popup-string-input" class="popup-input" type="string">
+					<hr class="popup-input-line">
+				</div>
+				<div class="popup-footer">
+					<div style="text-align: right">
+						<span id="id-popup-string-accept" class="popup-accept-button">OK</span>
+						<span>&nbsp;&nbsp;</span>
+						<span id="id-popup-string-close" class="popup-close-button">Cancel</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	<!-- Select modal -->
+	<div id="id-popup-select" class="popup-modal">
+			<div class="popup-content">
+				<div class="popup-header">
+					<div>
+						<span id="id-popup-select-title" class="popup-title"></span>
+						<!--<span id="id-popup-select-close" class="popup-close-button">&times</span>-->
+					</div>		
+				</div>
+				<div class="popup-body">
+					<div id="id-popup-select-group"></div>
+				</div>
+				<div class="popup-footer">
+					<div style="text-align: right">
+						<span id="id-popup-select-accept" class="popup-accept-button">OK</span>
+						<span>&nbsp;&nbsp;</span>
+						<span id="id-popup-select-close" class="popup-close-button">Cancel</span>
+					</div>
+				</div>
+			</div>
+		</div>		
+	</body>
 </html>

@@ -26,4 +26,5 @@ p {
     font-size: 30px;
     margin: 0px;
     width: 100%;
+    cursor: pointer;
 }
