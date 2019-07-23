@@ -3,7 +3,8 @@
     <head>
 		<title>Device Settings</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-        <link2 rel="stylesheet" type="text/css" href="style.css"/>
+		<link rel="stylesheet" type="text/css" href="style.css"/>
+		<link rel="stylesheet" type="text/css" href="css/font-awesome.min.css"/>
         <script src="jquery-3.4.1.min.js"></script>
 		<style>
 			body, p, h1, div, span, hr {
@@ -169,8 +170,16 @@
 		}
 	</script>
     </head>
-    <body style="text-align:left">
-        <h1 class="page_title">Device Settings</h1>
+	<body style="text-align:left">
+		<div>
+			<span class="page_title">Device Settings</span>
+			<span style="position: absolute; right: 6px; top: 4px">
+				<i class=" fa fa-3x fa-download" style="color:red;"></i>
+				<i class=" fa fa-3x fa-toggle-on" style="color:red;"></i>
+				<i class=" fa fa-3x fa-toggle-off" style="color:gray;"></i>
+			</span>
+		</span>
+		</div>
 		<div>
 			<h1 class="pref-group">Vario</h1>
 			<div>
@@ -219,5 +228,42 @@
 				</div>
 			</div>
 		</div>
+
+
+		<form id="form-test">
+			<div>
+			  <input type="radio" name="fruit-favorite" value="1" id="id-orange">
+			  <label for="id-orange">orange</label>
+			</div>
+			<div>
+			  <input type="radio" name="fruit-favorite" value="2" id="id-apple">
+			  <label for="id-apple">apple</label>
+			</div>
+			<div>
+			  <input type="radio" name="fruit-favorite" value="3" id="id-banana">
+			  <label for="id-banana">banana</label>
+			</div>
+			<input type="button" id="test-button" name="check" value="abc">
+		</form>	
+
+		<p>&nbsp;</p>
+
+		<select id='select-test'>
+			<option>a</option>
+			<option>b</option>
+			<option selected>c</option>
+			<option>d</option>
+			<option>e</option>
+		</select>
+		
+		<script>
+			$('#test-button').click(function (){
+				console.log($('input[name=fruit-favorite]:checked').val());
+			});
+
+			$('#select-test').change(function() {
+				console.log("changed!!!");
+			});
+		</script>
     </body>
 </html>

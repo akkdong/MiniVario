@@ -1,94 +1,150 @@
+//
+//
+//
+
 var pref_layout, pref_data;
 
 
-function onClosePopup (popup) {
-    $(popup).css('display', 'none'); 
+//
+//
+//
+
+function onClickCancel () {
+    $('#id-popup-editor').css('display', 'none');
 }
 
-function onAcceptPopup (popup, input, key) {
-    $('#' + key).text($(input).val());
+function onClickAccept () {
+    //
+    var _context = JSON.parse($('#id-popup-editor').attr('context'));
 
-    onClosePopup(popup);
+    if (_context.type === 'select') {
+        // id-popup-select, select-xxx_xxx_xxx, xxx_xxx_xxx
+        var _select = $('input[name=select-'+_context.key+']:checked').val();
+        var _option = _context.options.find(function (option) {
+            return (option.value == _select);
+        });
+
+        pref_data[_context.key] = _option.value;
+        $('#' + _context.key).text(_option.name);
+    } else {
+        var _ivalue = $('#id-popup-input').val();
+        if (_context.type === 'number')
+            _ivalue = Number(_ivalue);
+
+        $('#' + _context.key).text(_ivalue);
+        pref_data[_context.key] = _ivalue;
+    }
+    console.log("pref_data = ", JSON.stringify(pref_data));
+
+    //
+    onClickCancel();
 }
 
-function editNumber(context, value) {
-    $('#id-popup-number-title').text(context.name);
-    $('#id-popup-number-input').val(value);
-    $('#id-popup-number-close').attr('onclick', 'onClosePopup("#id-popup-number-edit")');
-    $('#id-popup-number-accept').attr('onclick', 'onAcceptPopup("#id-popup-number-edit", "#id-popup-number-input","' + context.key + '")');
+function editItem (item) {
+    var _context = JSON.parse($(item).attr('context'));
+    var _value = $(item).text();
+    var _body = $('#id-popup-body');
+    console.log('context = ', _context);
+    console.log('value = ', _value);
 
+    $('#id-popup-title').text(_context.name);
 
-    $('#id-popup-number-edit').css('display', 'block');
+    if (_context.type === 'number') {
+        var _input = $('<input>').attr('id', 'id-popup-input').attr('type', 'number').addClass('popup-input');
+        var _hr = $('<hr>').addClass('popup-input-inline');
 
-    /*
-    $('#id-popup-number-close').click(function() {
-        $('#id-popup-number-edit').css('display', 'none');    
-    });
-
-    $('#id-popup-number-accept').click(function() {
-        $('#id-popup-number-edit').css('display', 'none');    
-
-        $('#' + context.key).text($('#id-popup-number-input').val());
-        console.log('update value of ', context.key);
-    }); 
-    */   
-}
-
-function editString(context, value) {
-    $('#id-popup-string-title').text(context.name);
-    $('#id-popup-string-input').val(value);
-    $('#id-popup-string-input').attr('maxlength', context.max);
-    $('#id-popup-string-close').attr('onclick', 'onClosePopup("#id-popup-string-edit")');
-    $('#id-popup-string-accept').attr('onclick', 'onAcceptPopup("#id-popup-string-edit", "#id-popup-string-input","' + context.key + '")');
-
-
-    $('#id-popup-string-edit').css('display', 'block');
-}
-
-function editSelect(context, value) {
-    $('#id-popup-select-title').text(context.name);
-
-    var _group = $('#id-popup-select-group');
-    
-    _group.text('');
-    $.each(context.list, function (idx, name) {
-        var _input = $('<input>')
-            .attr('id', 'id-popup-radio-' + context.key)
-            .addClass('popup-radio')
-            .attr('type', 'radio')
-            .attr('name', 'group');
-        var _span = $('<span>').text(name);
+        _input.val(_value);
         
-        _group.append(_input);
-        _group.append(_span);
-        _group.append($('<br>'));
-    });  
+        _body.empty();
+        _body.append(_input);
+        _body.append(_hr);
+    } else if (_context.type === 'string') {
+        var _input = $('<input>').attr('id', 'id-popup-input').attr('type', 'string').addClass('popup-input');
+        var _hr = $('<hr>').addClass('popup-input-inline');
+        
+        _input.val(_value);
+        _input.attr('maxlength', _context.maxlength);
+        
+        _body.empty();
+        _body.append(_input);
+        _body.append(_hr);
+    } else if (_context.type === 'select') {
+        var _group = $('<div>').attr('id', 'id-select-group');
+    
+        $.each(_context.options, function (idx, option) {
+            var _div = $('<div>').css('font-size', '0.8em').css('color', 'black');
+            var _input = $('<input>')
+                .attr('id', 'item-' + idx)
+                .addClass('popup-radio')
+                .attr('type', 'radio')
+                .attr('value', option.value)
+                .attr('name', 'select-' + _context.key);
+            var _span = $('<label>').text(option.name).attr('for', 'item-' + idx);
+    
+            if (option.name === _value)
+                _input.attr('checked', 'checked');
+            
+            _div.append(_input);
+            _div.append(_span);
+            _group.append(_div);
+        });
 
+        _body.empty();
+        _body.append(_group);
+    }
 
-    $('#id-popup-select-close').attr('onclick', 'onClosePopup("#id-popup-select")');
-    $('#id-popup-select-accept').attr('onclick', 'onAcceptPopup("#id-popup-select", "#id-popup-select-input","' + context.key + '")');
+    // remove & re-assign click handler
+    $('#id-popup-accept').off('click');
+    $('#id-popup-accept').click(onClickAccept);
+    /*
+    $('#id-popup-accept').click(function () {
+        $('#id-popup-editor').css('display', 'none');    
 
-    $('#id-popup-select').css('display', 'block');
-}
+        if (_context.type === 'select') {
+            // id-popup-select, select-xxx_xxx_xxx, xxx_xxx_xxx
+            var _select = $('input[name=select-'+_context.key+']:checked').val();
+            var _option = _context.options.find(function (option) {
+                return (option.value == _select);
+            });
 
-function editPrefItem(item) {
-    var context = JSON.parse($(item).attr('context'));
-    console.log('context = ', context);
-    console.log('value = ', $(item).text());
+            pref_data[_context.key] = _option.value;
+            $('#' + _context.key).text(_option.name);
+        } else {
+            var _input_val = $('#id-popup-input').val();
+            if (_context.type === 'number')
+                _input_val = Number(_input_val);
 
-    if (context.type === 'number') {
-        editNumber(context, $(item).text());
-    } else if (context.type === 'string') {
-        editString(context, $(item).text());
-    } else if (context.type === 'select') {
-        editSelect(context, $(item).text());
-    } else if (context.type === 'boolean') {
+            console.log('input val =', _input_val);
+            $('#' + _context.key).text(_input_val);
+            pref_data[_context.key] = _input_val;
+        }
 
+        console.log("pref_data = ", JSON.stringify(pref_data));
+    });
+    */
+
+    // remove & re-assign click handler
+    $('#id-popup-close').off('click');
+    $('#id-popup-close').click(onClickCancel);
+    /*
+    $('#id-popup-close').click(function () {  
+        $('#id-popup-editor').css('display', 'none');
+    });
+    */
+
+    // show popup
+    $('#id-popup-editor').attr('context', JSON.stringify(_context));
+    $('#id-popup-editor').css('display', 'block');
+
+    if (_context.type === 'select') {
+        $('input[name=select-'+_context.key+']:checked').focus();
+    } else {
+        $('#id-popup-input').focus().select();
     }
 }
 
 function makePrefItem (item) {
-    // { type, name, desc, key }
+    // item: { type, name[, desc,] key[, min, max, step, maxlength, options] }
 
     var _hr = $('<hr>').addClass('pref-seperator');
     var _title = $('<div>')
@@ -100,14 +156,59 @@ function makePrefItem (item) {
         .attr('context', JSON.stringify(item));
 
     if (item.type === "boolean") {
-        _value.append($('<span>').text(item.desc));
-        _value.append($('<span>').append($('<i>').addClass('fas fa-toggle-on').attr('style','position: absolute; right:0px; width:60px')));
-    } else {
-        _value.attr('onclick', 'editPrefItem(this)').text(pref_data[item.key]);
+        var _toggle = $('<i>').attr('style','position: absolute; right:8px;')
+        if (pref_data[item.key]) {
+            _toggle.addClass('fas fa-toggle-on');
+            _toggle.css('color', 'green');
+        } else {
+            _toggle.addClass('fas fa-toggle-off')
+            _toggle.css('color', 'gray');
+        }
+        _value.click(function () {
+            pref_data[item.key] = !!! pref_data[item.key];
+            console.log('pref_data = ', JSON.stringify(pref_data));
 
-        if (item.type == "select") {
+            if (pref_data[item.key]) {
+                _toggle.attr('class', 'fas fa-toggle-on');
+                _toggle.css('color', 'green');
+            } else {
+                _toggle.attr('class', 'fas fa-toggle-off')
+                _toggle.css('color', 'gray');
+            }
+        });
+        _value.append($('<span>').text(item.desc));
+        _value.append($('<span>').append(_toggle));
+    } else if (item.type === "select-inline") {
+        var _select = $('<select>').attr('id', 'id-select-inline-' + item.key);
+
+        $.each(item.options, function (idx, option) {
+            var _option = $('<option>').val(option.name).text(option.name);
+            if (option.value == pref_data[item.key])
+                _option.attr('selected', 'selected');
+
+            _select.append(_option);
+        });
+
+        _select.change(function() {
+            var _name = $(this).children('option:selected').text();
+            console.log("timezone changed: ", _name);
+
+            pref_data[item.key] = item.options.find(function (option) {
+                return (_name == option.name);
+            }).value;
+            console.log('pref_data = ', JSON.stringify(pref_data));
+        });
+
+        _value.append(_select);
+    } else {
+        _value.attr('onclick', 'editItem(this)').text(pref_data[item.key]);
+
+        if (item.type === "select") {
             //_value.text(item.list[pref_data[item.key]]);
-            _value.text(item.list[_value.text()]);
+            var _option = item.options.find(function (option) {
+                return (_value.text() == option.value);
+            });
+            _value.text(_option.name);
         }
     }
 
@@ -115,48 +216,12 @@ function makePrefItem (item) {
         .append(_hr)
         .append(_title)
         .append(_value);
-
-    /*
-    var prefItem =
-        '<div>' +
-            '<hr class="pref-separator"/>' +
-            '<div class="pref-title">' + item.name + '</div>' +
-            '<div class="pref-value">' + pref_data[item.key] + '</div>' +
-        '</div>';
-
-    return prefItem;
-    */
 }
-
-/*
-function makePrefItems (parent, items) {
-    var prefItems = "";
-
-    $.each(items, function (idx, item) {
-        console.log(idx, item);
-        prefItems += makePrefItem(item);
-    });
-
-    return prefItems;
-}
-*/
 
 function makePrefGroup (title, items) {
-    /*
-    var group = 
-        '<div>' +
-            '<h1 class="pref-group">' + title + '</h1>' +
-            makePrefItems(items) +
-        '</div>';
-
-    return group;
-    */
-
-    var _group = $('<div>');
-    _group.append($('<h1>').addClass('pref-group').text(title));
+    var _group = $('<div>').append($('<div>').addClass('pref-group').text(title));
 
     $.each(items, function (idx, item) {
-        console.log(idx, item);
         _group.append(makePrefItem(item));
     });    
 
@@ -165,20 +230,10 @@ function makePrefGroup (title, items) {
 	
 function makePreference () {
     if (pref_layout != "" && pref_data != "") {
-        /*
-        var pref = "";
-
-        console.log("makePreference: ", pref_layout);
-        $.each(pref_layout, function(key, value) {
-            pref += makePrefGroup (value.title, value.items);
-        });
-
-        $("#vario_pref").html(pref);
-        */
-
-       $("#vario_pref").text("");
-
-       console.log("makePreference: ", pref_layout);
+       console.log("makePreference: ", pref_layout);       
+       // empty
+       $("#vario_pref").empty();
+       // append each groups
        $.each(pref_layout, function(key, value) {
             $("#vario_pref").append(makePrefGroup (value.title, value.items));
        });
@@ -202,6 +257,33 @@ function refreshPage () {
         console.log("pref-data.json: ", data);
         makePreference();
     });	    
+}
+
+function initPref() {
+    //
+    refreshPage();
+
+    //
+    $("#id-download").click(function () {
+        savePref();
+    });
+
+    $("#id-reload").click(function () {
+        refreshPage();
+    });
+
+    //
+    $(document).on( "keydown", function (evt) {
+        if (evt.keyCode == 13) {
+            if ($('#id-popup-editor').css('display') === 'block') {
+                onClickAccept();
+            }
+        } else if (evt.keyCode == 27) {
+            if ($('#id-popup-editor').css('display') === 'block') {
+                onClickCancel();
+            }
+        }
+    });    
 }
 
 function savePref () {

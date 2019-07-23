@@ -4,6 +4,18 @@ body, p, h1, div, span, hr {
     font-family: Helvetica;
 }
 
+select {
+    width: 140px;
+    padding: .6em .5em;
+    font-family: inherit;
+    background: url(drop-thumb.jpg) no-repeat 95% 50%;
+    border: 1px solid rgb(173, 171, 171);
+    border-radius: 0px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
 .page_title {
     color: rgb(4, 20, 49); 
     font-size: 3em;
@@ -11,8 +23,10 @@ body, p, h1, div, span, hr {
 
 .pref-group {
     color: rgb(62, 15, 100); 
-    font-size: 2.6em;
-    padding-top: 6px;
+    ffont-size: 2.6em;
+    font-size: 1.9em;
+    font-weight: bold;
+    padding-top: 12px;
 }
 
 .pref-separator {
