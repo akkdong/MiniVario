@@ -2,6 +2,7 @@
 //
 
 #include "WebService.h"
+#include <ArduinoJson.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -32,6 +33,7 @@ int WebServiceClass::begin()
     Serial.print("AP IP address: ");
     Serial.println(myIP);
 
+    mServer.on("/update", HTTP_POST, onUpdateConf);
     mServer.onNotFound(onRequest);
     mServer.begin();
 
@@ -134,6 +136,54 @@ bool WebServiceClass::handleFileRead(String path)
         Serial.println("  File not exist!");
 
     return false;
+}
+
+void WebServiceClass::onUpdateConf()
+{
+    //
+    WebServer & server = WebService.mServer;
+
+    /*
+    Serial.printf("URL: %s\n", server.uri());
+    Serial.printf("Headers: %d\n", server.headers());
+    for (int i = 0; i < server.headers(); i++)
+        Serial.printf("   %s: %s\n", server.headerName(i).c_str(), server.header(i).c_str());
+    Serial.printf("Arguments: %d\n", server.args());
+    for (int i = 0; i < server.args(); i++)
+        Serial.printf("   %s: %s\n", server.argName(i).c_str(), server.arg(i).c_str());
+
+     */
+
+    //
+    const size_t capacity = JSON_OBJECT_SIZE(29) + 1024;
+    DynamicJsonDocument doc(capacity);
+
+    for (int i = 0; i < server.args(); i++)
+    {
+        Serial.printf("%s: %s\n", server.argName(i).c_str(), server.arg(i).c_str());
+        doc[server.argName(i)] = server.arg(i);
+    }
+
+    Serial.print("Serialize JSON to File: ");
+    File conf = SPIFFS.open("/pref-data.json", FILE_WRITE);
+    if (conf)
+    {
+        if (serializeJson(doc, conf) == 0)
+            Serial.println(F("Failed to write to file"));
+        conf.close();
+
+        Serial.println("OK");
+
+        server.sendHeader("Connection", "close");
+        server.send(200, "text/plain", "OK");
+    }
+    else
+    {
+        Serial.println("FAILED");
+
+        server.sendHeader("Connection", "close");
+        server.send(200, "text/plain", "FAILED");
+    }    
 }
 
 void WebServiceClass::onRequest()

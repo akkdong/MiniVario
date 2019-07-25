@@ -32,6 +32,7 @@ protected:
 
     bool                handleFileRead(String path);
 
+    static void         onUpdateConf();
     static void         onRequest();
 
 protected:

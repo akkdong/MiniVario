@@ -1,0 +1,178 @@
+https://arduinojson.org/v6/assistant/
+
+
+
+ArduinoJson
+v6 
+Documentation
+Assistant
+Book
+News
+GitHub
+Search
+ArduinoJson Assistant
+How to use ArduinoJson?
+How to compute the JsonDocument size?
+Paste your JSON in the box and you'll know...
+
+This is the Assistant for ArduinoJson 6.11.3. Make sure the same version is installed on your computer.
+
+Input
+{
+    "vario_climb_threshold": 0.2,
+    "vario_sink_threshold" : -3,
+    "vario_sensitivity": 0.12,
+    "vario_ref_altitude_1": 0.0,
+    "vario_ref_altitude_2": 0.0,
+    "vario_ref_altitude_3": 0.0,
+    "vario_damping_factor" : 0.05,
+    "glider_type": 1,
+    "glider_manufacture": "Ozone",
+    "glider_model": "Zeno",
+    "igc_enable_logging": true,
+    "igc_takeoff_speed": 6,
+    "igc_landing_timeout": 10000,
+    "igc_logging_interval": 1000,
+    "igc_pilot": "AKKDONG",
+    "igc_timezone": 9.0,
+    "volume_vario_enabled": false,
+    "volume_effect_enabled": false,
+    "volume_auto_turnon": true,
+    "threshold_low_battery": 2.9,
+    "threshold_auto_shutdown": 600000,
+    "kalman_var_zmeas": 400.0,
+    "kalman_var_zaccel": 1000.0,
+    "kalman_var_abias": 1.0,
+    "device_enable_bt": true,
+    "device_enable_sound": false,
+    "device_bt_name": "MiniVario",
+    "device_enable_simulation": false,
+    "device_enable_nmea_logging": false
+}
+
+
+Examples: OpenWeatherMap, Weather Underground
+
+Memory pool size
+Expression
+JSON_OBJECT_SIZE(29)
+
+Additional bytes for strings duplication
+583
+
+Platform	Size
+AVR 8-bit	232+583 = 815
+ESP32/ESP8266	464+583 = 1047
+Visual Studio x86	464+583 = 1047
+Visual Studio x64	928+583 = 1511
+
+
+===================================================================================================================
+Parsing program
+
+
+const size_t capacity = JSON_OBJECT_SIZE(29) + 650;
+DynamicJsonDocument doc(capacity);
+
+const char* json = "{\"vario_climb_threshold\":0.2,\"vario_sink_threshold\":-3,\"vario_sensitivity\":0.12,\"vario_ref_altitude_1\":0,\"vario_ref_altitude_2\":0,\"vario_ref_altitude_3\":0,\"vario_damping_factor\":0.05,\"glider_type\":1,\"glider_manufacture\":\"Ozone\",\"glider_model\":\"Zeno\",\"igc_enable_logging\":true,\"igc_takeoff_speed\":6,\"igc_landing_timeout\":10000,\"igc_logging_interval\":1000,\"igc_pilot\":\"AKKDONG\",\"igc_timezone\":9,\"volume_vario_enabled\":false,\"volume_effect_enabled\":false,\"volume_auto_turnon\":true,\"threshold_low_battery\":2.9,\"threshold_auto_shutdown\":600000,\"kalman_var_zmeas\":400,\"kalman_var_zaccel\":1000,\"kalman_var_abias\":1,\"device_enable_bt\":true,\"device_enable_sound\":false,\"device_bt_name\":\"MiniVario\",\"device_enable_simulation\":false,\"device_enable_nmea_logging\":false}";
+
+deserializeJson(doc, json);
+
+float vario_climb_threshold = doc["vario_climb_threshold"]; // 0.2
+int vario_sink_threshold = doc["vario_sink_threshold"]; // -3
+float vario_sensitivity = doc["vario_sensitivity"]; // 0.12
+int vario_ref_altitude_1 = doc["vario_ref_altitude_1"]; // 0
+int vario_ref_altitude_2 = doc["vario_ref_altitude_2"]; // 0
+int vario_ref_altitude_3 = doc["vario_ref_altitude_3"]; // 0
+float vario_damping_factor = doc["vario_damping_factor"]; // 0.05
+int glider_type = doc["glider_type"]; // 1
+const char* glider_manufacture = doc["glider_manufacture"]; // "Ozone"
+const char* glider_model = doc["glider_model"]; // "Zeno"
+bool igc_enable_logging = doc["igc_enable_logging"]; // true
+int igc_takeoff_speed = doc["igc_takeoff_speed"]; // 6
+int igc_landing_timeout = doc["igc_landing_timeout"]; // 10000
+int igc_logging_interval = doc["igc_logging_interval"]; // 1000
+const char* igc_pilot = doc["igc_pilot"]; // "AKKDONG"
+int igc_timezone = doc["igc_timezone"]; // 9
+bool volume_vario_enabled = doc["volume_vario_enabled"]; // false
+bool volume_effect_enabled = doc["volume_effect_enabled"]; // false
+bool volume_auto_turnon = doc["volume_auto_turnon"]; // true
+float threshold_low_battery = doc["threshold_low_battery"]; // 2.9
+long threshold_auto_shutdown = doc["threshold_auto_shutdown"]; // 600000
+int kalman_var_zmeas = doc["kalman_var_zmeas"]; // 400
+int kalman_var_zaccel = doc["kalman_var_zaccel"]; // 1000
+int kalman_var_abias = doc["kalman_var_abias"]; // 1
+bool device_enable_bt = doc["device_enable_bt"]; // true
+bool device_enable_sound = doc["device_enable_sound"]; // false
+const char* device_bt_name = doc["device_bt_name"]; // "MiniVario"
+bool device_enable_simulation = doc["device_enable_simulation"]; // false
+bool device_enable_nmea_logging = doc["device_enable_nmea_logging"]; // false
+
+
+===================================================================================================================
+Serializing program
+
+
+const size_t capacity = JSON_OBJECT_SIZE(29);
+DynamicJsonDocument doc(capacity);
+
+doc["vario_climb_threshold"] = 0.2;
+doc["vario_sink_threshold"] = -3;
+doc["vario_sensitivity"] = 0.12;
+doc["vario_ref_altitude_1"] = 0;
+doc["vario_ref_altitude_2"] = 0;
+doc["vario_ref_altitude_3"] = 0;
+doc["vario_damping_factor"] = 0.05;
+doc["glider_type"] = 1;
+doc["glider_manufacture"] = "Ozone";
+doc["glider_model"] = "Zeno";
+doc["igc_enable_logging"] = true;
+doc["igc_takeoff_speed"] = 6;
+doc["igc_landing_timeout"] = 10000;
+doc["igc_logging_interval"] = 1000;
+doc["igc_pilot"] = "AKKDONG";
+doc["igc_timezone"] = 9;
+doc["volume_vario_enabled"] = false;
+doc["volume_effect_enabled"] = false;
+doc["volume_auto_turnon"] = true;
+doc["threshold_low_battery"] = 2.9;
+doc["threshold_auto_shutdown"] = 600000;
+doc["kalman_var_zmeas"] = 400;
+doc["kalman_var_zaccel"] = 1000;
+doc["kalman_var_abias"] = 1;
+doc["device_enable_bt"] = true;
+doc["device_enable_sound"] = false;
+doc["device_bt_name"] = "MiniVario";
+doc["device_enable_simulation"] = false;
+doc["device_enable_nmea_logging"] = false;
+
+serializeJson(doc, Serial);
+
+
+
+Support the project and learn at the same time
+Mastering ArduinoJson
+Do you want to learn more about ArduinoJson?
+
+Check out the book Mastering ArduinoJson, the official manual for ArduinoJson.
+
+With this book, you will:
+
+Refresh your knowledge of essential C++ concepts
+Learn how to deserialize JSON
+Learn how to serialize JSON
+Open the hood an see how the library works
+Learn how to troubleshoot your programs
+Study new examples
+If you never used ArduinoJson, you will appreciate this book because it guides you through your learning. It starts with the basic usage of the library and increments the complexity step by step. The last chapter analyzes several example projects and explains the design choices. It is a much better way to learn than blindly copy-pasting the examples.
+
+If you are already using ArduinoJson, you will learn how to get the best performance and the most straightforward code. You will discover that many examples found on the Internet are suboptimal and even dangerous. The sample projects will give you a sense of how the library should be used and will give you a new perspective on your projects.
+
+Purchasing the book is also a great way to thank the author of the library.
+
+
+Copyright 2014-2019 ¨Ï Benoit Blanchon
+About
+Contact
+GitHub
+Privacy policy
