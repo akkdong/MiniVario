@@ -312,6 +312,8 @@ function initPref() {
 function savePref () {
     console.log("save preferences...");
     $.post("/update/pref-data.json", pref_data, function (data) {
-        console.log(data);
-    }, "json");
+        console.log("data: ", data);
+    }).fail(function(xhr, stat, err) {
+		console.log("error: ", err);
+	});
 }

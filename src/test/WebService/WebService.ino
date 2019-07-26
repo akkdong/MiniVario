@@ -59,8 +59,10 @@ void setup()
         {
             Serial.println("pref-data.json not exist");
         }
-        
     }
+
+    //
+    WebService.begin();
 }
 
 void loop()
