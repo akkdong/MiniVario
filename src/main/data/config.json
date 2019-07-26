@@ -1,65 +1,33 @@
 {
-    "vario": {
-        "climbThreshold": 0.2,
-        "sinkThreshold": -3,
-        "sensitivity": 0.12,
-        "sentence": 2,
-        "altitudeRef1": 0.0,
-        "altitudeRef2": 0.0,
-        "altitudeRef3": 0.0,
-        "dampingFactor": 0.05
-    },
-    "glider": {
-        "type": 0,
-        "typeList": [
-            "Parglider",
-            "Hanglider Flex",
-            "Hanglider Rigid",
-            "Sailplane",
-            "PPG Foot",
-            "PPG Wheel"
-        ],
-        "manufacture": "OZone",
-        "model": "Zeno"
-    },
-    "IGCLogger": {
-        "enable": true,
-        "takeoffSpeed": 6,
-        "landingTimeout": 30000,
-        "loggingInterval": 1000,
-        "pilot": "akkdong",
-        "timezone": 9
-    },
-    "ToneTable": [
-        {
-            "velocity": 0,
-            "freq": 100,
-            "period": 100,
-            "duty": 0
-        }
-    ],
-    "volume": {
-        "vario": 100,
-        "effect": 100,
-        "autoTurnOn": true
-    },
-    "threshold": {
-        "lowBattery": 2.9,
-        "shutdownHoldtime": 2000,
-        "autoShutdownVario": 600000
-    },
-    "kalman": {
-        "zmeas": 400.0,
-        "zaccel": 1000.0,
-        "abias": 1.0
-    },
-    "device": {
-        "enableBT": 1,
-        "enableSound": 0,
-        "enableNmeaLogging": 1,
-        "btName": "MiniVario",
-        "SSID": "MiniVario",
-        "password": "1234567890",
-        "host": "mini-vario"
-    }
+    "vario_climb_threshold": 0.2,
+    "vario_sink_threshold" : -3,
+    "vario_sensitivity": 0.12,
+    "vario_ref_altitude_1": 0.0,
+    "vario_ref_altitude_2": 0.0,
+    "vario_ref_altitude_3": 0.0,
+    "vario_damping_factor" : 0.05,
+    "glider_type": 1,
+    "glider_manufacture": "Ozone",
+    "glider_model": "Zeno",
+    "igc_enable_logging": true,
+    "igc_takeoff_speed": 6,
+    "igc_landing_timeout": 10000,
+    "igc_logging_interval": 1000,
+    "igc_pilot": "akkdong",
+    "igc_timezone": 9.0,
+    "volume_vario_enabled": false,
+    "volume_effect_enabled": false,
+    "volume_auto_turnon": true,
+    "threshold_low_battery": 2.9,
+    "threshold_auto_shutdown": 600000,
+    "kalman_var_zmeas": 400.0,
+    "kalman_var_zaccel": 1000.0,
+    "kalman_var_abias": 1.0,
+    "device_enable_bt": true,
+    "device_enable_sound": false,
+    "device_bt_name": "MiniVario",
+    "device_enable_simulation": false,
+    "device_enable_nmea_logging": false,
+    "wifi_ssid": "MiniVario",
+    "wifi_password": "123456789"
 }

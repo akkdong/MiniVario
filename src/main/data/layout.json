@@ -1,0 +1,256 @@
+{
+    "g_vario": {
+        "title": "Vario",
+        "items": [
+            {
+                "type": "number",
+                "name": "Climb Threshold",
+                "key": "vario_climb_threshold",
+                "min": 0.0,
+                "max": 1.0,
+                "step": 0.01
+            },
+            {
+                "type": "number",
+                "name": "Climb Threshold",
+                "key": "vario_sink_threshold",
+                "min": -10.0,
+                "max": 0.0,
+                "step": 0.1
+            },
+            {
+                "type": "number",
+                "name": "Sensitivity",
+                "key": "vario_sensitivity",
+                "min": 0.0,
+                "max": 1.0,
+                "step": 0.01
+            },
+            {
+                "type": "number",
+                "name": "Reference Alt 1",
+                "key": "vario_ref_altitude_1",
+                "min": 0.0,
+                "max": 2000.0,
+                "step": 1
+            },
+            {
+                "type": "number",
+                "name": "Reference Alt 2",
+                "key": "vario_ref_altitude_2",
+                "min": 0.0,
+                "max": 2000.0,
+                "step": 1
+            },
+            {
+                "type": "number",
+                "name": "Reference Alt 3",
+                "key": "vario_ref_altitude_3",
+                "min": 0.0,
+                "max": 2000.0,
+                "step": 1
+            },
+            {
+                "type": "number",
+                "name": "Damping Factor",
+                "key": "vario_damping_factor",
+                "min": 0.0,
+                "max": 1.0,
+                "step": 0.01
+            }
+        ]
+    },
+    "g_glider": {
+        "title": "Glider",
+        "items": [
+            {
+                "type": "select",
+                "name": "Type",
+                "key": "glider_type",
+                "options": [
+                    { "value": 0, "name": "Unknown" },
+                    { "value": 1, "name": "Paraglider" },
+                    { "value": 2, "name": "HG Flex" },
+                    { "value": 3, "name": "HG Rigid" },
+                    { "value": 4, "name": "Sailplane" },
+                    { "value": 5, "name": "PPG Foot" },
+                    { "value": 6, "name": "PPG Wheel" }
+                ]
+            },
+            {
+                "type": "string",
+                "name": "Manufacture",
+                "key": "glider_manufacture",
+                "maxlength": 16
+            },
+            {
+                "type": "string",
+                "name": "Model",
+                "key": "glider_model",
+                "maxlength ": 16
+            }
+        ]
+    },
+    "g_igc": {
+        "title": "IGC Logger",
+        "items": [
+            {
+                "type": "boolean",
+                "name": "IGC Logging",
+                "desc": "Enable IGC Logging",
+                "key": "igc_enable_logging"
+            },
+            {
+                "type": "number",
+                "name": "Takeoff Speed",
+                "key": "igc_takeoff_speed",
+                "min": 2.0,
+                "max": 10.0,
+                "step": 1.0
+            },
+            {
+                "type": "select",
+                "name": "Landing Timeout",
+                "key": "igc_landing_timeout",
+                "options": [
+                    { "value": 10000, "name": "10 seconds" },
+                    { "value": 20000, "name": "20 seconds" },
+                    { "value": 30000, "name": "30 seconds" }
+                ]
+            },
+            {
+                "type": "string",
+                "name": "Pilot Name",
+                "key": "igc_pilot",
+                "maxlength": 16
+            },
+            {
+                "type": "select-inline",
+                "name": "Time zone",
+                "key": "igc_timezone",
+                "options": [
+                    { "value": -12.0, "name": "GMT - 12" },
+                    { "value": -11.5, "name": "GMT - 11.5" },
+                    { "value": -11.0, "name": "GMT - 11" },
+                    { "value": -10.5, "name": "GMT - 10.5" },
+                    { "value": -10.0, "name": "GMT - 10" },
+                    { "value": -9.5, "name": "GMT - 9.5" },
+                    { "value": -9.0, "name": "GMT - 9" },
+                    { "value": -8.5, "name": "GMT - 8.5" },
+                    { "value": -8.0, "name": "GMT - 8" },
+                    { "value": -7.5, "name": "GMT - 7.5" },
+                    { "value": -7.0, "name": "GMT - 7" },
+                    { "value": -6.5, "name": "GMT - 6.5" },
+                    { "value": -6.0, "name": "GMT - 6" },
+                    { "value": -5.5, "name": "GMT - 5.5" },
+                    { "value": -5.0, "name": "GMT - 5" },
+                    { "value": -4.5, "name": "GMT - 4.5" },
+                    { "value": -4.0, "name": "GMT - 4" },
+                    { "value": -3.5, "name": "GMT - 3.5" },
+                    { "value": -3.0, "name": "GMT - 3" },
+                    { "value": -2.5, "name": "GMT - 2.5" },
+                    { "value": -2.0, "name": "GMT - 2" },
+                    { "value": -1.5, "name": "GMT - 1.5" },
+                    { "value": -1.0, "name": "GMT - 1" },
+                    { "value": -0.5, "name": "GMT - 0.5" },
+                    { "value": 0.0, "name": "GMT + 0" },
+                    { "value": 0.5, "name": "GMT + 0.5" },
+                    { "value": 1.0, "name": "GMT + 1" },
+                    { "value": 1.5, "name": "GMT + 1.5" },
+                    { "value": 2.0, "name": "GMT + 2" },
+                    { "value": 2.5, "name": "GMT + 2.5" },
+                    { "value": 3.0, "name": "GMT + 3" },
+                    { "value": 3.5, "name": "GMT + 3.5" },
+                    { "value": 4.0, "name": "GMT + 4" },
+                    { "value": 4.5, "name": "GMT + 4.5" },
+                    { "value": 5.0, "name": "GMT + 5" },
+                    { "value": 5.5, "name": "GMT + 5.5" },
+                    { "value": 6.0, "name": "GMT + 6" },
+                    { "value": 6.5, "name": "GMT + 6.5" },
+                    { "value": 7.0, "name": "GMT + 7" },
+                    { "value": 7.5, "name": "GMT + 7.5" },
+                    { "value": 8.0, "name": "GMT + 8" },
+                    { "value": 8.5, "name": "GMT + 8.5" },
+                    { "value": 9.0, "name": "GMT + 9" },
+                    { "value": 9.5, "name": "GMT + 9.5" },
+                    { "value": 10.0, "name": "GMT + 10" },
+                    { "value": 10.5, "name": "GMT + 10.5" },
+                    { "value": 11.0, "name": "GMT + 11" },
+                    { "value": 11.5, "name": "GMT + 11.5" },
+                    { "value": 12.0, "name": "GMT + 12" }
+                ]
+            }
+        ]
+    },
+    "g_device": {
+        "title": "Device Default",
+        "items": [
+            {
+                "type": "boolean",
+                "name": "Acoustic Sound",
+                "desc": "Turn on sound after device started",
+                "key": "device_enable_sound"
+            },
+            {
+                "type": "boolean",
+                "name": "Auto Sound",
+                "desc": "Automatic turn on sound after take-off",
+                "key": "volume_auto_turnon"
+            },
+            {
+                "type": "boolean",
+                "name": "NMEA Logging",
+                "desc": "Enable NMEA Logging",
+                "key": "device_enable_nmea_logging"
+            },
+            {
+                "type": "number",
+                "name": "Low battery threshold",
+                "key": "threshold_low_battery",
+                "min": 2.5,
+                "max": 3.2,
+                "step": 0.1
+            },
+            {
+                "type": "select",
+                "name": "Auto Shutdown",
+                "key": "threshold_auto_shutdown",
+                "options": [
+                    { "value": 0, "name": "Never" },
+                    { "value": 60000, "name": "1 minutes" },
+                    { "value": 300000, "name": "5 minutes" },
+                    { "value": 600000, "name": "10 minutes" }
+                ]
+            },
+            {
+                "type": "boolean",
+                "name": "Enable BT",
+                "desc": "Enable Bluetooth when device started",
+                "key": "device_enable_bt"
+            },
+            {
+                "type": "string",
+                "name": "BT Name",
+                "key": "device_bt_name",
+                "max": 16
+            }
+        ]
+    },
+    "g_wifi": {
+        "title": "Wifi",
+        "items": [
+            {
+                "type": "string",
+                "name": "SSID",
+                "key": "wifi_ssid",
+                "max": 16
+            },
+            {
+                "type": "string",
+                "name": "Password",
+                "key": "wifi_password",
+                "max": 16
+            }
+        ]
+    }
+}

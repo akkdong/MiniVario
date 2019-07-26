@@ -1,16 +1,37 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>MiniVario Web Interface</title>
-        <link rel="stylesheet" type="text/css" href="style.css"/>
-        <script src="jquery-3.4.1.min.js"></script>
-    </head>
- 
-    <body>
-        <h1>Mini-Vario</h1> 
-        <p><a href="pref.html"><button class="button">Device Settings</button></a></p>
-        <p><a href="fup.html"><button class="button">Firmware Update</button></a></p>
-        <p><a href="logs.html"><button class="button">Track Logs</button></a></p>
-    </body>
- 
+<head>
+    <title>MiniVario Web Interface</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <script>
+        function loadScript(url, callback) {
+            // Adding the script tag to the head as suggested before
+            var head = document.head;
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = url;
+
+            // Then bind the event to the callback function.
+            // There are several events for cross browser compatibility.
+            script.onreadystatechange = callback;
+            script.onload = callback;
+
+            // Fire the loading
+            head.appendChild(script);
+        }
+
+        function onLoad_JQuery() {
+            console.log("ok!!!");
+        }
+
+        loadScript("jquery-3.4.1.min.js", onLoad_JQuery)
+    </script>
+</head>
+
+<body>
+    <h1 class="pref">Mini-Vario</h1> 
+    <p class="pref"><a href="pref.html"><button class="pref-button">Device Settings</button></a></p>
+    <p class="pref"><a href="fup.html"><button class="pref-button">Firmware Update</button></a></p>
+    <p class="pref"><a href="logs.html"><button class="pref-button">Track Logs</button></a></p>
+</body>
 </html>

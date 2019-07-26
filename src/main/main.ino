@@ -20,6 +20,8 @@
 #include "FirmwareUpdater.h"
 #include "WiFi.h"
 #include "WiFiServer.h"
+#include "ArduinoJson.h"
+#include "WebService.h"
 
 #define USE_KALMAN_VARIO 						(1)
 
@@ -250,6 +252,7 @@ void processKey(int key);
 void startVario();
 void loadPreferences();
 void savePreferences();
+void toggleWebService();
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -345,7 +348,7 @@ void setup()
 	}
 
 	// load last device-context
-	//loadPreferences();
+	loadPreferences();
 	
 	//
 	TaskWatchdog::begin(TASK_TIMEOUT_S);
@@ -903,6 +906,7 @@ void processKey(int key)
 			switch (GET_PARAM(ret))
 			{
 			case TMID_SHOW_PREFERENCE : // show preference
+				toggleWebService();
 				break;
 				
 			case TMID_TOGGLE_SOUND : // toggle sound
@@ -984,19 +988,141 @@ void startVario()
 	deviceTick = millis();
 }
 
+static const char * config_key[] =
+{
+	"vario_climb_threshold",
+	"vario_sink_threshold",
+	"vario_sensitivity",
+	"vario_ref_altitude_1",
+	"vario_ref_altitude_2",
+	"vario_ref_altitude_3",
+	"vario_damping_factor",
+	"glider_type",
+	"glider_manufacture",
+	"glider_model",
+	"igc_enable_logging",
+	"igc_takeoff_speed",
+	"igc_landing_timeout",
+	"igc_logging_interval",
+	"igc_pilot",
+	"igc_timezone",
+	"volume_vario_enabled",
+	"volume_effect_enabled",
+	"volume_auto_turnon",
+	"threshold_low_battery",
+	"threshold_auto_shutdown",
+	"kalman_var_zmeas",
+	"kalman_var_zaccel",
+	"kalman_var_abias",
+	"device_enable_bt",
+	"device_enable_sound",
+	"device_bt_name",
+	"device_enable_simulation",
+	"device_enable_nmea_logging",
+	"wifi_ssid",
+	"wifi_password",
+};
+
 void loadPreferences()
 {
+	#if 0
 	Preferences pref;
 	pref.begin("vario", false);
 	context.load(pref);
 	context.dump();
 	pref.end();
+	#else
+	File file = SPIFFS.open("/config.json");
+	if (file)
+	{
+		const size_t capacity = JSON_OBJECT_SIZE(31) + 700;
+		DynamicJsonDocument doc(capacity);
+
+		DeserializationError error = deserializeJson(doc, file);
+		file.close();
+
+		if (! error)
+		{
+			if (doc["vario_climb_threshold"])
+				context.varioSetting.sinkThreshold = doc["vario_climb_threshold"]; // 0.2
+			if (doc["vario_sink_threshold"])
+				context.varioSetting.climbThreshold = doc["vario_sink_threshold"]; // -3
+			if (doc["vario_sensitivity"])
+				context.varioSetting.sensitivity = doc["vario_sensitivity"]; // 0.12
+			if (doc["vario_ref_altitude_1"])
+				context.varioSetting.altitudeRef1 = doc["vario_ref_altitude_1"]; // 0
+			if (doc["vario_ref_altitude_2"])
+				context.varioSetting.altitudeRef2 = doc["vario_ref_altitude_2"]; // 0
+			if (doc["vario_ref_altitude_3"])
+				context.varioSetting.altitudeRef3 = doc["vario_ref_altitude_3"]; // 0
+			if (doc["vario_damping_factor"])
+				context.varioSetting.dampingFactor = doc["vario_damping_factor"]; // 0.05
+			if (doc["glider_type"])
+				context.gliderInfo.type = doc["glider_type"]; // 1
+			if (doc["glider_manufacture"])
+				strcpy(context.gliderInfo.manufacture, doc["glider_manufacture"]); // "Ozone"
+			if (doc["glider_model"])
+				strcpy(context.gliderInfo.model, doc["glider_model"]); // "Zeno"
+			if (doc["igc_enable_logging"])
+				context.logger.enable = doc["igc_enable_logging"]; // true
+			if (doc["igc_takeoff_speed"])
+				context.logger.takeoffSpeed = doc["igc_takeoff_speed"]; // 6
+			if (doc["igc_landing_timeout"])
+				context.logger.landingTimeout = doc["igc_landing_timeout"]; // 10000
+			if (doc["igc_logging_interval"])
+				context.logger.loggingInterval = doc["igc_logging_interval"]; // 1000
+			if (doc["igc_pilot"])
+				strcpy(context.logger.pilot, doc["igc_pilot"]); // "akkdong"
+			if (doc["igc_timezone"])
+				context.logger.timezone = doc["igc_timezone"]; // 9
+			if (doc["volume_vario_enabled"])
+				context.volume.vario = doc["volume_vario_enabled"]; // false
+			if (doc["volume_effect_enabled"])
+				context.volume.effect = doc["volume_effect_enabled"]; // false
+			if (doc["volume_auto_turnon"])
+				context.volume.autoTurnOn = doc["volume_auto_turnon"]; // true
+			if (doc["threshold_low_battery"])
+				context.threshold.lowBattery = doc["threshold_low_battery"]; // 2.9
+			if (doc["threshold_auto_shutdown"])
+				context.threshold.autoShutdownVario = doc["threshold_auto_shutdown"]; // 600000
+			if (doc["kalman_var_zmeas"])
+				context.kalman.varZMeas = doc["kalman_var_zmeas"]; // 400
+			if (doc["kalman_var_zaccel"])
+				context.kalman.varZAccel = doc["kalman_var_zaccel"]; // 1000
+			if (doc["kalman_var_abias"])
+				context.kalman.varAccelBias = doc["kalman_var_abias"]; // 1
+			if (doc["device_enable_bt"])
+				context.deviceDefault.enableBT = doc["device_enable_bt"]; // true
+			if (doc["device_enable_sound"])
+				context.deviceDefault.enableSound = doc["device_enable_sound"]; // false
+			if (doc["device_bt_name"])
+				strcpy(context.deviceDefault.btName,doc["device_bt_name"]); // "MiniVario"
+			if (doc["device_enable_simulation"])
+				context.deviceDefault.enableSimulation = doc["device_enable_simulation"]; // false
+			if (doc["device_enable_nmea_logging"])
+				context.deviceDefault.enableNmeaLogging = doc["device_enable_nmea_logging"]; // false
+			if (doc["wifi_ssid"])
+				strcpy(context.deviceDefault.wifiSSID, doc["wifi_ssid"]); // "MiniVario"
+			if (doc["wifi_password"])
+				strcpy(context.deviceDefault.wifiPassword, doc["wifi_password"]); // "123456789"
+		}
+	}
+	#endif
 }
 
 void savePreferences()
 {
+	#if 0
 	Preferences pref;
 	pref.begin("vario", false);
 	context.save(pref);
 	pref.end();
+	#else
+	#endif
+}
+
+void toggleWebService()
+{
+	WebService.begin();
+	WebService.end();
 }

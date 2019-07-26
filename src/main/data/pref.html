@@ -1,95 +1,73 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Device Settings</title>
-        <link rel="stylesheet" type="text/css" href="style.css"/>
-        <script src="jquery-3.4.1.min.js"></script>
-		<style>
-			body, p, h1, div, span, hr {
-				margin: 0px;
-				padding: 0px 2px;
-			}
-			
-			.page_title {
-				color: #0F3376; 
-				font-size: 3em;
-				padding-top: 4px;
-			}
-			
-			.pref-group {
-				color: red; 
-				font-size: 2.6em;
-				margin-top: 6px;
-			}
-			
-			.pref-separator {
-				margin: 4px 2px;
-				color: #0F0F0F;
-				border: 0;
-				height: 1px;
-				background: #333;
-				background-image: -webkit-linear-gradient(left, #ccc, #333, #ccc);
-				background-image: -moz-linear-gradient(left, #ccc, #333, #ccc);
-				background-image: -ms-linear-gradient(left, #ccc, #333, #ccc);
-				background-image: -o-linear-gradient(left, #ccc, #333, #ccc);				
-			}
-			
-			hr.style-two {
-				border: 0;
-				height: 0;
-				border-top: 1px solid rgba(0, 0, 0, 0.1);
-				border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-			}			
-			
-			.pref-title {
-				color: green;
-				font-size: 2em;
-				margin-bottom: 4px
-			}
-			
-			.pref-value {
-				color: gray;
-				font-size: 1.8em;
-			}
-		</style>
-    </head>
-    <body style="text-align:left">
-        <h1 class="page_title">Device Settings</h1>
-		<p>
-			<h1 class="pref-group">Vario</h1>
-			<div>
-				<hr class="pref-separator"/>
-				<div class="pref-title">Climb Threshold</div>
-				<div class="pref-value">0.2</div>			
+<head>
+<title>Preference</title>
+<link rel="stylesheet" type="text/css" href="style.css"/>
+<!--<script src="jquery-3.4.1.min.js"></script>-->
+<!--<script src="preferences.js"></script>-->
+<script>
+	function loadScript(url, callback) {
+		// Adding the script tag to the head as suggested before
+		var head = document.head;
+		var script = document.createElement('script');
+		script.type = 'text/javascript';
+		script.src = url;
+
+		// Then bind the event to the callback function.
+		// There are several events for cross browser compatibility.
+		script.onreadystatechange = callback;
+		script.onload = callback;
+
+		// Fire the loading
+		head.appendChild(script);
+	}
+
+	function onLoad_Preferences() {
+		initPref();
+	}
+
+	function onLoad_FontAwesome() {
+	}
+
+	function onLoad_JQuery() {
+		loadScript("https://kit.fontawesome.com/be430f8e49.js", onLoad_FontAwesome);
+		loadScript("preferences.js", onLoad_Preferences);
+	}
+
+	loadScript("jquery-3.4.1.min.js", onLoad_JQuery)
+</script>
+</head>
+<body>
+	<!-- Preference Title -->
+	<div class="page_title">
+		<span>Device Settings</span>
+		<span style="position: absolute; right:0px; padding-top: 4px; padding-right:8px">
+			<i id="id-download" class="pref-title-button fas fa-download"></i>
+			<i id="id-reload" class="pref-title-button fas fa-redo-alt"></i>
+		</span>
+	</div>
+
+	<!-- Preference Contents -->
+	<div id="vario_pref"></div>
+
+	<!-- Popups -->
+	<div id="id-popup-editor" class="popup-modal" context="{{pref_context}}">
+		<div class="popup-content">
+			<div class="popup-header">
+				<div>
+					<span id="id-popup-title" class="popup-title"></span>
+				</div>		
 			</div>
-			<div>
-				<hr class="pref-separator"/>
-				<div class="pref-title">Sink Threshold</div>
-				<div class="pref-value">-3</div>			
+			<div id="id-popup-body" class="popup-body"></div>
+			<div class="popup-footer">
+				<div style="text-align: right">
+					<span id="id-popup-accept" class="popup-accept-button">OK</span>
+					<span>&nbsp;&nbsp;</span>
+					<span id="id-popup-close" class="popup-close-button">Cancel</span>
+				</div>
 			</div>
-			<div>
-				<hr class="pref-separator"/>
-				<div class="pref-title">Sensitivity</div>
-				<div class="pref-value">0.12</div>			
-			</div>
-		</p>
-		<p>
-			<h1 class="pref-group">Glider</h1>
-			<div>
-				<hr class="pref-separator"/>
-				<div class="pref-title">Type</div>
-				<div class="pref-value">Paraglider</div>			
-			</div>
-			<div>
-				<hr class="pref-separator"/>
-				<div class="pref-title">Manufacture</div>
-				<div class="pref-value">OZone</div>			
-			</div>
-			<div>
-				<hr class="pref-separator"/>
-				<div class="pref-title">Model</div>
-				<div class="pref-value">Zeno</div>			
-			</div>
-		</p>
-    </body>
+		</div>
+	</div>
+		
+</body>
 </html>

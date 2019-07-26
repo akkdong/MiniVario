@@ -165,6 +165,9 @@ struct DeviceDefault
 
 	uint8_t			enableSimulation;
 	uint8_t			enableNmeaLogging;
+
+	char			wifiSSID[MAX_STRING_SIZE];
+	char			wifiPassword[MAX_STRING_SIZE];
 };
 
 struct FlightStats

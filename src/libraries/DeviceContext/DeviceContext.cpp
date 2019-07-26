@@ -129,6 +129,8 @@ void DeviceContext::reset()
 	deviceDefault.enableNmeaLogging = 0;
 
 	strcpy(deviceDefault.btName, "MiniVario");
+	strcpy(deviceDefault.wifiSSID, "MiniVario");
+	strcpy(deviceDefault.wifiPassword, "123456789");
 
 	//
 	deviceState.statusBT = deviceDefault.enableBT ? 1 : 0;
