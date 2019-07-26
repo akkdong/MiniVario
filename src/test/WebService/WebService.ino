@@ -17,7 +17,7 @@ void setup()
         File conf = SPIFFS.open("/pref-data.json");
         if (conf)
         {
-            const size_t capacity = JSON_OBJECT_SIZE(29) + 650;
+            const size_t capacity = JSON_OBJECT_SIZE(29) + 1024;
             DynamicJsonDocument doc(capacity);
 
             DeserializationError error = deserializeJson(doc, conf);

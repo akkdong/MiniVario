@@ -8,6 +8,28 @@
 ///////////////////////////////////////////////////////////////////////////////////
 //
 
+bool parseBoolean(String str)
+{
+    if (str == "true")
+        return true;
+
+    return false;
+}
+
+int parseInteger(String str)
+{
+    return atoi(str.c_str());
+}
+
+float parseFloat(String str)
+{
+    return atof(str.c_str());
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////
+//
+
 WebServiceClass  WebService;
 
 
@@ -26,6 +48,7 @@ WebServiceClass::~WebServiceClass()
 
 int WebServiceClass::begin()
 {
+    //
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(IPAddress(192, 168, 1, 1), IPAddress(192, 168, 1, 1), IPAddress(255, 255, 255, 0));
     WiFi.softAP("esp32", "123456789");
@@ -33,8 +56,10 @@ int WebServiceClass::begin()
     Serial.print("AP IP address: ");
     Serial.println(myIP);
 
-    mServer.on("/update", HTTP_POST, onUpdateConf);
+    //
+    mServer.on("/update/{}", HTTP_POST, onUpdateRequest);
     mServer.onNotFound(onRequest);
+
     mServer.begin();
 
     return 0;
@@ -138,52 +163,91 @@ bool WebServiceClass::handleFileRead(String path)
     return false;
 }
 
-void WebServiceClass::onUpdateConf()
+
+void WebServiceClass::onUpdateRequest()
 {
     //
     WebServer & server = WebService.mServer;
 
-    /*
-    Serial.printf("URL: %s\n", server.uri());
-    Serial.printf("Headers: %d\n", server.headers());
-    for (int i = 0; i < server.headers(); i++)
-        Serial.printf("   %s: %s\n", server.headerName(i).c_str(), server.header(i).c_str());
-    Serial.printf("Arguments: %d\n", server.args());
-    for (int i = 0; i < server.args(); i++)
-        Serial.printf("   %s: %s\n", server.argName(i).c_str(), server.arg(i).c_str());
-
-     */
-
-    //
-    const size_t capacity = JSON_OBJECT_SIZE(29) + 1024;
-    DynamicJsonDocument doc(capacity);
-
-    for (int i = 0; i < server.args(); i++)
+    String target = "/" + server.pathArg(0);
+    if (! SPIFFS.exists(target))
     {
-        Serial.printf("%s: %s\n", server.argName(i).c_str(), server.arg(i).c_str());
-        doc[server.argName(i)] = server.arg(i);
-    }
-
-    Serial.print("Serialize JSON to File: ");
-    File conf = SPIFFS.open("/pref-data.json", FILE_WRITE);
-    if (conf)
-    {
-        if (serializeJson(doc, conf) == 0)
-            Serial.println(F("Failed to write to file"));
-        conf.close();
-
-        Serial.println("OK");
+        Serial.printf("File Not Exist: %s\n", target);
 
         server.sendHeader("Connection", "close");
-        server.send(200, "text/plain", "OK");
+        server.send(200, "text/plain", "NOT EXIST");
     }
     else
     {
-        Serial.println("FAILED");
+        //
+        const size_t capacity = JSON_OBJECT_SIZE(29) + 1024;
+        DynamicJsonDocument doc(capacity);
 
-        server.sendHeader("Connection", "close");
-        server.send(200, "text/plain", "FAILED");
-    }    
+        // read
+        {
+            File file = SPIFFS.open(target, FILE_READ);
+            if (file)
+            {
+                deserializeJson(doc, file);
+                file.close();
+            }
+        }
+
+        // update
+        for (int i = 0; i < server.args(); i++)
+        {
+            Serial.printf("%s: %s\n", server.argName(i).c_str(), server.arg(i).c_str());
+
+            String name = server.argName(i);
+            String value = server.arg(i);
+            JsonVariant var = doc[name];
+
+            if (! var.isNull())
+            {
+                if (var.is<bool>())
+                    doc[name] = parseBoolean(value);
+                else if (var.is<int>())
+                    doc[name] = parseInteger(value);
+                else if (var.is<float>())
+                    doc[name] = parseFloat(value);
+                else
+                    doc[name] = value;
+            }
+            else
+            {
+                doc[name] = value;
+            }
+        }
+
+        // save
+        {
+            File file = SPIFFS.open(target, FILE_WRITE);
+            size_t size = 0;
+
+            if (file)
+            {
+                size = serializeJson(doc, file);
+                file.close();
+
+                Serial.printf("Serialize %d bytes\n", size);
+            }
+
+            if (size != 0)
+            {
+                Serial.printf("Update Success.\n");
+
+                server.sendHeader("Connection", "close");
+                server.send(200, "text/plain", "OK");
+            }
+            else
+            {
+                Serial.printf("Update Failed!\n");
+
+                server.sendHeader("Connection", "close");
+                server.send(200, "text/plain", "FAILED");
+            }
+        }
+    }
 }
 
 void WebServiceClass::onRequest()
