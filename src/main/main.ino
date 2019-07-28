@@ -348,6 +348,8 @@ void setup()
 	}
 
 	// load last device-context
+	SPIFFS.begin();
+
 	loadPreferences();
 	
 	//
@@ -542,7 +544,7 @@ void loop()
 		processKey(key);
 
 	//
-	//yield();
+	WebService.update();
 }
 
 void readyFlight()
@@ -1043,69 +1045,71 @@ void loadPreferences()
 
 		if (! error)
 		{
-			if (doc["vario_climb_threshold"])
+			if (! doc["vario_climb_threshold"].isNull())
 				context.varioSetting.sinkThreshold = doc["vario_climb_threshold"]; // 0.2
-			if (doc["vario_sink_threshold"])
+			if (! doc["vario_sink_threshold"].isNull())
 				context.varioSetting.climbThreshold = doc["vario_sink_threshold"]; // -3
-			if (doc["vario_sensitivity"])
+			if (! doc["vario_sensitivity"].isNull())
 				context.varioSetting.sensitivity = doc["vario_sensitivity"]; // 0.12
-			if (doc["vario_ref_altitude_1"])
+			if (! doc["vario_ref_altitude_1"].isNull())
 				context.varioSetting.altitudeRef1 = doc["vario_ref_altitude_1"]; // 0
-			if (doc["vario_ref_altitude_2"])
+			if (! doc["vario_ref_altitude_2"].isNull())
 				context.varioSetting.altitudeRef2 = doc["vario_ref_altitude_2"]; // 0
-			if (doc["vario_ref_altitude_3"])
+			if (! doc["vario_ref_altitude_3"].isNull())
 				context.varioSetting.altitudeRef3 = doc["vario_ref_altitude_3"]; // 0
-			if (doc["vario_damping_factor"])
+			if (! doc["vario_damping_factor"].isNull())
 				context.varioSetting.dampingFactor = doc["vario_damping_factor"]; // 0.05
-			if (doc["glider_type"])
+			if (! doc["glider_type"].isNull())
 				context.gliderInfo.type = doc["glider_type"]; // 1
-			if (doc["glider_manufacture"])
-				strcpy(context.gliderInfo.manufacture, doc["glider_manufacture"]); // "Ozone"
-			if (doc["glider_model"])
-				strcpy(context.gliderInfo.model, doc["glider_model"]); // "Zeno"
-			if (doc["igc_enable_logging"])
+			if (! doc["glider_manufacture"].isNull())
+				strcpy(context.gliderInfo.manufacture, (const char *)doc["glider_manufacture"]); // "Ozone"
+			if (! doc["glider_model"].isNull())
+				strcpy(context.gliderInfo.model, (const char *)doc["glider_model"]); // "Zeno"
+			if (! doc["igc_enable_logging"].isNull())
 				context.logger.enable = doc["igc_enable_logging"]; // true
-			if (doc["igc_takeoff_speed"])
+			if (! doc["igc_takeoff_speed"].isNull())
 				context.logger.takeoffSpeed = doc["igc_takeoff_speed"]; // 6
-			if (doc["igc_landing_timeout"])
+			if (! doc["igc_landing_timeout"].isNull())
 				context.logger.landingTimeout = doc["igc_landing_timeout"]; // 10000
-			if (doc["igc_logging_interval"])
+			if (! doc["igc_logging_interval"].isNull())
 				context.logger.loggingInterval = doc["igc_logging_interval"]; // 1000
-			if (doc["igc_pilot"])
-				strcpy(context.logger.pilot, doc["igc_pilot"]); // "akkdong"
-			if (doc["igc_timezone"])
+			if (! doc["igc_pilot"].isNull())
+				strcpy(context.logger.pilot, (const char *)doc["igc_pilot"]); // "akkdong"
+			if (! doc["igc_timezone"].isNull())
 				context.logger.timezone = doc["igc_timezone"]; // 9
-			if (doc["volume_vario_enabled"])
+			if (! doc["volume_vario_enabled"].isNull())
 				context.volume.vario = doc["volume_vario_enabled"]; // false
-			if (doc["volume_effect_enabled"])
+			if (! doc["volume_effect_enabled"].isNull())
 				context.volume.effect = doc["volume_effect_enabled"]; // false
-			if (doc["volume_auto_turnon"])
+			if (! doc["volume_auto_turnon"].isNull())
 				context.volume.autoTurnOn = doc["volume_auto_turnon"]; // true
-			if (doc["threshold_low_battery"])
+			if (! doc["threshold_low_battery"].isNull())
 				context.threshold.lowBattery = doc["threshold_low_battery"]; // 2.9
-			if (doc["threshold_auto_shutdown"])
+			if (! doc["threshold_auto_shutdown"].isNull())
 				context.threshold.autoShutdownVario = doc["threshold_auto_shutdown"]; // 600000
-			if (doc["kalman_var_zmeas"])
+			if (! doc["kalman_var_zmeas"].isNull())
 				context.kalman.varZMeas = doc["kalman_var_zmeas"]; // 400
-			if (doc["kalman_var_zaccel"])
+			if (! doc["kalman_var_zaccel"].isNull())
 				context.kalman.varZAccel = doc["kalman_var_zaccel"]; // 1000
-			if (doc["kalman_var_abias"])
+			if (! doc["kalman_var_abias"].isNull())
 				context.kalman.varAccelBias = doc["kalman_var_abias"]; // 1
-			if (doc["device_enable_bt"])
+			if (! doc["device_enable_bt"].isNull())
 				context.deviceDefault.enableBT = doc["device_enable_bt"]; // true
-			if (doc["device_enable_sound"])
+			if (! doc["device_enable_sound"].isNull())
 				context.deviceDefault.enableSound = doc["device_enable_sound"]; // false
-			if (doc["device_bt_name"])
-				strcpy(context.deviceDefault.btName,doc["device_bt_name"]); // "MiniVario"
-			if (doc["device_enable_simulation"])
+			if (! doc["device_bt_name"].isNull())
+				strcpy(context.deviceDefault.btName, (const char *)doc["device_bt_name"]); // "MiniVario"
+			if (! doc["device_enable_simulation"].isNull())
 				context.deviceDefault.enableSimulation = doc["device_enable_simulation"]; // false
-			if (doc["device_enable_nmea_logging"])
+			if (! doc["device_enable_nmea_logging"].isNull())
 				context.deviceDefault.enableNmeaLogging = doc["device_enable_nmea_logging"]; // false
-			if (doc["wifi_ssid"])
-				strcpy(context.deviceDefault.wifiSSID, doc["wifi_ssid"]); // "MiniVario"
-			if (doc["wifi_password"])
-				strcpy(context.deviceDefault.wifiPassword, doc["wifi_password"]); // "123456789"
+			if (! doc["wifi_ssid"].isNull())
+				strcpy(context.deviceDefault.wifiSSID, (const char *)doc["wifi_ssid"]); // "MiniVario"
+			if (! doc["wifi_password"].isNull())
+				strcpy(context.deviceDefault.wifiPassword, (const char *)doc["wifi_password"]); // "123456789"
 		}
+
+		context.dump();
 	}
 	#endif
 }
@@ -1124,5 +1128,9 @@ void savePreferences()
 void toggleWebService()
 {
 	WebService.begin();
-	WebService.end();
+
+	TaskWatchdog::reset();
+	TaskWatchdog::remove(NULL);
+
+	//WebService.end();
 }

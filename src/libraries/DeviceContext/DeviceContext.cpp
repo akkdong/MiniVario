@@ -243,6 +243,8 @@ void DeviceContext::dump()
 	Serial.printf("DeviceDefault.enableSound = %d\n", deviceDefault.enableSound);
 	Serial.printf("DeviceDefault.enableSimulation = %d\n", deviceDefault.enableSimulation);
 	Serial.printf("DeviceDefault.btName = %s\n", deviceDefault.btName);
+	Serial.printf("DeviceDefault.wifiSSID = %s\n", deviceDefault.wifiSSID);
+	Serial.printf("DeviceDefault.wifiPassword = %s\n", deviceDefault.wifiPassword);
 
 	Serial.printf("VarioSettings.sinkThreshold = %f\n", varioSetting.sinkThreshold);
 	Serial.printf("VarioSettings.climbThreshold = %f\n", varioSetting.climbThreshold);

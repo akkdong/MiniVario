@@ -1,6 +1,7 @@
 // WebService.cpp
 //
 
+#include "DeviceContext.h"
 #include "WebService.h"
 #include <ArduinoJson.h>
 
@@ -48,10 +49,12 @@ WebServiceClass::~WebServiceClass()
 
 int WebServiceClass::begin()
 {
+    DeviceContext & context = __DeviceContext;
+
     //
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(IPAddress(192, 168, 1, 1), IPAddress(192, 168, 1, 1), IPAddress(255, 255, 255, 0));
-    WiFi.softAP("esp32", "123456789");
+    WiFi.softAP(context.deviceDefault.wifiSSID, context.deviceDefault.wifiPassword);
     IPAddress myIP = WiFi.softAPIP();
     Serial.print("AP IP address: ");
     Serial.println(myIP);

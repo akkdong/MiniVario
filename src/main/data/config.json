@@ -23,7 +23,7 @@
     "kalman_var_zmeas": 400.0,
     "kalman_var_zaccel": 1000.0,
     "kalman_var_abias": 1.0,
-    "device_enable_bt": true,
+    "device_enable_bt": false,
     "device_enable_sound": false,
     "device_bt_name": "MiniVario",
     "device_enable_simulation": false,
