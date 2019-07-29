@@ -336,14 +336,27 @@ void VarioDisplay::draw(PopupWebService * service)
 	int mh = 160;
 	int x = WORKAREA_X + (WORKAREA_W - mw) / 2;
 	int y = WORKAREA_Y + (WORKAREA_H - mh) / 2;
+	char sz[32];
 
 	fillRect(x, y, mw, mh, COLOR_WHITE);
 	drawRect(x, y, mw, mh, COLOR_BLACK);
 
-	drawText("Web Service", x + 10, y + 10, mw - 10, 24, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
-	//drawText("SSID", x + 10, y + 10, mw - 10, 24, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
-	//drawText("Password", x + 10, y + 10, mw - 10, 24, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
-	//drawText("IP", x + 10, y + 10, mw - 10, 24, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
+	x += 10;
+	y += 10;
+	drawText("Web Service", x, y, mw - 10, 24, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_TOP, COLOR_BLACK);
+
+	y += 24;
+	drawText("SSID:", x, y, mw - 10, 18, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
+	y += 18;
+	drawText(context.deviceDefault.wifiSSID, x + 8, y, mw - 18, 18, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
+	y += 18;
+	drawText("Password:", x, y, mw - 10, 18, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
+	y += 18;
+	drawText(context.deviceDefault.wifiPassword, x + 8, y, mw - 18, 18, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
+	y += 18;
+	drawText("IP", x, y, mw - 10, 18, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
+	y += 18;
+	drawText("192.168.1.1", x + 8, y, mw - 18, 18, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
 }
 
 void VarioDisplay::draw(Widget * widget)

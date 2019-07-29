@@ -344,8 +344,6 @@ void setup()
 			ESP.restart();
 		}		
 		// else go down
-
-
 	}
 	else
 	{
@@ -426,8 +424,10 @@ void loop()
 		}
 
 		if (context.deviceDefault.enableSound)
+		{
 			//varioBeeper.setVelocity(context.varioState.speedVertActive);
 			beeper.setVelocity(context.varioState.speedVertActive);
+		}
 
 		//
 		{
@@ -455,9 +455,6 @@ void loop()
 	
 	// read & prase gps sentence
 	nmeaParser.update();
-
-	// send any prepared sentence to BT
-	btMan.update();	
 
 	// GPS may be 1Hz : execute every second
 	if (nmeaParser.dataReady())
@@ -538,6 +535,9 @@ void loop()
 
 		nmeaParser.resetReady();
 	}
+
+	// send any prepared sentence to BT
+	btMan.update();	
 
 	//
 	if (battery.update())
