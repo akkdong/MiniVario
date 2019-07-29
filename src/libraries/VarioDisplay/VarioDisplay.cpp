@@ -272,8 +272,8 @@ void VarioDisplay::draw(VarioPopup * popup)
 {
 	switch (popup->objType)
 	{
-	case DispObject_PopupMenu :
-		draw((PopupMenu *)popup);
+	case DispObject_PopupTopMenu :
+		draw((PopupTopMenu *)popup);
 		break;
 	case DispObject_PopupMessageBox :
 		break;
@@ -283,10 +283,13 @@ void VarioDisplay::draw(VarioPopup * popup)
 		break;
 	case DispObject_PopupRadioBox :
 		break;
+	case DispObject_PopupWebService :
+		draw((PopupWebService *)popup);
+		break;
 	}
 }
 
-void VarioDisplay::draw(PopupMenu * menu)
+void VarioDisplay::draw(PopupTopMenu * menu)
 {
 	int mw = 120;
 	int mh = (menu->itemCount + 1) * 24;
@@ -304,6 +307,7 @@ void VarioDisplay::draw(PopupMenu * menu)
 		switch (menu->items[i].itemId)
 		{
 		case TMID_SHOW_PREFERENCE : strcpy(str, "Basic settings"); break;
+		case TMID_TOGGLE_WEBSERVICE : strcpy(str, "Web Service On"); break;
 		case TMID_TOGGLE_SOUND : sprintf(str, "Sound %s", context.deviceDefault.enableSound ? "Off" : "On"); break;
 		case TMID_TOGGLE_BLUETOOTH : sprintf(str, "Bluetooth %s", context.deviceState.statusBT ? "Off" : "On"); break;
 		case TMID_RESET_DEVICE : strcpy(str, "Restart Device"); break;
@@ -324,6 +328,22 @@ void VarioDisplay::draw(PopupMenu * menu)
 			
 		y += 24;
 	}
+}
+
+void VarioDisplay::draw(PopupWebService * service)
+{
+	int mw = 140;
+	int mh = 160;
+	int x = WORKAREA_X + (WORKAREA_W - mw) / 2;
+	int y = WORKAREA_Y + (WORKAREA_H - mh) / 2;
+
+	fillRect(x, y, mw, mh, COLOR_WHITE);
+	drawRect(x, y, mw, mh, COLOR_BLACK);
+
+	drawText("Web Service", x + 10, y + 10, mw - 10, 24, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
+	//drawText("SSID", x + 10, y + 10, mw - 10, 24, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
+	//drawText("Password", x + 10, y + 10, mw - 10, 24, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
+	//drawText("IP", x + 10, y + 10, mw - 10, 24, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
 }
 
 void VarioDisplay::draw(Widget * widget)

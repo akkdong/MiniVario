@@ -250,6 +250,12 @@ void WebServiceClass::onUpdateRequest()
                 server.send(200, "text/plain", "FAILED");
             }
         }
+
+        // update context
+        {
+            DeviceContext & context = __DeviceContext;
+            context.set(doc);
+        }
     }
 }
 

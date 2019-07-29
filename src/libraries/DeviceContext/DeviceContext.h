@@ -6,6 +6,7 @@
 
 #include <Arduino.h>
 #include <Preferences.h>
+#include <ArduinoJson.h>
 #include "DeviceDefines.h"
 
 #define MAX_STRING_SIZE					(16)
@@ -112,7 +113,7 @@ struct IGCLogger
 	int				loggingInterval;
 	
 	char			pilot[MAX_STRING_SIZE];
-	char			timezone;
+	float			timezone;
 };
 
 struct VarioTone
@@ -266,6 +267,8 @@ public:
 
 	bool				load(Preferences & pref);
 	bool				save(Preferences & pref);
+
+	void				set(JsonDocument & doc);
 
 	void				updateVarioHistory();
 	void				updateTrackHistory(float lat, float lon, float vario);

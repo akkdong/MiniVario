@@ -79,7 +79,8 @@ protected:
 	void				draw(VarioScreen * screen);
 	void				draw(VarioPreference * pref);
 	void				draw(VarioPopup * popup);
-	void				draw(PopupMenu * menu);
+	void				draw(PopupTopMenu * menu);
+	void				draw(PopupWebService * service);
 	void 				draw(Widget * widget);
 
 	void 				drawEmptyArea(Widget * widget);

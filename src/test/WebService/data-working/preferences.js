@@ -187,16 +187,29 @@ function makePrefItem (item) {
         _value.append($('<span>').text(item.desc));
         _value.append($('<span>').append(_toggle));
         */
-        var _label = $('<label>').addClass("switch");
+        //var _label = $('<label>').addClass("switch");
+        //var _input = $('<input>').attr('type', 'checkbox').attr('disabled', 'disabled');
+        var _label = $('<label>', { class: 'switch' });
+        var _input = $('<input>', { type: 'checkbox', disabled: 'disabled' });
         if (pref_data[item.key]) {
-            _label.append($('<input>').attr('type', 'checkbox').attr('checked', 'checked'));
-        } else {
-            _label.append($('<input>').attr('type', 'checkbox'));
+            _input.attr('checked', 'checked');
         }
-        _label.append($('<span>').addClass('slider').addClass('round'));
+        _label.append(_input);
+        _label.append($('<span>', { class: 'slider round'}));
         
         _value.append($('<span>').text(item.desc));
-        _value.append($('<span>').append(_label).attr('style','position: absolute; right:8px;'));
+        _value.append($('<span>', { style: 'position: absolute; right:8px;'}).append(_label));
+
+        _value.click(function () {
+            pref_data[item.key] = !!! pref_data[item.key];
+            console.log('pref_data = ', JSON.stringify(pref_data));
+
+            if (pref_data[item.key]) {
+                _input.attr('checked', 'checked');
+            } else {
+                _input.removeAttr('checked');
+            }
+        });
     } else if (item.type === "select-inline") {
         var _select = $('<select>').attr('id', 'id-select-inline-' + item.key);
 
@@ -308,6 +321,9 @@ function initPref() {
     $("#id-reload").click(function () {
         refreshPage();
     });
+
+    $("#id-download img").attr("src", image_download );
+    $("#id-reload img").attr("src", image_upload );
 
     //
     $(document).on( "keydown", function (evt) {

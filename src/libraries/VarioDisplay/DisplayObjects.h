@@ -25,6 +25,9 @@
 
 #define CMD_LEAVE_TOPMENU		(0x00040000)
 #define CMD_LEAVE_PREFERENCE	(0x00050000)
+#define CMD_LEAVE_WEBSERVICE	(0x00060000)
+
+#define CMD_TOOGLE_SOUND		(0x00070000)
 
 #define CMD_SAVE_SCREENSHOT		(0xFFFC0000)
 #define CMD_SHUTDOWN			(0xFFFE0000)
@@ -34,11 +37,12 @@ typedef enum _DispObjectType
 	DispObject_Undef,
 	DispObject_Screen,
 	DispObject_Preference,
-	DispObject_PopupMenu,
+	DispObject_PopupTopMenu,
 	DispObject_PopupMessageBox,
 	DispObject_PopupListBox,
 	DispObject_PopupCheckBox,
-	DispObject_PopupRadioBox
+	DispObject_PopupRadioBox,
+	DispObject_PopupWebService
 	
 } DispObjectType;
 
@@ -128,14 +132,14 @@ public:
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-// class PopupMenu
+// class PopupTopMenu
 
-class PopupMenu : public VarioPopup
+class PopupTopMenu : public VarioPopup
 {
 	friend class VarioDisplay;
 	
 public:
-	PopupMenu();
+	PopupTopMenu();
 	
 public:
 	int16_t				addItem(uint16_t itemId, uint16_t strId);
@@ -203,5 +207,19 @@ public:
 	PopupRadioBox();
 };
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// class PopupWebService
+
+class PopupWebService : public VarioPopup
+{
+	friend class VarioDisplay;
+	
+public:
+	PopupWebService();
+
+public:
+	virtual uint32_t	processKey(uint8_t key);	
+};
 
 #endif // __DISPLAYOBJECTS_H__

@@ -23,8 +23,11 @@ uint32_t VarioScreen::processKey(uint8_t key)
 		// move to next page
 		return CMD_SHOW_NEXT_PAGE;
 	
-	case KEY_SEL :
+	case KEY_UP_LONG :
 		return CMD_SAVE_SCREENSHOT;
+
+	case KEY_DOWN_LONG :
+		return CMD_TOOGLE_SOUND;
 		
 	case KEY_SEL_LONG :
 		return CMD_SHOW_TOP_MENU;
@@ -66,17 +69,17 @@ VarioPreference::VarioPreference() : DisplayObject(DispObject_Screen)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-// class PopupMenu
+// class PopupTopMenu
 
-PopupMenu::PopupMenu() 
-	: VarioPopup(DispObject_PopupMenu)
+PopupTopMenu::PopupTopMenu() 
+	: VarioPopup(DispObject_PopupTopMenu)
 	, itemCount(0)
 	, itemTop(0)
 	, itemSelect(0)
 {
 }
 
-int16_t PopupMenu::addItem(uint16_t itemId, uint16_t strId)
+int16_t PopupTopMenu::addItem(uint16_t itemId, uint16_t strId)
 {
 	if (itemCount < MAX_MEUITEMS)
 	{
@@ -89,7 +92,7 @@ int16_t PopupMenu::addItem(uint16_t itemId, uint16_t strId)
 	return -1;
 }
 
-uint32_t PopupMenu::processKey(uint8_t key)
+uint32_t PopupTopMenu::processKey(uint8_t key)
 {
 	switch (key)
 	{
@@ -144,4 +147,23 @@ PopupCheckBox::PopupCheckBox() : VarioPopup(DispObject_PopupCheckBox)
 
 PopupRadioBox::PopupRadioBox() : VarioPopup(DispObject_PopupRadioBox)
 {
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// class PopupWebService
+
+PopupWebService::PopupWebService() 
+	: VarioPopup(DispObject_PopupWebService)
+{
+}
+
+uint32_t PopupWebService::processKey(uint8_t key)
+{
+	switch (key)
+	{
+	case KEY_SEL_LONG :
+		return MAKE_LRESULT(CMD_LEAVE_WEBSERVICE, 0x0000);
+	}
+	
+	return 0;
 }

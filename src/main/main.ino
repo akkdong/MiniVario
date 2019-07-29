@@ -61,7 +61,7 @@ enum _DeviceMode
 	DEVICE_MODE_VARIO,			// (2)
 	DEVICE_MODE_VARIO_AND_GPS,	// (3)
 	DEVICE_MODE_PREFERENCE,		// (4)
-	DEVICE_MODE_UPDATE,
+	DEVICE_MODE_WEB_SERVICE		// (5)
 };
 
 enum _VarioMode
@@ -162,7 +162,8 @@ uint32_t deviceTick;	// global tick-count
 uint32_t modeTick;		// mode-specific tick-count
 
 ScreenManager	scrnMan;
-PopupMenu		topMenu;
+PopupTopMenu	popupTopMenu;
+PopupWebService	popupWebService;
 
 
 DeviceContext & context = __DeviceContext;
@@ -252,7 +253,11 @@ void processKey(int key);
 void startVario();
 void loadPreferences();
 void savePreferences();
-void toggleWebService();
+
+void startWebService();
+void toggleVarioSound();
+void toggleBTService();
+void toggleSimulation();
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -469,7 +474,7 @@ void loop()
 			{
 				readyFlight();
 			}
-			else // if (deviceMode == DEVICE_MODE_VARIO_AND_GPS)
+			else if (deviceMode == DEVICE_MODE_VARIO_AND_GPS)
 			{
 				if (context.flightState.flightMode == FMODE_READY)
 				{
@@ -544,7 +549,7 @@ void loop()
 		processKey(key);
 
 	//
-	WebService.update();
+	//WebService.update();
 }
 
 void readyFlight()
@@ -830,7 +835,7 @@ void goDeepSleep()
 	// close logging-file
 	logger.end(nmeaParser.getDateTime());
 	//
-	beeper.setBeep(NOTE_B2, 400, 200, 3, 100);
+	//beeper.setBeep(NOTE_B2, 400, 200, 3, 100);
 
 	//
 	TaskWatchdog::remove(NULL);
@@ -844,6 +849,9 @@ void goDeepSleep()
 void resetDevice()
 {
 	//
+	display.showPopup(NULL);
+
+	//
 	btMan.stopLogging();
 	btMan.end();
 
@@ -853,7 +861,7 @@ void resetDevice()
 	// turn-off peripherals
 	setPinState(&powerPins[0], PIN_STATE_INACTIVE);
 	setPinState(&powerPins[1], PIN_STATE_INACTIVE);
-	delay(5000); // delay will trigger Task watchdog!
+	delay(1000); // delay will trigger Task watchdog!
 
 	// or manually reset
 	ESP.restart();
@@ -861,12 +869,13 @@ void resetDevice()
 
 void makeTopMenu()
 {
-	topMenu.addItem(TMID_SHOW_PREFERENCE, 0 /* IDS_BASIC_SETTINGS */);
-	topMenu.addItem(TMID_TOGGLE_SOUND, 0 /* IDS_SOUND_ONOFF */);
-	topMenu.addItem(TMID_TOGGLE_BLUETOOTH, 0 /* IDS_BLUETOOTH_ONOFF */);
-	topMenu.addItem(TMID_SIMULATION_MODE, 0 /* IDS_SIMULATION_MODE */);
-	topMenu.addItem(TMID_RESET_DEVICE, 0 /* IDS_RESET_DEVICE */);
-	topMenu.addItem(TMID_POWER_OFF, 0 /* IDS_POWER_OFF */);
+//	popupTopMenu.addItem(TMID_SHOW_PREFERENCE, 0 /* IDS_BASIC_SETTINGS */);
+	popupTopMenu.addItem(TMID_TOGGLE_WEBSERVICE, 0 /* IDS_WEBSERVICE_ONOFF */);
+	popupTopMenu.addItem(TMID_TOGGLE_SOUND, 0 /* IDS_SOUND_ONOFF */);
+	popupTopMenu.addItem(TMID_TOGGLE_BLUETOOTH, 0 /* IDS_BLUETOOTH_ONOFF */);
+	popupTopMenu.addItem(TMID_SIMULATION_MODE, 0 /* IDS_SIMULATION_MODE */);
+	popupTopMenu.addItem(TMID_RESET_DEVICE, 0 /* IDS_RESET_DEVICE */);
+	popupTopMenu.addItem(TMID_POWER_OFF, 0 /* IDS_POWER_OFF */);
 }
 
 void processKey(int key)
@@ -892,14 +901,18 @@ void processKey(int key)
 			break;
 		case CMD_SHOW_TOP_MENU :
 			// enter menu
-			display.showPopup(&topMenu);
+			if (context.flightState.flightMode == FMODE_READY)
+				display.showPopup(&popupTopMenu);
 			break;
 
 		case CMD_SAVE_SCREENSHOT :
 			// save current screen to file
 			display.saveScreenShot();
 			break;
-			
+		case CMD_TOOGLE_SOUND :
+			toggleVarioSound();
+			break;
+
 		// from top-menu
 		case CMD_LEAVE_TOPMENU :
 			// releave menu
@@ -908,27 +921,18 @@ void processKey(int key)
 			switch (GET_PARAM(ret))
 			{
 			case TMID_SHOW_PREFERENCE : // show preference
-				toggleWebService();
 				break;
-				
+
+			case TMID_TOGGLE_WEBSERVICE : // start web-service
+				startWebService();
+				break;
+
 			case TMID_TOGGLE_SOUND : // toggle sound
-				context.deviceDefault.enableSound = context.deviceDefault.enableSound ? 0 : 1;
-				if (! context.deviceDefault.enableSound)
-				{
-					//varioBeeper.setVelocity(0);			
-					//toneGen.setFrequency(0);
-					beeper.setVelocity(0);
-				}
-				//savePreferences();
+				toggleVarioSound();
 				break;
 				
 			case TMID_TOGGLE_BLUETOOTH : // toggle bluetooth
-				context.deviceDefault.enableBT = context.deviceState.statusBT = context.deviceState.statusBT ? 0 : 1;
-				if (context.deviceState.statusBT)
-					serialBluetooth.begin("MiniVario");
-				else
-					serialBluetooth.end();
-				//savePreferences();
+				toggleBTService();
 				break;
 				
 			case TMID_POWER_OFF : // turn-off device
@@ -942,14 +946,17 @@ void processKey(int key)
 				while(1);
 
 			case TMID_SIMULATION_MODE : // toggle simulation mode
-				context.deviceDefault.enableSimulation = context.deviceDefault.enableSimulation ? 0 : 1;
-				nmeaParser.enableSimulation(context.deviceDefault.enableSimulation ? true : false);
+				toggleSimulation();
 				break;
 				
 			case TMID_RESET_DEVICE : // restart(reset) device
 				resetDevice();
 				break;
 			}
+			break;
+
+		case CMD_LEAVE_WEBSERVICE :
+			resetDevice();
 			break;
 		}
 	}
@@ -990,41 +997,6 @@ void startVario()
 	deviceTick = millis();
 }
 
-static const char * config_key[] =
-{
-	"vario_climb_threshold",
-	"vario_sink_threshold",
-	"vario_sensitivity",
-	"vario_ref_altitude_1",
-	"vario_ref_altitude_2",
-	"vario_ref_altitude_3",
-	"vario_damping_factor",
-	"glider_type",
-	"glider_manufacture",
-	"glider_model",
-	"igc_enable_logging",
-	"igc_takeoff_speed",
-	"igc_landing_timeout",
-	"igc_logging_interval",
-	"igc_pilot",
-	"igc_timezone",
-	"volume_vario_enabled",
-	"volume_effect_enabled",
-	"volume_auto_turnon",
-	"threshold_low_battery",
-	"threshold_auto_shutdown",
-	"kalman_var_zmeas",
-	"kalman_var_zaccel",
-	"kalman_var_abias",
-	"device_enable_bt",
-	"device_enable_sound",
-	"device_bt_name",
-	"device_enable_simulation",
-	"device_enable_nmea_logging",
-	"wifi_ssid",
-	"wifi_password",
-};
-
 void loadPreferences()
 {
 	#if 0
@@ -1044,70 +1016,7 @@ void loadPreferences()
 		file.close();
 
 		if (! error)
-		{
-			if (! doc["vario_climb_threshold"].isNull())
-				context.varioSetting.sinkThreshold = doc["vario_climb_threshold"]; // 0.2
-			if (! doc["vario_sink_threshold"].isNull())
-				context.varioSetting.climbThreshold = doc["vario_sink_threshold"]; // -3
-			if (! doc["vario_sensitivity"].isNull())
-				context.varioSetting.sensitivity = doc["vario_sensitivity"]; // 0.12
-			if (! doc["vario_ref_altitude_1"].isNull())
-				context.varioSetting.altitudeRef1 = doc["vario_ref_altitude_1"]; // 0
-			if (! doc["vario_ref_altitude_2"].isNull())
-				context.varioSetting.altitudeRef2 = doc["vario_ref_altitude_2"]; // 0
-			if (! doc["vario_ref_altitude_3"].isNull())
-				context.varioSetting.altitudeRef3 = doc["vario_ref_altitude_3"]; // 0
-			if (! doc["vario_damping_factor"].isNull())
-				context.varioSetting.dampingFactor = doc["vario_damping_factor"]; // 0.05
-			if (! doc["glider_type"].isNull())
-				context.gliderInfo.type = doc["glider_type"]; // 1
-			if (! doc["glider_manufacture"].isNull())
-				strcpy(context.gliderInfo.manufacture, (const char *)doc["glider_manufacture"]); // "Ozone"
-			if (! doc["glider_model"].isNull())
-				strcpy(context.gliderInfo.model, (const char *)doc["glider_model"]); // "Zeno"
-			if (! doc["igc_enable_logging"].isNull())
-				context.logger.enable = doc["igc_enable_logging"]; // true
-			if (! doc["igc_takeoff_speed"].isNull())
-				context.logger.takeoffSpeed = doc["igc_takeoff_speed"]; // 6
-			if (! doc["igc_landing_timeout"].isNull())
-				context.logger.landingTimeout = doc["igc_landing_timeout"]; // 10000
-			if (! doc["igc_logging_interval"].isNull())
-				context.logger.loggingInterval = doc["igc_logging_interval"]; // 1000
-			if (! doc["igc_pilot"].isNull())
-				strcpy(context.logger.pilot, (const char *)doc["igc_pilot"]); // "akkdong"
-			if (! doc["igc_timezone"].isNull())
-				context.logger.timezone = doc["igc_timezone"]; // 9
-			if (! doc["volume_vario_enabled"].isNull())
-				context.volume.vario = doc["volume_vario_enabled"]; // false
-			if (! doc["volume_effect_enabled"].isNull())
-				context.volume.effect = doc["volume_effect_enabled"]; // false
-			if (! doc["volume_auto_turnon"].isNull())
-				context.volume.autoTurnOn = doc["volume_auto_turnon"]; // true
-			if (! doc["threshold_low_battery"].isNull())
-				context.threshold.lowBattery = doc["threshold_low_battery"]; // 2.9
-			if (! doc["threshold_auto_shutdown"].isNull())
-				context.threshold.autoShutdownVario = doc["threshold_auto_shutdown"]; // 600000
-			if (! doc["kalman_var_zmeas"].isNull())
-				context.kalman.varZMeas = doc["kalman_var_zmeas"]; // 400
-			if (! doc["kalman_var_zaccel"].isNull())
-				context.kalman.varZAccel = doc["kalman_var_zaccel"]; // 1000
-			if (! doc["kalman_var_abias"].isNull())
-				context.kalman.varAccelBias = doc["kalman_var_abias"]; // 1
-			if (! doc["device_enable_bt"].isNull())
-				context.deviceDefault.enableBT = doc["device_enable_bt"]; // true
-			if (! doc["device_enable_sound"].isNull())
-				context.deviceDefault.enableSound = doc["device_enable_sound"]; // false
-			if (! doc["device_bt_name"].isNull())
-				strcpy(context.deviceDefault.btName, (const char *)doc["device_bt_name"]); // "MiniVario"
-			if (! doc["device_enable_simulation"].isNull())
-				context.deviceDefault.enableSimulation = doc["device_enable_simulation"]; // false
-			if (! doc["device_enable_nmea_logging"].isNull())
-				context.deviceDefault.enableNmeaLogging = doc["device_enable_nmea_logging"]; // false
-			if (! doc["wifi_ssid"].isNull())
-				strcpy(context.deviceDefault.wifiSSID, (const char *)doc["wifi_ssid"]); // "MiniVario"
-			if (! doc["wifi_password"].isNull())
-				strcpy(context.deviceDefault.wifiPassword, (const char *)doc["wifi_password"]); // "123456789"
-		}
+			context.set(doc);
 
 		context.dump();
 	}
@@ -1125,12 +1034,63 @@ void savePreferences()
 	#endif
 }
 
-void toggleWebService()
+void startWebService()
 {
 	WebService.begin();
 
 	TaskWatchdog::reset();
 	TaskWatchdog::remove(NULL);
 
-	//WebService.end();
+	deviceMode = DEVICE_MODE_WEB_SERVICE;
+
+	// activate web-service popup
+	display.showPopup(&popupWebService);
+
+	// local loop
+	while(1)
+	{
+		//
+		keybd.update();
+
+		int key = keybd.getch();
+		if (key >= 0)
+			processKey(key);
+
+		//
+		WebService.update();
+	}
+}
+
+void toggleVarioSound()
+{
+	context.deviceDefault.enableSound = context.deviceDefault.enableSound ? 0 : 1;
+
+	if (! context.deviceDefault.enableSound)
+	{
+		//varioBeeper.setVelocity(0);			
+		//toneGen.setFrequency(0);
+		beeper.setVelocity(0);
+	}
+	else
+	{
+		// beep beep
+		beeper.setBeep(NOTE_C4, 600, 400, 2, 100);
+	}
+}
+
+void toggleBTService()
+{
+	context.deviceDefault.enableBT = context.deviceState.statusBT = context.deviceState.statusBT ? 0 : 1;
+
+	if (context.deviceState.statusBT)
+		serialBluetooth.begin(context.deviceDefault.btName);
+	else
+		serialBluetooth.end();
+}
+
+void toggleSimulation()
+{
+	context.deviceDefault.enableSimulation = context.deviceDefault.enableSimulation ? 0 : 1;
+
+	nmeaParser.enableSimulation(context.deviceDefault.enableSimulation ? true : false);
 }

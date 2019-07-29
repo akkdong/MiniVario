@@ -226,8 +226,9 @@ hr.style-two {
 .switch {
     position: relative;
     display: inline-block;
-    width: 80px;
-    height: 32px;
+    width: 62px;
+    height: 28px;
+    bottom: -2px;
   }
   
   /* Hide default HTML checkbox */
@@ -253,11 +254,11 @@ hr.style-two {
   .slider:before {
     position: absolute;
     content: "";
-    height: 24px;
-    width: 24px;
+    height: 22px;
+    width: 22px;
     left: 4px;
-    bottom: 4px;
-    background-color: white;
+    bottom: 3px;
+    background-color: rgb(255, 255, 255);
     -webkit-transition: .4s;
     transition: .4s;
   }
@@ -271,14 +272,14 @@ hr.style-two {
   }
   
   input:checked + .slider:before {
-    -webkit-transform: translateX(26px);
-    -ms-transform: translateX(26px);
-    transform: translateX(26px);
+    -webkit-transform: translateX(33px);
+    -ms-transform: translateX(33px);
+    transform: translateX(33px);
   }
   
   /* Rounded sliders */
   .slider.round {
-    border-radius: 34px;
+    border-radius: 20px;
   }
   
   .slider.round:before {
