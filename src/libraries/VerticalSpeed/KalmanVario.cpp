@@ -3,6 +3,7 @@
 
 #include "KalmanVario.h"
 #include "TaskWatchdog.h"
+#include "DeviceContext.h"
 
 
 #if CONFIG_FREERTOS_UNICORE
@@ -191,7 +192,7 @@ void KalmanVario::update()
 		
 		//
 		float altitude = Sensor_MS5611::getAltitude(prs, seaLevel);
-		baroAltitude += (altitude - baroAltitude) * 0.06;
+		baroAltitude += (altitude - baroAltitude) * __DeviceContext.varioSetting.dampingFactor;
 
 		// delta time
 //		unsigned long deltaTime = 20; // millis() - t_;

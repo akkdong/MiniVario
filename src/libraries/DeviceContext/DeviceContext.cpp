@@ -89,6 +89,7 @@ void DeviceContext::reset()
 	logger.enable = true;
 	
 	logger.takeoffSpeed = FLIGHT_START_MIN_SPEED;		// km/s
+	logger.landingSpeed = FLIGHT_STOP_MIN_SPEED;		// km/s
 	logger.landingTimeout = FLIGHT_LANDING_THRESHOLD;	// ms
 	logger.loggingInterval = FLIGHT_LOGGING_INTERVAL;	// ms
 	
@@ -197,9 +198,9 @@ bool DeviceContext::save(Preferences & pref)
 void DeviceContext::set(JsonDocument & doc)
 {
 	if (! doc["vario_climb_threshold"].isNull())
-		varioSetting.sinkThreshold = doc["vario_climb_threshold"]; // 0.2
+		varioSetting.climbThreshold = doc["vario_climb_threshold"]; // 0.2
 	if (! doc["vario_sink_threshold"].isNull())
-		varioSetting.climbThreshold = doc["vario_sink_threshold"]; // -3
+		varioSetting.sinkThreshold = doc["vario_sink_threshold"]; // -3
 	if (! doc["vario_sensitivity"].isNull())
 		varioSetting.sensitivity = doc["vario_sensitivity"]; // 0.12
 	if (! doc["vario_ref_altitude_1"].isNull())
@@ -220,6 +221,8 @@ void DeviceContext::set(JsonDocument & doc)
 		logger.enable = doc["igc_enable_logging"]; // true
 	if (! doc["igc_takeoff_speed"].isNull())
 		logger.takeoffSpeed = doc["igc_takeoff_speed"]; // 6
+	if (! doc["igc_landing_speed"].isNull())
+		logger.landingSpeed = doc["igc_landing_speed"]; // 2
 	if (! doc["igc_landing_timeout"].isNull())
 		logger.landingTimeout = doc["igc_landing_timeout"]; // 10000
 	if (! doc["igc_logging_interval"].isNull())
@@ -314,9 +317,11 @@ void DeviceContext::dump()
 	Serial.printf("DeviceDefault.enableBT = %d\n", deviceDefault.enableBT);
 	Serial.printf("DeviceDefault.enableSound = %d\n", deviceDefault.enableSound);
 	Serial.printf("DeviceDefault.enableSimulation = %d\n", deviceDefault.enableSimulation);
+	Serial.printf("DeviceDefault.enableNmeaLogging = %d\n", deviceDefault.enableNmeaLogging);
 	Serial.printf("DeviceDefault.btName = %s\n", deviceDefault.btName);
 	Serial.printf("DeviceDefault.wifiSSID = %s\n", deviceDefault.wifiSSID);
 	Serial.printf("DeviceDefault.wifiPassword = %s\n", deviceDefault.wifiPassword);
+	Serial.printf("VolumeSettings.autoTurnOn = %d\n", volume.autoTurnOn);
 
 	Serial.printf("VarioSettings.sinkThreshold = %f\n", varioSetting.sinkThreshold);
 	Serial.printf("VarioSettings.climbThreshold = %f\n", varioSetting.climbThreshold);
@@ -327,12 +332,17 @@ void DeviceContext::dump()
 	Serial.printf("VarioSettings.altitudeRef3 = %f\n", varioSetting.altitudeRef3);
 	Serial.printf("VarioSettings.dampingFactor = %f\n", varioSetting.dampingFactor);
 
+	Serial.printf("KalmanParameter.varZMeas = %f\n", kalman.varZMeas);
+	Serial.printf("KalmanParameter.varZAccel = %f\n", kalman.varZAccel);
+	Serial.printf("KalmanParameter.varAccelBias = %f\n", kalman.varAccelBias);
+
 	Serial.printf("GliderInfo.type = %d\n", gliderInfo.type);
 	Serial.printf("GliderInfo.manufacture = %s\n", gliderInfo.manufacture);
 	Serial.printf("GliderInfo.model = %s\n", gliderInfo.model);
 
 	Serial.printf("IGCLogger.enable = %d\n", logger.enable);
 	Serial.printf("IGCLogger.takeoffSpeed = %d\n", logger.takeoffSpeed);
+	Serial.printf("IGCLogger.landingSpeed = %d\n", logger.landingSpeed);
 	Serial.printf("IGCLogger.landingTimeout = %d\n", logger.landingTimeout);
 	Serial.printf("IGCLogger.loggingInterval = %d\n", logger.loggingInterval);
 	Serial.printf("IGCLogger.pilot = %s\n", logger.pilot);

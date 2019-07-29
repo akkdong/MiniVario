@@ -109,6 +109,14 @@
                 "step": 1.0
             },
             {
+                "type": "number",
+                "name": "Landing Speed",
+                "key": "igc_landing_speed",
+                "min": 2.0,
+                "max": 10.0,
+                "step": 1.0
+            },
+            {
                 "type": "select",
                 "name": "Landing Timeout",
                 "key": "igc_landing_timeout",
@@ -187,14 +195,14 @@
         "items": [
             {
                 "type": "boolean",
-                "name": "Acoustic Sound",
-                "desc": "Turn on sound after device started",
+                "name": "Vario Sound",
+                "desc": "Turn on sound when device started",
                 "key": "device_enable_sound"
             },
             {
                 "type": "boolean",
                 "name": "Auto Sound",
-                "desc": "Automatic turn on sound after take-off",
+                "desc": "Turn on sound when it takeoff",
                 "key": "volume_auto_turnon"
             },
             {

@@ -182,6 +182,18 @@ void VarioLogger::reset()
 	varioAltitude 	= 0.0;
 }
 
+int VarioLogger::validateName(int ch)
+{
+	if ('A' <= ch && ch <= 'Z')
+		return ch;
+	if ('a' <= ch && ch <= 'z')
+		return (ch - 'a') + 'A';
+	if ('0' <= ch && ch <= '9')
+		return ch;
+
+	return '_';
+}
+
 const char * VarioLogger::makeFileName(char * buf, time_t date)
 {
 	// name format : YYYY-MM-DD-NRC-XXX-nn.igc
@@ -218,7 +230,7 @@ const char * VarioLogger::makeFileName(char * buf, time_t date)
 	// FR serial number
 	ptr = __DeviceContext.logger.pilot[0] ? __DeviceContext.logger.pilot : serialNumber;
 	for (i = 0; i < 3; i++)
-		buf[pos++] = (*ptr) && (*ptr != 0x20) ? *ptr++ : 'X';
+		buf[pos++] = validateName(ptr[i]); // (*ptr) && (*ptr != 0x20) ? *ptr++ : 'X';
 	buf[pos++] = '-';
 	
 	// flight number of the day & file extension
@@ -286,8 +298,8 @@ void VarioLogger::writeHeader(time_t date)
 		case IGC_HEADER_CLASS	 :
 			break;
 		case IGC_HEADER_GLIDER	 :
-			//if (__DeviceContext.profile_glider[0])
-			//	file.print(__DeviceContext.profile_glider);
+			if (__DeviceContext.gliderInfo.manufacture[0] || __DeviceContext.gliderInfo.model[0])
+				file.printf("%s %s", __DeviceContext.gliderInfo.manufacture, __DeviceContext.gliderInfo.model);
 			break;
 		case IGC_HEADER_GPSDATUM :
 			// leave it empty!!

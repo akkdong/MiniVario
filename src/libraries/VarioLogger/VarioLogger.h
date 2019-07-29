@@ -38,6 +38,8 @@ private:
 	const char *		makeFileName(char * buf, time_t date);
 	void				writeHeader(time_t date);
 
+	int					validateName(int ch);
+
 private:
 	File				root;
 	File				file;

@@ -109,6 +109,7 @@ struct IGCLogger
 	uint8_t			enable;
 	
 	int				takeoffSpeed;
+	int				landingSpeed;
 	int				landingTimeout;
 	int				loggingInterval;
 	

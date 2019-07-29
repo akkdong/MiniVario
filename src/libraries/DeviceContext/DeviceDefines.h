@@ -69,6 +69,7 @@
 //
 
 #define FLIGHT_START_MIN_SPEED 					(6.0)		// 6Km/h
+#define FLIGHT_STOP_MIN_SPEED					(2.0)
 #define FLIGHT_LANDING_THRESHOLD 				(10000)		// 10s
 #define FLIGHT_LOGGING_INTERVAL					(1000)		// 1s
 

@@ -475,7 +475,7 @@ void loop()
 			{
 				if (context.flightState.flightMode == FMODE_READY)
 				{
-					if (nmeaParser.getSpeed() > FLIGHT_START_MIN_SPEED)
+					if (nmeaParser.getSpeed() > context.logger.takeoffSpeed) // FLIGHT_START_MIN_SPEED)
 					{
 						startFlight();
 					}
@@ -484,9 +484,9 @@ void loop()
 				{
 					updateFlightState();
 
-					if (nmeaParser.getSpeed() < FLIGHT_START_MIN_SPEED)
+					if (nmeaParser.getSpeed() < context.logger.landingSpeed) // FLIGHT_START_MIN_SPEED)
 					{
-						if ((millis() - modeTick) > FLIGHT_LANDING_THRESHOLD)
+						if ((millis() - modeTick) > context.logger.landingTimeout) // FLIGHT_LANDING_THRESHOLD)
 						{
 							stopFlight();
 						}
@@ -541,8 +541,15 @@ void loop()
 
 	//
 	if (battery.update())
+	{
 		context.deviceState.batteryPower = battery.getVoltage();
-	
+
+		//if (context.deviceState.batteryPower < context.threshold.lowBattery)
+		//{
+		//	go shutdown
+		//}
+	}
+
 	//
 	int key = keybd.getch();
 	if (key >= 0)
@@ -987,10 +994,10 @@ void startVario()
 	context.deviceState.statusBT = context.deviceDefault.enableBT ? 1 : 0;
 
 	//
-	vario.begin();
+	vario.begin(context.kalman.varZMeas, context.kalman.varZAccel, context.kalman.varAccelBias);
 
 	context.varioState.speedVertActive = vario.getVelocity();
-	context.varioState.speedVertLazy = context.varioState.speedVertLazy + (context.varioState.speedVertActive - context.varioState.speedVertLazy) * context.varioSetting.dampingFactor;
+	context.varioState.speedVertLazy = context.varioState.speedVertActive; // context.varioState.speedVertLazy + (context.varioState.speedVertActive - context.varioState.speedVertLazy) * context.varioSetting.dampingFactor;
 	
 	deviceMode = DEVICE_MODE_VARIO;
 	//varioMode = VARIO_MODE_INIT;
