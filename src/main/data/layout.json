@@ -64,7 +64,7 @@
         "title": "Glider",
         "items": [
             {
-                "type": "select",
+                "type": "select-inline",
                 "name": "Type",
                 "key": "glider_type",
                 "options": [
@@ -117,7 +117,7 @@
                 "step": 1.0
             },
             {
-                "type": "select",
+                "type": "select-inline",
                 "name": "Landing Timeout",
                 "key": "igc_landing_timeout",
                 "options": [
@@ -196,13 +196,13 @@
             {
                 "type": "boolean",
                 "name": "Vario Sound",
-                "desc": "Turn on sound when device started",
+                "desc": "Turn on at Device Start",
                 "key": "device_enable_sound"
             },
             {
                 "type": "boolean",
                 "name": "Auto Sound",
-                "desc": "Turn on sound when it takeoff",
+                "desc": "Turn on at Takeoff",
                 "key": "volume_auto_turnon"
             },
             {
@@ -220,7 +220,7 @@
                 "step": 0.1
             },
             {
-                "type": "select",
+                "type": "select-inline",
                 "name": "Auto Shutdown",
                 "key": "threshold_auto_shutdown",
                 "options": [
@@ -233,7 +233,7 @@
             {
                 "type": "boolean",
                 "name": "Enable BT",
-                "desc": "Enable Bluetooth when device started",
+                "desc": "Enable at Device Start",
                 "key": "device_enable_bt"
             },
             {
@@ -241,21 +241,16 @@
                 "name": "BT Name",
                 "key": "device_bt_name",
                 "max": 16
-            }
-        ]
     },
-    "g_wifi": {
-        "title": "Wifi",
-        "items": [
             {
                 "type": "string",
-                "name": "SSID",
+                "name": "WiFi SSID",
                 "key": "wifi_ssid",
                 "max": 16
             },
             {
                 "type": "string",
-                "name": "Password",
+                "name": "WiFi Password",
                 "key": "wifi_password",
                 "max": 16
             }

@@ -64,7 +64,7 @@
         "title": "Glider",
         "items": [
             {
-                "type": "select",
+                "type": "select-inline",
                 "name": "Type",
                 "key": "glider_type",
                 "options": [
@@ -96,7 +96,7 @@
         "items": [
             {
                 "type": "boolean",
-                "name": "Enable Logging",
+                "name": "IGC Logging",
                 "desc": "Enable IGC Logging",
                 "key": "igc_enable_logging"
             },
@@ -109,7 +109,15 @@
                 "step": 1.0
             },
             {
-                "type": "select",
+                "type": "number",
+                "name": "Landing Speed",
+                "key": "igc_landing_speed",
+                "min": 2.0,
+                "max": 10.0,
+                "step": 1.0
+            },
+            {
+                "type": "select-inline",
                 "name": "Landing Timeout",
                 "key": "igc_landing_timeout",
                 "options": [
@@ -187,19 +195,19 @@
         "items": [
             {
                 "type": "boolean",
-                "name": "Enable Sound",
-                "desc": "Turn on sound after device started",
+                "name": "Vario Sound",
+                "desc": "Turn on at Device Start",
                 "key": "device_enable_sound"
             },
             {
                 "type": "boolean",
                 "name": "Auto Sound",
-                "desc": "Automatic turn on sound after take-off",
+                "desc": "Turn on at Takeoff",
                 "key": "volume_auto_turnon"
             },
             {
                 "type": "boolean",
-                "name": "Enable Logging",
+                "name": "NMEA Logging",
                 "desc": "Enable NMEA Logging",
                 "key": "device_enable_nmea_logging"
             },
@@ -212,7 +220,7 @@
                 "step": 0.1
             },
             {
-                "type": "select",
+                "type": "select-inline",
                 "name": "Auto Shutdown",
                 "key": "threshold_auto_shutdown",
                 "options": [
@@ -225,13 +233,25 @@
             {
                 "type": "boolean",
                 "name": "Enable BT",
-                "desc": "Enable Bluetooth when device started",
+                "desc": "Enable at Device Start",
                 "key": "device_enable_bt"
             },
             {
                 "type": "string",
                 "name": "BT Name",
                 "key": "device_bt_name",
+                "max": 16
+            },
+            {
+                "type": "string",
+                "name": "WiFi SSID",
+                "key": "wifi_ssid",
+                "max": 16
+            },
+            {
+                "type": "string",
+                "name": "WiFi Password",
+                "key": "wifi_password",
                 "max": 16
             }
         ]

@@ -11,6 +11,7 @@
     "glider_model": "Zeno",
     "igc_enable_logging": true,
     "igc_takeoff_speed": 6,
+	"igc_landing_speed": 4,
     "igc_landing_timeout": 10000,
     "igc_logging_interval": 1000,
     "igc_pilot": "AKKDONG",
@@ -23,9 +24,11 @@
     "kalman_var_zmeas": 400.0,
     "kalman_var_zaccel": 1000.0,
     "kalman_var_abias": 1.0,
-    "device_enable_bt": true,
+    "device_enable_bt": false,
     "device_enable_sound": false,
     "device_bt_name": "MiniVario",
     "device_enable_simulation": false,
-    "device_enable_nmea_logging": false
+    "device_enable_nmea_logging": false,
+    "wifi_ssid": "MiniVario",
+    "wifi_password": "123456789"
 }
