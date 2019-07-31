@@ -14,15 +14,15 @@
 ///////////////////////////////////////////////////////////////////////////////////
 // class WebServiceClass
 
-class WebServiceClass
+class WebServiceClass : public WebServer
 {
 public:
     WebServiceClass();
     ~WebServiceClass();
 
 public:
-    int                 begin();
-    void                end();
+    void                start();
+    void                stop();
 
     void                update();
 
@@ -33,10 +33,13 @@ protected:
     bool                handleFileRead(String path);
 
     static void         onUpdateRequest();
+    static void         onRequestTrackLogs();
+    static void         onDownloadTrackLog();
+    static void         onDeleteTrackLog();
     static void         onRequest();
 
 protected:
-    WebServer           mServer;
+//    WebServer           mServer;
 };
 
 

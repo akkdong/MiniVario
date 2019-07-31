@@ -10,3 +10,5 @@ copy .\jquery-3.4.1.min.js ..\data\
 copy .\preferences.js ..\data\
 copy .\config.json ..\data\
 copy .\layout.json ..\data\
+
+copy .\delete-button.png ..\data\

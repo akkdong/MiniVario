@@ -336,7 +336,7 @@ function initPref() {
 
 function savePref () {
     console.log("save preferences...");
-    $.post("/update/config.json", pref_config, function (data) {
+    $.post("/Update/config.json", pref_config, function (data) {
         alert("Save Preferences Sucsess.");
     }).fail(function(xhr, stat, err) {
 		alert("Save Preferences Failed!");

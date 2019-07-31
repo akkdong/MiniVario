@@ -346,14 +346,12 @@ void VarioDisplay::draw(PopupWebService * service)
 	drawText("Web Service", x, y, mw - 10, 24, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_TOP, COLOR_BLACK);
 
 	y += 24;
-	drawText("SSID:", x, y, mw - 10, 18, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
+	drawText("WiFi:", x, y, mw - 10, 18, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
 	y += 18;
 	drawText(context.deviceDefault.wifiSSID, x + 8, y, mw - 18, 18, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
 	y += 18;
-	drawText("Password:", x, y, mw - 10, 18, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
-	y += 18;
 	drawText(context.deviceDefault.wifiPassword, x + 8, y, mw - 18, 18, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
-	y += 18;
+	y += 36;
 	drawText("IP", x, y, mw - 10, 18, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);
 	y += 18;
 	drawText("192.168.1.1", x + 8, y, mw - 18, 18, WS_FONT_NORMAL_2 | WS_TA_LEFT | WS_TA_MIDDLE, COLOR_BLACK);

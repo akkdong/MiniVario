@@ -13,6 +13,7 @@ void setup()
     SPIFFS.begin();
 
     //
+    if (0)
     {
         File conf = SPIFFS.open("/pref-data.json");
         if (conf)
@@ -62,7 +63,7 @@ void setup()
     }
 
     //
-    WebService.begin();
+    WebService.start();
 }
 
 void loop()
@@ -75,13 +76,13 @@ void loop()
         if (ch == 'B' || ch == 'b')
         {
             Serial.println("start WebService");
-            WebService.begin();
+            WebService.start();
         }
 
         if (ch == 'E' || ch == 'e')
         {
             Serial.println("stop WebService");
-            WebService.end();
+            WebService.stop();
         }
     }
 

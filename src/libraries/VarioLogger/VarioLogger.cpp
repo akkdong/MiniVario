@@ -283,9 +283,9 @@ void VarioLogger::writeHeader(time_t date)
 					file.write(digit.read());
 				
 				//
-				time_t localdate = date + (__DeviceContext.logger.timezone * 60 * 60); 
-				_tm = localtime(&localdate);	
-				
+//				time_t localdate = date + (__DeviceContext.logger.timezone * 60 * 60); 
+//				_tm = localtime(&localdate);	
+//				
 //				file.timestamp(T_ACCESS|T_CREATE|T_WRITE,
 //								_tm->tm_year + 1900, _tm->tm_mon+1, _tm->tm_mday,
 //								_tm->tm_hour, _tm->tm_min, _tm->tm_sec);
