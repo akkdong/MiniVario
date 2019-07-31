@@ -964,7 +964,8 @@ const char * VarioDisplay::getString(WidgetContentType type)
 		#else
 		{
 			time_t now = time(NULL);
-			sprintf(tempString, "%02d:%02d", (now / 3600) % 24, (now / 60) % 60);
+			struct tm * _t = localtime(&now);
+			sprintf(tempString, "%02d:%02d", _t->tm_hour, _t->tm_min); // (now / 3600) % 24, (now / 60) % 60);
 		}
 		#endif
 		return tempString;

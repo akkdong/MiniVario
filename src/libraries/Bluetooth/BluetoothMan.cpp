@@ -200,7 +200,7 @@ void BluetoothManEx::startLogging(time_t date)
 	const char * ptr;
 	struct tm * _tm;
 
-	date = date + (__DeviceContext.logger.timezone * 60 * 60); 
+	//date = date + (__DeviceContext.logger.timezone * 60 * 60); 
 	_tm = localtime(&date);
 
 	sprintf(file, "/TrackLogs/%04d%02d%02d-%02d%02d%02d.log", 

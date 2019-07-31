@@ -203,7 +203,7 @@ const char * VarioLogger::makeFileName(char * buf, time_t date)
 	const char * ptr;
 	struct tm * _tm;
 
-	date = date + (__DeviceContext.logger.timezone * 60 * 60); 
+	//date = date + (__DeviceContext.logger.timezone * 60 * 60); 
 	_tm = localtime(&date);
 	
 	// year
@@ -267,7 +267,7 @@ void VarioLogger::writeHeader(time_t date)
 		case IGC_HEADER_DATE	 :
 			{
 				struct tm * _tm;
-				_tm = localtime(&date);				
+				_tm = gmtime(&date);				
 				
 				//  DD : tm_mday -> 1 ~ 31
 				digit.begin(_tm->tm_mday, 2);

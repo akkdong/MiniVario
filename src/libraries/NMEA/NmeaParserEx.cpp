@@ -3,6 +3,7 @@
 
 #include "NmeaParserEx.h"
 #include "FixedLenDigit.h"
+#include "DeviceContext.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -381,6 +382,9 @@ void timeStr2TmStruct(struct tm * _tm, const char * str)
 	_tm->tm_hour = ((str[0] - '0') * 10) + (str[1] - '0');
 	_tm->tm_min  = ((str[2] - '0') * 10) + (str[3] - '0');
 	_tm->tm_sec  = ((str[4] - '0') * 10) + (str[5] - '0');
+	_tm->tm_isdst = 0;
+
+	_tm->tm_min = _tm->tm_min + (int)(__DeviceContext.logger.timezone * 60);
 }
 
 void dateStr2TmStruct(struct tm * _tm, const char * str)
@@ -434,7 +438,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			dateStr2TmStruct(&mTmStruct, &mBuffer[startPos]);
 			
 			if (IS_SET(RMC_VALID))
-				mDateTime = mktime(&mTmStruct);
+				mDateTime = mktime(&mTmStruct); // mDateTime is UTC: mktime convert GMTx to UTC
 			//else
 			//	mDateTime = 0;
 			//mDate = strToNum(startPos);

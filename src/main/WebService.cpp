@@ -31,12 +31,12 @@ float parseFloat(String str)
 String getDateString(time_t t)
 {
     struct tm * _tm;
-    _tm = localtime(&t);
+    _tm = gmtime(&t);
 
     char str[32]; // YYYY-MM-DD hh:mm:ssZ
     String date;
     
-    sprintf(str, "%d-%d-%d %d:%d:%d", 
+    sprintf(str, "%d-%d-%d %d:%d:%dZ", 
         _tm->tm_year + 1900, _tm->tm_mon + 1, _tm->tm_mday,
         _tm->tm_hour, _tm->tm_min, _tm->tm_sec);
 
