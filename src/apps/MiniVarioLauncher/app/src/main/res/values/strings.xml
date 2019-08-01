@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">MiniVario Launcher</string>
+    <string name="text_wifi_ssid">WiFi SSID</string>
+    <string name="text_wifi_password">WiFi Password</string>
+    <string name="test_host_ip">Host IP Address</string>
+    <string name="text_open_page">Open Page</string>
+    <string name="text_connect_wifi">Connect WiFi</string>
+    <string name="def_wifi_ssid">MiniVario</string>
+    <string name="def_wifi_password">123456789</string>
+    <string name="def_host_ip">192.168.1.1</string>
+</resources>

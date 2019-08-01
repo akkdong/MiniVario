@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="176dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/text_wifi_ssid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/text_wifi_ssid" />
+
+        <EditText
+            android:id="@+id/edit_wifi_ssid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="@string/def_wifi_ssid"
+            android:inputType="text"
+            android:text="@string/def_wifi_ssid" />
+
+        <TextView
+            android:id="@+id/text_wifi_pasword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/text_wifi_password" />
+
+        <EditText
+            android:id="@+id/edit_wifi_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="number"
+            android:text="@string/def_wifi_password" />
+
+        <Button
+            android:id="@+id/btn_wifi_connect"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/text_connect_wifi" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+
+        <TextView
+            android:id="@+id/text_host_ip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/test_host_ip" />
+
+        <EditText
+            android:id="@+id/edit_host_ip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="number|text"
+            android:text="@string/def_host_ip" />
+
+        <Button
+            android:id="@+id/btn_page_open"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/text_open_page" />
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>
