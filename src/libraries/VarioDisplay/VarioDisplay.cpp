@@ -308,7 +308,7 @@ void VarioDisplay::draw(PopupTopMenu * menu)
 		{
 		case TMID_SHOW_PREFERENCE : strcpy(str, "Basic settings"); break;
 		case TMID_TOGGLE_WEBSERVICE : strcpy(str, "Web Service On"); break;
-		case TMID_TOGGLE_SOUND : sprintf(str, "Sound %s", context.deviceDefault.enableSound ? "Off" : "On"); break;
+		case TMID_TOGGLE_SOUND : sprintf(str, "Sound %s", context.volume.vario ? "Off" : "On"); break;
 		case TMID_TOGGLE_BLUETOOTH : sprintf(str, "Bluetooth %s", context.deviceState.statusBT ? "Off" : "On"); break;
 		case TMID_RESET_DEVICE : strcpy(str, "Restart Device"); break;
 		case TMID_POWER_OFF : strcpy(str, "Power Off"); break;
@@ -463,7 +463,7 @@ void VarioDisplay::drawStatusBar(Widget * widget)
 		x += SB_BITMAP_WIDTH;
 	}
 	
-	drawBitmapBM(context.deviceDefault.enableSound ? Bitmap_StatusBar_soundon : Bitmap_StatusBar_soundoff, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
+	drawBitmapBM(context.volume.vario ? Bitmap_StatusBar_soundon : Bitmap_StatusBar_soundoff, x, y, SB_BITMAP_WIDTH, SB_BITMAP_HEIGHT, COLOR_WHITE, bm_invert);
 	x += SB_BITMAP_WIDTH;
 	
 	//

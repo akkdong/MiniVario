@@ -124,7 +124,7 @@ void DeviceContext::reset()
 	kalman.varAccelBias = KF_ACCELBIAS_VARIANCE;
 
 	//
-	deviceDefault.enableBT = 1;
+	deviceDefault.enableBT = 0;
 	deviceDefault.enableSound = 0;
 	deviceDefault.enableSimulation = 0;
 	deviceDefault.enableNmeaLogging = 0;
@@ -231,10 +231,10 @@ void DeviceContext::set(JsonDocument & doc)
 		strcpy(logger.pilot, (const char *)doc["igc_pilot"]); // "akkdong"
 	if (! doc["igc_timezone"].isNull())
 		logger.timezone = doc["igc_timezone"]; // 9
-	if (! doc["volume_vario_enabled"].isNull())
-		volume.vario = doc["volume_vario_enabled"]; // false
-	if (! doc["volume_effect_enabled"].isNull())
-		volume.effect = doc["volume_effect_enabled"]; // false
+	if (! doc["volume_enable_vario"].isNull())
+		volume.vario = doc["volume_enable_vario"]; // false
+	if (! doc["volume_enable_effect"].isNull())
+		volume.effect = doc["volume_enable_effect"]; // false
 	if (! doc["volume_auto_turnon"].isNull())
 		volume.autoTurnOn = doc["volume_auto_turnon"]; // true
 	if (! doc["threshold_low_battery"].isNull())
@@ -321,6 +321,9 @@ void DeviceContext::dump()
 	Serial.printf("DeviceDefault.btName = %s\n", deviceDefault.btName);
 	Serial.printf("DeviceDefault.wifiSSID = %s\n", deviceDefault.wifiSSID);
 	Serial.printf("DeviceDefault.wifiPassword = %s\n", deviceDefault.wifiPassword);
+	
+	Serial.printf("VolumeSettings.vario = %d\n", volume.vario);
+	Serial.printf("VolumeSettings.effect = %d\n", volume.effect);
 	Serial.printf("VolumeSettings.autoTurnOn = %d\n", volume.autoTurnOn);
 
 	Serial.printf("VarioSettings.sinkThreshold = %f\n", varioSetting.sinkThreshold);

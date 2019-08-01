@@ -67,7 +67,11 @@
 
 		node.append(_div);
 	}
-	
+
+	function numberWithCommas(x) {
+	    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	}
+
 	function makeLogList(data) {
 		//
 		var logs = $("#logs");			
@@ -77,11 +81,16 @@
 			// empty!!
 			appendEmpty(logs);
 		} else {
+			// sort
+			data.sort(function (a, b) {
+				return a.name < b.name ? 1 : -1; // descending
+			});
+
 			// enumerate each file
 			$.each(data, function (idx, file) {
 				var _name = file.name;
 				var _date = new Date(file.date); // Date.parse(file.date);
-				var _size = file.size + " Bytes";				
+				var _size = numberWithCommas(file.size) + " bytes";				
 				var _div = $('<div>', { 'href': _name });
 
 				_div.append($('<hr>').addClass('file-separator'));
@@ -90,7 +99,7 @@
 						.append($('<lable>').addClass('file-delete').append($('<img>').addClass('delete-image').attr('src','delete-button.png'))));
 				_div.append($('<div>', { class: "file-info" })
 						.append($('<span>').text(_date.toLocaleTimeString()))
-						.append(",&nbsp;")
+						.append("&nbsp;&nbsp;")
 						.append($('<span>').text(_size)));
 						
 				logs.append(_div);

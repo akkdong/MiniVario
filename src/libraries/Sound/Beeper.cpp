@@ -2,7 +2,7 @@
 //
 
 #include "Beeper.h"
-#include "DeviceContext.h"
+
 
 ////////////////////////////////////////////////////////////////////////////////////
 //
@@ -22,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // class Beeper
 
-Beeper::Beeper() : Task("Beeper", 2 * 1024, 2)
+Beeper::Beeper() : Task("Beeper", 2 * 1024, 2), context(__DeviceContext)
 { 
     init();
 }
@@ -62,33 +62,33 @@ void Beeper::init()
     exitTask            = false;
 }
 
-void Beeper::setVelocity(float velocity)
+void Beeper::setVelocity(float velocity, int volume)
 {
 	boolean typeChanged = false;
 	
 	switch (beepType)
 	{
 	case BEEP_TYPE_SINKING :
-		if (__DeviceContext.varioSetting.sinkThreshold + __DeviceContext.varioSetting.sensitivity < velocity)
+		if (context.varioSetting.sinkThreshold + context.varioSetting.sensitivity < velocity)
 			typeChanged = true;
 		break;
 		
 	case BEEP_TYPE_SILENT :
-		if (velocity <= __DeviceContext.varioSetting.sinkThreshold || __DeviceContext.varioSetting.climbThreshold <= velocity)
+		if (velocity <= context.varioSetting.sinkThreshold || context.varioSetting.climbThreshold <= velocity)
 			typeChanged = true;
 		break;
 		
 	case BEEP_TYPE_CLIMBING :
-		if (velocity < __DeviceContext.varioSetting.climbThreshold - __DeviceContext.varioSetting.sensitivity)
+		if (velocity < context.varioSetting.climbThreshold - context.varioSetting.sensitivity)
 			typeChanged = true;
 		break;
 	}
 	
 	if (typeChanged)
 	{
-		if (velocity <= __DeviceContext.varioSetting.sinkThreshold)
+		if (velocity <= context.varioSetting.sinkThreshold)
 			beepType = BEEP_TYPE_SINKING;
-		else if (__DeviceContext.varioSetting.climbThreshold <= velocity)
+		else if (context.varioSetting.climbThreshold <= velocity)
 			beepType = BEEP_TYPE_CLIMBING;
 		else
 			beepType = BEEP_TYPE_SILENT;
@@ -99,7 +99,7 @@ void Beeper::setVelocity(float velocity)
 		int freq, period, duty;
 		
 		findTone(velocity, freq, period, duty);		
-		setBeep(freq, period, duty, 0);
+		setBeep(freq, period, duty, 0, volume);
 	}
 	else
 	{
@@ -261,28 +261,28 @@ void Beeper::findTone(float velocity, int & freq, int & period, int & duty)
 {
 	int index;
 	
-	for (index = 0; index < (sizeof(__DeviceContext.toneTable) / sizeof(__DeviceContext.toneTable[0])); index++)
+	for (index = 0; index < (sizeof(context.toneTable) / sizeof(context.toneTable[0])); index++)
 	{
-		if (velocity <= __DeviceContext.toneTable[index].velocity)
+		if (velocity <= context.toneTable[index].velocity)
 			break;
 	}
 	
-	if (index == 0 || index == (sizeof(__DeviceContext.toneTable) / sizeof(__DeviceContext.toneTable[0])))
+	if (index == 0 || index == (sizeof(context.toneTable) / sizeof(context.toneTable[0])))
 	{
 		if (index != 0)
 			index -= 1;
 		
-		freq = __DeviceContext.toneTable[index].freq;
-		period = __DeviceContext.toneTable[index].period;
-		duty = __DeviceContext.toneTable[index].duty;
+		freq = context.toneTable[index].freq;
+		period = context.toneTable[index].period;
+		duty = context.toneTable[index].duty;
 	}
 	else
 	{
-		float ratio = __DeviceContext.toneTable[index].velocity / velocity;
+		float ratio = context.toneTable[index].velocity / velocity;
 		
-		freq = (__DeviceContext.toneTable[index].freq - __DeviceContext.toneTable[index-1].freq) / (__DeviceContext.toneTable[index].velocity - __DeviceContext.toneTable[index-1].velocity) * (velocity - __DeviceContext.toneTable[index-1].velocity) + __DeviceContext.toneTable[index-1].freq;
-		period = (__DeviceContext.toneTable[index].period - __DeviceContext.toneTable[index-1].period) / (__DeviceContext.toneTable[index].velocity - __DeviceContext.toneTable[index-1].velocity) * (velocity - __DeviceContext.toneTable[index-1].velocity) + __DeviceContext.toneTable[index-1].period;
-		duty = (__DeviceContext.toneTable[index].duty - __DeviceContext.toneTable[index-1].duty) / (__DeviceContext.toneTable[index].velocity - __DeviceContext.toneTable[index-1].velocity) * (velocity - __DeviceContext.toneTable[index-1].velocity) + __DeviceContext.toneTable[index-1].duty;
+		freq = (context.toneTable[index].freq - context.toneTable[index-1].freq) / (context.toneTable[index].velocity - context.toneTable[index-1].velocity) * (velocity - context.toneTable[index-1].velocity) + context.toneTable[index-1].freq;
+		period = (context.toneTable[index].period - context.toneTable[index-1].period) / (context.toneTable[index].velocity - context.toneTable[index-1].velocity) * (velocity - context.toneTable[index-1].velocity) + context.toneTable[index-1].period;
+		duty = (context.toneTable[index].duty - context.toneTable[index-1].duty) / (context.toneTable[index].velocity - context.toneTable[index-1].velocity) * (velocity - context.toneTable[index-1].velocity) + context.toneTable[index-1].duty;
 	}
 	
 	//period = (int)(period * 1.0);
@@ -391,8 +391,8 @@ void Beeper::playNext()
 
 void Beeper::playTone(int freq, int volume)
 {
-	if (freq > 0)
+//	if (freq > 0 && volume > 0)
 		toneGen.setTone(freq, volume);
-	else
-		toneGen.setTone(0);
+//	else
+//		toneGen.setTone(0);
 }

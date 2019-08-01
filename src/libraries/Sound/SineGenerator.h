@@ -38,7 +38,7 @@ public:
 	void						setOffset(uint8_t offset);
 	void 						setFrequency(int freq); // 0 to turn-off(mute)
 	
-	void						setTone(uint16_t hz, uint8_t volume = 100) { setFrequency(hz); }
+	void						setTone(uint16_t hz, uint8_t volume = 100) { setFrequency(volume > 0 ? hz : 0); }
 	
 protected:
 //	void						enable(CHANNEL channel);	

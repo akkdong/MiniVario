@@ -180,11 +180,13 @@ BluetoothSerialEx  	serialBluetooth;
 //
 //
 
-//SineGenerator toneGen;
-//TonePlayer tonePlayer(toneGen);
-//
-//VarioBeeper varioBeeper(tonePlayer);
+#if 0
+SineGenerator toneGen;
+TonePlayer tonePlayer(toneGen);
+VarioBeeper varioBeeper(tonePlayer);
+#else
 Beeper beeper;
+#endif
 
 VarioDisplayDriver driver(ePaperPins);
 VarioDisplay display(driver, context);
@@ -375,7 +377,7 @@ void setup()
 		startVario();
 
 	//
-	beeper.setBeep(NOTE_C4, 600, 400, 2, 100);
+	beeper.setBeep(NOTE_C4, 600, 400, 2, context.volume.effect);
 	deviceTick = millis();
 }
 
@@ -387,9 +389,8 @@ void loop()
 	// check key-input
 	keybd.update();
 	
-	// beep beep beep!
-	//tonePlayer.update();
 	// beeper update function is executed in task proc
+	// beep beep beep!
 
 	if (deviceMode == DEVICE_MODE_WAKEUP)
 	{
@@ -426,11 +427,7 @@ void loop()
 			context.varioState.speedVertNext = (context.varioState.speedVertNext + 1) % MAX_VARIO_HISTORY;
 		}
 
-		if (context.deviceDefault.enableSound)
-		{
-			//varioBeeper.setVelocity(context.varioState.speedVertActive);
-			beeper.setVelocity(context.varioState.speedVertActive);
-		}
+		beeper.setVelocity(context.varioState.speedVertActive, context.volume.vario);
 
 		//
 		{
@@ -574,9 +571,8 @@ void readyFlight()
 	settimeofday(&now, NULL);
 
 	// play ready melody~~~
-	//tonePlayer.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
 	//beeper.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, context.volume.effect/*, PLAY_PREEMPTIVE*/);
-	beeper.setBeep(NOTE_C4, 400, 200, 3, 100);
+	beeper.setBeep(NOTE_C4, 400, 200, 3, context.volume.effect);
 	
 	// now ready to fly~~~
 	deviceMode = DEVICE_MODE_VARIO_AND_GPS;
@@ -588,12 +584,11 @@ void startFlight()
 {
 	//
 	if (context.volume.autoTurnOn)
-		context.deviceDefault.enableSound = 1;
+		context.volume.effect = context.volume.vario = 1;
 	
 	// play take-off melody
-	//tonePlayer.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
 	//beeper.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, context.volume.effect/*, PLAY_PREEMPTIVE*/);
-	beeper.setBeep(NOTE_C4, 1000, 800, 1, 100);
+	beeper.setBeep(NOTE_C4, 1000, 800, 1, context.volume.effect);
 
 	//
 	if (context.deviceDefault.enableNmeaLogging)
@@ -752,9 +747,8 @@ void stopFlight()
 	context.flightState.bearingTakeoff = -1;
 	
 	// play landing melody
-	//tonePlayer.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, PLAY_PREEMPTIVE, context.volume.effect);
 	//beeper.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, context.volume.effect/*, PLAY_PREEMPTIVE*/);
-	beeper.setBeep(NOTE_C3, 1000, 800, 1, 100);
+	beeper.setBeep(NOTE_C3, 1000, 800, 1, context.volume.effect);
 
 	//
 	btMan.stopLogging();
@@ -845,7 +839,7 @@ void goDeepSleep()
 	// close logging-file
 	logger.end(nmeaParser.getDateTime());
 	//
-	//beeper.setBeep(NOTE_B2, 400, 200, 3, 100);
+	//beeper.setBeep(NOTE_B2, 400, 200, 3, context.volume.effect);
 
 	//
 	TaskWatchdog::remove(NULL);
@@ -1073,18 +1067,17 @@ void startWebService()
 
 void toggleVarioSound()
 {
-	context.deviceDefault.enableSound = context.deviceDefault.enableSound ? 0 : 1;
+	context.volume.effect = context.volume.vario = context.volume.vario ? 0 : 1;
 
-	if (! context.deviceDefault.enableSound)
+	if (! context.volume.vario)
 	{
-		//varioBeeper.setVelocity(0);			
-		//toneGen.setFrequency(0);
-		beeper.setVelocity(0);
+		// silent if not
+		beeper.setVelocity(0, context.volume.vario);
 	}
 	else
 	{
 		// beep beep
-		beeper.setBeep(NOTE_C4, 600, 400, 2, 100);
+		beeper.setBeep(NOTE_C4, 600, 400, 2, context.volume.effect);
 	}
 }
 

@@ -196,8 +196,14 @@
             {
                 "type": "boolean",
                 "name": "Vario Sound",
-                "desc": "Turn on at Device Start",
-                "key": "device_enable_sound"
+                "desc": "Enable Vario Sound",
+                "key": "volume_enable_vario"
+            },
+            {
+                "type": "boolean",
+                "name": "Effect Sound",
+                "desc": "Enable Effect Sound",
+                "key": "volume_enable_effect"
             },
             {
                 "type": "boolean",
@@ -241,7 +247,7 @@
                 "name": "BT Name",
                 "key": "device_bt_name",
                 "max": 16
-    },
+            },
             {
                 "type": "string",
                 "name": "WiFi SSID",
