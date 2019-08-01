@@ -114,7 +114,8 @@ protected:
 	void 				TaskProc();
 
 private:
-	const char *		makeTimeString(char * str, time_t sec);
+	const char *		getElapsedTimeString(char * str, time_t sec);
+	const char *		getTimeString(char * str, time_t t);
 	
 protected:
 	static GFXfontPtr 	__FontStack[MAX_FONTS];

@@ -535,7 +535,7 @@ void VarioDisplay::drawTrackHistory(Widget * widget)
 		float x0 = context.flightState.trackDistance[i].dx * ZOOM_FACTOR;
 		float y0 = context.flightState.trackDistance[i].dy * ZOOM_FACTOR;
 
-		int16_t x = (widget->x + widget->w / 2) + (int16_t)(x0 * cos(theta) - y0 * sin(theta));
+		int16_t x = (widget->x + widget->w / 2) - (int16_t)(x0 * cos(theta) - y0 * sin(theta));
 		int16_t y = (widget->y + widget->h / 2) - (int16_t)(x0 * sin(theta) + y0 * cos(theta));
 #else // 0 clock is north
 		int16_t x = widget->x + widget->w / 2;
@@ -563,6 +563,15 @@ void VarioDisplay::drawTrackHistory(Widget * widget)
 		}
 
 		i = (i + 1) % MAX_TRACK_HISTORY;
+	}
+
+	// draw glider
+	{
+		int16_t cx = widget->x + widget->w / 2;
+		int16_t cy = widget->y + widget->h / 2;
+
+		drawLine(cx - 10, cy, cx, cy - 18, COLOR_BLACK);
+		drawLine(cx, cy - 18, cx + 10, cy, COLOR_BLACK);
 	}
 }
 
@@ -783,21 +792,21 @@ const char * VarioDisplay::getLabel(WidgetContentType type)
 	case WidgetContent_Time_Current :
 		return "Time";
 	case WidgetContent_Time_Flight :
-		return "FTime";
+		return "Time.Fl";
 	case WidgetContent_Time_Takeoff :
-		return "TTime";
+		return "Time.Ta";
 	case WidgetContent_Pressure :
 		return "Prs";
 	case WidgetContent_Temperature :
 		return "Temp";
 	case WidgetContent_Distance_Takeoff :
-		return "Dist.T";
+		return "Dist.Ta";
 	case WidgetContent_Distance_Flight :
-		return "Dist.F";
+		return "Dist.Fl";
 	case WidgetContent_Thermaling_Gain :
-		return "T.Gain";
+		return "Th.Gain";
 	case WidgetContent_Thermaling_Time :
-		return "T.Time";
+		return "Th.Time";
 	case WidgetContent_Thermaling_Slope :
 		return "";
 
@@ -810,9 +819,9 @@ const char * VarioDisplay::getLabel(WidgetContentType type)
 	case WidgetContent_SinkRate_Max :
 		return "Snk.Max";
 	case WidgetContent_Total_Thermaling :
-		return "Tot.Thm";
+		return "Th.Cnt";
 	case WidgetContent_Max_ThermalingGain :
-		return "Max.Thm";
+		return "Th.Max";
 
 	case WidgetContent_Ground_Level :
 		return "G.Lvl";
@@ -848,11 +857,11 @@ const char * VarioDisplay::getUnit(WidgetContentType type)
 		return "";
 	case WidgetContent_Latitude :
 		return "";
-	case WidgetContent_Altitude_GPS :		// QNH
+	case WidgetContent_Altitude_GPS :	// QNH
 		return "m";
 	case WidgetContent_Altitude_Baro :	// QNE
 		return "m";
-	case WidgetContent_Altitude_AGL :		// QFE
+	case WidgetContent_Altitude_AGL :	// QFE
 		return "m";
 	case WidgetContent_Altitude_Ref1 :	// QFE
 		return "m";
@@ -864,16 +873,16 @@ const char * VarioDisplay::getUnit(WidgetContentType type)
 		return "";
 	case WidgetContent_Vario_Active :
 		return "m/s";
-	case WidgetContent_Vario_Lazy :		// 1s average
+	case WidgetContent_Vario_Lazy :		// x seconds average
 		return "m/s";
 	case WidgetContent_DateTime :
 		return "";
 	case WidgetContent_Time_Current :
 		return "";
 	case WidgetContent_Time_Flight :
-		return (context.flightState.flightTime < 3600) ? "mm/ss" : "hh/mm";
+		return (context.flightState.flightTime < 3600) ? "m:s" : "h:m";
 	case WidgetContent_Time_Takeoff :
-		return "hh/mm";
+		return "h:m";
 	case WidgetContent_Pressure :
 		return "hPa";
 	case WidgetContent_Temperature :
@@ -884,7 +893,7 @@ const char * VarioDisplay::getUnit(WidgetContentType type)
 	case WidgetContent_Thermaling_Gain :
 		return "m";
 	case WidgetContent_Thermaling_Time :
-		return "mm:ss";
+		return "m:s";
 
 	case WidgetContent_Altitude_Max :
 		return "m";
@@ -944,7 +953,7 @@ const char * VarioDisplay::getString(WidgetContentType type)
 		if (context.flightState.glideRatio < 0.0)
 			return "-/-";
 		else if (context.flightState.glideRatio == 0)
-			return "INF";
+			return "inf";
 		sprintf(tempString, "%.1f", context.flightState.glideRatio);
 		return tempString;
 	case WidgetContent_Vario_Active :
@@ -956,26 +965,15 @@ const char * VarioDisplay::getString(WidgetContentType type)
 	case WidgetContent_DateTime :
 		return "";
 	case WidgetContent_Time_Current :
-		#if 0
-		if (context.varioState.timeCurrent != 0)
-			sprintf(tempString, "%02d:%02d", (context.varioState.timeCurrent / 3600) % 24, (context.varioState.timeCurrent / 60) % 60);
-		else
+		if (context.varioState.timeCurrent == 0)
 			strcpy(tempString, "--:--");
-		#else
-		{
-			time_t now = time(NULL);
-			struct tm * _t = localtime(&now);
-			sprintf(tempString, "%02d:%02d", _t->tm_hour, _t->tm_min); // (now / 3600) % 24, (now / 60) % 60);
-		}
-		#endif
+		else
+			getTimeString(tempString, time(NULL));
 		return tempString;
 	case WidgetContent_Time_Flight :
-		makeTimeString(tempString, context.flightState.flightTime);
-		return tempString;
+		return getElapsedTimeString(tempString, context.flightState.flightTime);
 	case WidgetContent_Time_Takeoff :
-		makeTimeString(tempString, context.flightState.takeOffTime);
-		return tempString;
-		break;
+		return getTimeString(tempString, context.flightState.takeOffTime);
 
 	case WidgetContent_Pressure :
 		sprintf(tempString, "%.2f", context.varioState.pressure);
@@ -992,8 +990,7 @@ const char * VarioDisplay::getString(WidgetContentType type)
 	case WidgetContent_Thermaling_Gain :
 		return itoa(context.flightState.circlingGain, tempString, 10);
 	case WidgetContent_Thermaling_Time :
-		sprintf(tempString, "%02d:%02d", context.flightState.circlingTime / 60, context.flightState.circlingTime % 60);
-		return tempString;
+		return getElapsedTimeString(tempString, context.flightState.circlingTime);
 
 	case WidgetContent_Altitude_Max :
 		return itoa(context.flightStats.altitudeMax + 0.5, tempString, 10);
@@ -1044,7 +1041,7 @@ DisplayObject * VarioDisplay::getActiveObject()
 	return NULL;
 }
 
-const char * VarioDisplay::makeTimeString(char * str, time_t sec)
+const char * VarioDisplay::getElapsedTimeString(char * str, time_t sec)
 {
 	sec = sec % (24 * 60 * 60); // trim date
 
@@ -1052,6 +1049,16 @@ const char * VarioDisplay::makeTimeString(char * str, time_t sec)
 		sprintf(str, "%02d:%02d", sec / 60, sec % 60);
 	else 
 		sprintf(str, "%02d:%02d", sec / 3600, (sec / 60) % 60);
+
+	return str;
+}
+
+const char * VarioDisplay::getTimeString(char * str, time_t t)
+{
+	struct tm * _tm = localtime(&t);
+	sprintf(str, "%02d:%02d", _tm->tm_hour, _tm->tm_min);
+
+	return str;
 }
 
 

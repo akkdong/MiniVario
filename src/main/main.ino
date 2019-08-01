@@ -721,10 +721,10 @@ void updateFlightState()
 
 			if (dist > 100)
 			{
-				if (context.flightState.glidingStartPos.alt < context.varioState.altitudeGPS)
+				if (context.flightState.glidingStartPos.alt > context.varioState.altitudeGPS)
 				{
 					float diff = context.flightState.glidingStartPos.alt - context.varioState.altitudeGPS;
-					context.flightState.glideRatio = diff ? dist / diff : 0;
+					context.flightState.glideRatio = dist / diff;
 				}
 				else
 				{
