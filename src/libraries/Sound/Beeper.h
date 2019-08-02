@@ -18,15 +18,17 @@
 ////////////////////////////////////////////////////////////////////////////////////
 //
 
-struct Tone 
+struct Tone
 {
 	int			freq;
 	int			length;
 };
 
-struct PlayTones
+typedef struct Tone * TonePtr;
+
+struct Melody
 {
-	Tone *		tonePtr;
+	TonePtr 	tonePtr;
 	int			toneCount;
 
 	int			volume;
@@ -34,7 +36,11 @@ struct PlayTones
 
 	int			activeTone;
 	int			playCount;
+
+    int         needStacato;
 };
+
+typedef struct Melody * MelodyPtr;
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -51,8 +57,9 @@ public:
 
     void                setVelocity(float velocity, int volume);
     void                setMelody(Tone * tonePtr, int toneCount, int repeat, int volume, int preemptive = PLAY_COOPERATIVE);
-    void                setBeep(int freq, int period, int duty, int repeat, int volume); // duty --> ms
-    void                setMute(int preemptive = PLAY_PREEMPTIVE);
+    void                setMelody(int freq, int period, int duty, int repeat, int volume, int preemptive = PLAY_COOPERATIVE);
+    
+    void                setMuteMelody(int preemptive = PLAY_PREEMPTIVE);
 
 protected:
 	void				TaskProc();
@@ -61,21 +68,26 @@ private:
     void                findTone(float velocity, int & freq, int & period, int & duty);
     void                playTone(int freq, int volume = 1);
 
-	#if 0
-    int                 playCheck();
-    void                playNext();
-	#endif
-
     void                init();
+
+    MelodyPtr           getActiveMelody() { return &Melodies[activeMelody]; }
+    MelodyPtr           getNextMelody() { return &Melodies[1 - activeMelody]; }
+
+    TonePtr             getActiveMelodyTones() { return Melodies[activeMelody].tonePtr; }
+    TonePtr             getNextMelodyTones() { return Melodies[1 - activeMelody].tonePtr; }
+
+    TonePtr             getActiveBeepTone() { return &toneBeep[activeMelody][0]; }
+    TonePtr             getNextBeepTone() { return &toneBeep[1 - activeMelody][0]; }
+
+    void                switchMelody();
 
 private:
 	//
-	PlayTones			playTones[2];		// active & candidate
-	int					activeTones;	// 0 or 1
+	Melody			    Melodies[2];	// active & next
+	int					activeMelody;	// 0 or 1
 
-	Tone				muteTone[1];
-	Tone 				beepTone[2];
-	Tone				beepToneNext[2];
+	Tone				toneMute[1];
+	Tone 				toneBeep[2][2];
 
 	//
     uint8_t             beepType; // sinking, silent, (gliding), climbing

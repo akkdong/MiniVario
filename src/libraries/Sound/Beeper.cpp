@@ -50,12 +50,11 @@ void Beeper::end()
 void Beeper::init()
 {
 	//
-	memset(playTones, 0, sizeof(playTones));
-	memset(muteTone, 0, sizeof(muteTone));
-	memset(beepTone, 0, sizeof(beepTone));
-	memset(beepToneNext, 0, sizeof(beepToneNext));
+	memset(Melodies, 0, sizeof(Melodies));
+	memset(toneMute, 0, sizeof(toneMute));
+	memset(toneBeep, 0, sizeof(toneBeep));
 
-	activeTones = 0;
+	activeMelody = 0;
 
     //
     beepType            = BEEP_TYPE_SILENT;
@@ -99,11 +98,11 @@ void Beeper::setVelocity(float velocity, int volume)
 		int freq, period, duty;
 		
 		findTone(velocity, freq, period, duty);		
-		setBeep(freq, period, duty, 0, volume);
+		setMelody(freq, period, duty, 0, volume);
 	}
 	else
 	{
-		setMute(0);
+		setMuteMelody(0);
 	}    
 }
 
@@ -111,78 +110,99 @@ void Beeper::setMelody(Tone * tonePtr, int toneCount, int repeat, int volume, in
 {
 	cs.Enter();
 	{
-		PlayTones * next = &playTones[1 - activeTones];
+		MelodyPtr melody = getNextMelody();
 
-		next->tonePtr = tonePtr;
-		next->toneCount = toneCount;
-		next->volume = volume;
-		next->repeatCount = repeat;
-		next->activeTone = 0;
-		next->playCount = 0;
+		melody->tonePtr = tonePtr;
+		melody->toneCount = toneCount;
+		melody->volume = volume;
+		melody->repeatCount = repeat;
+		melody->activeTone = 0;
+		melody->playCount = 0;
+        melody->needStacato = 0;
 		
-		if (preemptive)
-			activeTones = 1 - activeTones;
+		if (! getActiveMelodyTones() || preemptive)
+			switchMelody();
 	}
 	cs.Leave();
 }
 
-void Beeper::setBeep(int freq, int period, int duty, int repeat, int volume)
+void Beeper::setMelody(int freq, int period, int duty, int repeat, int volume, int preemptive)
 {
+	//Serial.printf("setMelody: %d, %d, %d, %d, %d\n", freq, period, duty, repeat, volume);
 	cs.Enter();
 	{
-		//
-		if (period == duty || period == 0)
-		{
-			beepToneNext[0].freq = freq;
-			beepToneNext[0].length = 100;
+		duty = constrain(duty, 0, 100);
 
-			beepToneNext[1].freq = freq;
-			beepToneNext[1].length = 100;
+		//
+        TonePtr tone = getNextBeepTone();
+
+		if (period == 0 || duty == 100)
+		{
+			tone[0].freq = freq;
+			tone[0].length = 100;
+
+			tone[1].freq = freq;
+			tone[1].length = 100;
 		}
 		else
 		{
-			beepToneNext[0].freq = freq;
-			beepToneNext[0].length = duty;
+			tone[0].freq = freq;
+			tone[0].length = period * duty / 100;
 
-			beepToneNext[1].freq = 0;
-			beepToneNext[1].length = period - duty;
+			tone[1].freq = 0;
+			tone[1].length = period * (100 - duty) / 100;
 		}
 
 		//
-		PlayTones * next = &playTones[1 - activeTones];
+		MelodyPtr melody = getNextMelody();
 
-		next->tonePtr = &beepTone[0];
-		next->toneCount = 2;
-		next->volume = volume;
-		next->repeatCount = repeat;
-		next->activeTone = 0;
-		next->playCount = 0;
+		melody->tonePtr = tone;
+		melody->toneCount = 2;
+		melody->volume = volume;
+		melody->repeatCount = repeat;
+		melody->activeTone = 0;
+		melody->playCount = 0;
+        melody->needStacato = 0;
+
+		if (! getActiveMelodyTones() || preemptive)
+			switchMelody();
 	}
 	cs.Leave();
 }
 
-void Beeper::setMute(int preemptive)
+void Beeper::setMuteMelody(int preemptive)
 {
 	cs.Enter();
 	{
-		PlayTones * next = &playTones[1 - activeTones];
+        MelodyPtr melody = getNextMelody();
 
-		next->tonePtr = &muteTone[0];
-		next->toneCount = 1;
-		next->volume = 0;
-		next->repeatCount = 0; // infinite repeat
-		next->activeTone = 0;
-		next->playCount = 0;
+		melody->tonePtr = &toneMute[0];
+		melody->toneCount = 1;
+		melody->volume = 0;
+		melody->repeatCount = 1; // infinite repeat
+		melody->activeTone = 0;
+		melody->playCount = 0;
+        melody->needStacato = 0;
 		
-		if (preemptive)
-			activeTones = 1 - activeTones;
+		if (! getActiveMelodyTones() || preemptive)
+			switchMelody();
 	}
 	cs.Leave();
+}
+
+void Beeper::switchMelody()
+{
+    // reset active melody
+    MelodyPtr activePtr = getActiveMelody();
+    memset(activePtr, 0, sizeof(Melody));
+
+    // swap melody
+    activeMelody = 1 - activeMelody;
 }
 
 void Beeper::TaskProc()
 {
-    const TickType_t xDelay10 = 30 / portTICK_PERIOD_MS;
+    const TickType_t xDelay10 = 10 / portTICK_PERIOD_MS;
 	const TickType_t xDelay100 = 100 / portTICK_PERIOD_MS;
 
     while (! exitTask)
@@ -191,62 +211,60 @@ void Beeper::TaskProc()
 
 		cs.Enter();
 		{
-			PlayTones * tones = &playTones[activeTones];
-			PlayTones * nextTones = &playTones[1 - activeTones];
+            MelodyPtr active = getActiveMelody();
 
-			if (tones->tonePtr)
-			{
-				Tone * tone = &tones->tonePtr[tones->activeTone];
+            if (active->tonePtr)
+            {
+                if (active->needStacato) 
+                {
+                    // stacato delay
+                    playTone(0);
 
-				// 
-				if (tones->tonePtr == &beepTone[0] && tones->activeTone == 0)
-					memcpy(&beepTone[0], &beepToneNext[0], sizeof(beepTone));
-				if (tones->activeTone > 0 && tone->freq < 0)
-				{
-					playTone(0);
-					vTaskDelay(xDelay10); // negative freqency means play with a stacato
-				}
+                    xDelay = xDelay10;
+                    active->needStacato = 0;
+                }
+                else if (active->activeTone < active->toneCount)
+                {
+                    // play active tone ...
+                    TonePtr tone = &active->tonePtr[active->activeTone];
+                    active->activeTone += 1;
+                    active->needStacato = tone->freq < 0 ? 1 : 0; // negative frequency means stacato playing
+                    xDelay = tone->length > 0 ? tone->length / portTICK_PERIOD_MS : xDelay100;
 
-				// check if has playable tone
-				if (tones->activeTone < tones->toneCount)
-				{
-					playTone(abs(tone->freq), tones->volume);
-					tones->activeTone += 1; // next tone
+                    //Serial.printf("Play #%d: %d, %d, %d\n", active->activeTone, tone->freq, tone->length, active->volume);
+                    playTone(abs(tone->freq), active->volume);
+                }
+                else
+                {
+                    // all tones are played : increase play count
+                    active->playCount += 1;
 
-					xDelay = tone->length > 0 ? tone->length / portTICK_PERIOD_MS : xDelay100;
-				}
-				else 
-				{
-					// after play all tones: no more playable tone
-					// mute & increase play count
-					playTone(0);
-					tones->playCount += 1;
+                    if ((active->repeatCount == 0 && getNextMelodyTones() == NULL) || (active->playCount < active->repeatCount))
+                    {
+                        // case 1: infinite tone but beeper has not the next melody
+                        // case 2: hasn't played all yet
+                        //
+                        // play melody again  : go back to first tone
+                        active->activeTone = 0;
+                    }
+                    else
+                    {
+                        // other case: switch melody
+                        switchMelody();
 
-					if ((tones->repeatCount == 0 && nextTones->tonePtr == NULL) || (tones->playCount < tones->repeatCount))
-					{
-						// repeat tones
-						tones->activeTone = 0;
-					}
-					else
-					{
-						// infinite tones has next tones or finish playing all
-						// --> reset current tones
-						tones->tonePtr = NULL;
-						// --> change active tones
-						activeTones = 1 - activeTones;						
-					}
-				}
-			}
-			else if (nextTones->tonePtr)
-			{
-				// change active tones
-				activeTones = 1 - activeTones;	
-			}
-			else
-			{
-				// no play tones : sleep 100ms
+                        if (! getActiveMelodyTones())
+                        {
+                            //Serial.printf("Stop play: mute\n");
+                            playTone(0);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // no active melody : sleep 100ms
 				xDelay = xDelay100;
-			}
+            }
 		}
 		cs.Leave();
 
@@ -285,109 +303,8 @@ void Beeper::findTone(float velocity, int & freq, int & period, int & duty)
 		duty = (context.toneTable[index].duty - context.toneTable[index-1].duty) / (context.toneTable[index].velocity - context.toneTable[index-1].velocity) * (velocity - context.toneTable[index-1].velocity) + context.toneTable[index-1].duty;
 	}
 	
-	//period = (int)(period * 1.0);
-	duty = (int)(period * duty / 100.0);
-	
-	//if (period == duty)
-	//	period = duty = 0; // infinite beepping
-	
-	//Serial.print(freq); Serial.print(", "); Serial.print(period); Serial.print(", "); Serial.println(duty);
+    //Serial.printf("findTone: %d, %d, %d\n", freq, period, duty);
 }
-
-#if 0
-int Beeper::playCheck()
-{
-	if (tonePlay.playType == PLAY_NONE)
-	{
-		//if (toneNext.playType != PLAY_NONE)
-		//	return 1;
-		//
-		//return 0;
-		
-		return 1;
-	}
-	
-	if (tonePlay.tonePtr[toneIndex].length > 0)
-	{
-		unsigned long now = millis();
-
-		if (toneStartTick + tonePlay.tonePtr[toneIndex].length <= now)
-		{
-			toneIndex += 1;
-			
-			if (toneIndex < tonePlay.toneCount)
-			{
-				toneStartTick = now;
-				playTone(tonePlay.tonePtr[toneIndex].freq);
-			}
-			else
-			{
-				// now all tone is played
-				// move next or repeat again ?
-				playCount += 1;
-				
-				if (tonePlay.repeatCount == 0 || playCount < tonePlay.repeatCount)
-				{
-					// interrupt continuous tone if next tone exist
-					if (tonePlay.repeatCount == 0 && toneNext.playType != PLAY_NONE)
-						return 1; // play next
-					
-					// else replay from first tone
-					toneIndex = 0;
-					toneStartTick = now;
-					playTone(tonePlay.tonePtr[toneIndex].freq);
-				}
-				else // repeatCount > 0 && playerCount == repeatCount
-				{
-					tonePlay.playType = PLAY_NONE; // stop play
-					playTone(0); // mute
-					
-					return 1; // play next
-				}
-			}
-		}
-		else
-		{
-			// insert mute gap between tones.
-			if (toneStartTick + tonePlay.tonePtr[toneIndex].length - GAP_BETWEEN_TONE <= now)
-				playTone(0); // mute
-		}
-	}
-	else
-	{
-		// 
-		if (toneNext.playType != PLAY_NONE)
-			return 1;
-	}
-
-	return 0;
-}
-
-void Beeper::playNext()
-{
-	if (toneNext.playType == PLAY_NONE)
-		return;
-	
-	// copy next context to current 
-	tonePlay = toneNext;
-	// copy beepToneNext to beepTone if next play type is beep
-	if (tonePlay.playType == PLAY_BEEP)
-	{
-		beepTone[0] = beepToneNext[0];
-		beepTone[1] = beepToneNext[1];
-	}
-
-	// reset next play
-	toneNext.playType = PLAY_NONE;
-	
-	//
-	toneIndex = 0;
-	toneStartTick = millis();
-	playCount = 0;
-	
-	playTone(tonePlay.tonePtr[toneIndex].freq);
-}
-#endif
 
 void Beeper::playTone(int freq, int volume)
 {

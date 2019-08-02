@@ -26,6 +26,8 @@ struct PinSetting
 	uint8_t	mode;
 	uint8_t	active;
 	uint8_t	init;		// initial state of output pin
+
+	volatile int pinState;
 };
 
 

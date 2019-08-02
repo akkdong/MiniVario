@@ -377,7 +377,7 @@ void setup()
 		startVario();
 
 	//
-	beeper.setBeep(NOTE_C4, 600, 400, 2, context.volume.effect);
+	beeper.setMelody(NOTE_C4, 600, 60, 2, context.volume.effect);
 	deviceTick = millis();
 }
 
@@ -572,7 +572,7 @@ void readyFlight()
 
 	// play ready melody~~~
 	//beeper.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, context.volume.effect/*, PLAY_PREEMPTIVE*/);
-	beeper.setBeep(NOTE_C4, 400, 200, 3, context.volume.effect);
+	beeper.setMelody(NOTE_C4, 400, 50, 3, context.volume.effect);
 	
 	// now ready to fly~~~
 	deviceMode = DEVICE_MODE_VARIO_AND_GPS;
@@ -584,18 +584,18 @@ void startFlight()
 {
 	//
 	if (context.volume.autoTurnOn)
-		context.volume.effect = context.volume.vario = 1;
+		context.volume.effect = context.volume.vario = 100;
 	
 	// play take-off melody
 	//beeper.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, context.volume.effect/*, PLAY_PREEMPTIVE*/);
-	beeper.setBeep(NOTE_C4, 1000, 800, 1, context.volume.effect);
+	beeper.setMelody(NOTE_C4, 1000, 80, 1, context.volume.effect);
 
 	//
 	if (context.deviceDefault.enableNmeaLogging)
 		btMan.startLogging(nmeaParser.getDateTime());
 	
 	// start logging & change mode
-	if (logger.begin(nmeaParser.getDateTime()))
+	if (context.logger.enable && logger.begin(nmeaParser.getDateTime()))
 		context.deviceState.statusSDCard = 2;
 
 	//
@@ -748,7 +748,7 @@ void stopFlight()
 	
 	// play landing melody
 	//beeper.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, context.volume.effect/*, PLAY_PREEMPTIVE*/);
-	beeper.setBeep(NOTE_C3, 1000, 800, 1, context.volume.effect);
+	beeper.setMelody(NOTE_C3, 1000, 80, 1, context.volume.effect);
 
 	//
 	btMan.stopLogging();
@@ -839,7 +839,7 @@ void goDeepSleep()
 	// close logging-file
 	logger.end(nmeaParser.getDateTime());
 	//
-	//beeper.setBeep(NOTE_B2, 400, 200, 3, context.volume.effect);
+	//beeper.setMelody(NOTE_B2, 400, 50, 3, context.volume.effect);
 
 	//
 	TaskWatchdog::remove(NULL);
@@ -890,11 +890,11 @@ void processKey(int key)
 	{
 		uint32_t ret = dispObject->processKey(key);
 		uint32_t cmd = GET_COMMAND(ret);
-		//Serial.print("cmd = "); Serial.println(cmd);
+		//Serial.printf("[D] Cmd = %X\n", cmd);
 		
 		switch (cmd)
 		{
-		// from main scren
+		// from main screen
 		case CMD_SHOW_NEXT_PAGE :
 			//display.attachScreen(scrnMan.getNextScreen());
 			scrnMan.showNextActiveScreen(display);
@@ -1067,17 +1067,17 @@ void startWebService()
 
 void toggleVarioSound()
 {
-	context.volume.effect = context.volume.vario = context.volume.vario ? 0 : 1;
+	context.volume.effect = context.volume.vario = context.volume.vario ? 0 : 100;
 
 	if (! context.volume.vario)
 	{
 		// silent if not
-		beeper.setVelocity(0, context.volume.vario);
+		beeper.setMuteMelody();
 	}
 	else
 	{
 		// beep beep
-		beeper.setBeep(NOTE_C4, 600, 400, 2, context.volume.effect);
+		beeper.setMelody(NOTE_C4, 600, 60, 2, context.volume.effect);
 	}
 }
 

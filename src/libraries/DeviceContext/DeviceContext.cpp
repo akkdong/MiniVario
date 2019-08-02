@@ -57,13 +57,13 @@ const VarioTone DeviceContext::defaultTone[MAX_VARIO_TONE] =
 	{   -2.00,   369, 200,  100 },
 	{   -1.00,   440, 200,  100 },
 	{   -0.50,   470, 600,  100 },
-	{    0.00,  1000, 600,   30 },
-	{    1.00,  1100, 400,   50 },
-	{    2.00,  1200, 300,   60 },
-	{    4.00,  1400, 275,   60 },
-	{    6.00,  1600, 250,   60 },
-	{    8.00,  1800, 225,   60 },
-	{   10.00,  2000, 200,   60 },
+	{    0.00,   988, 600,   70 },	// B5
+	{    1.00,  1175, 400,   60 },	// D6
+	{    2.00,  1319, 300,   50 },	// E6
+	{    4.00,  1397, 275,   50 },	// F6
+	{    6.00,  1568, 250,   40 },	// G6
+	{    8.00,  1760, 225,   40 },	// A6
+	{   10.00,  1976, 200,   40 },	// B6
 };
 #endif
 
@@ -232,9 +232,9 @@ void DeviceContext::set(JsonDocument & doc)
 	if (! doc["igc_timezone"].isNull())
 		logger.timezone = doc["igc_timezone"]; // 9
 	if (! doc["volume_enable_vario"].isNull())
-		volume.vario = doc["volume_enable_vario"]; // false
+		volume.vario = doc["volume_enable_vario"] ? 100 : 0; // false
 	if (! doc["volume_enable_effect"].isNull())
-		volume.effect = doc["volume_enable_effect"]; // false
+		volume.effect = doc["volume_enable_effect"] ? 100 : 0; // false
 	if (! doc["volume_auto_turnon"].isNull())
 		volume.autoTurnOn = doc["volume_auto_turnon"]; // true
 	if (! doc["threshold_low_battery"].isNull())

@@ -7,6 +7,17 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 //
 
+void IRAM_ATTR ISR_InputPin(void * arg)
+{
+	PinSetting * pin = (PinSetting *)arg;
+
+	pin->pinState = digitalRead(pin->no);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//
+
 void initPins(PinSetting * pins, int count)
 {
 	for (int i = 0; i < count; i++)
@@ -19,13 +30,16 @@ void initPins(PinSetting * pins, int count)
 		else
 		{
 			pinMode(pins[i].no, INPUT);
+			pins[i].pinState  = digitalRead(pins[i].no);
+
+			attachInterruptArg(pins[i].no, ISR_InputPin, &pins[i], CHANGE);
 		}
 	}
 }
 
 int getPinState(PinSetting * pin)
 {
-	int value = digitalRead(pin->no);
+	int value = pin->pinState; // digitalRead(pin->no);
 	
 	if (pin->active == PIN_ACTIVE_LOW)
 		return value == LOW ? PIN_STATE_ACTIVE : PIN_STATE_INACTIVE;
