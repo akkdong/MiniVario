@@ -377,7 +377,7 @@ void setup()
 		startVario();
 
 	//
-	beeper.setMelody(NOTE_C4, 600, 60, 2, context.volume.effect);
+	beeper.setMelody(NOTE_C4, 600, 60, 2, context.volume.effect, PLAY_PREEMPTIVE);
 	deviceTick = millis();
 }
 
@@ -572,7 +572,7 @@ void readyFlight()
 
 	// play ready melody~~~
 	//beeper.setMelody(&melodyVarioReady[0], sizeof(melodyVarioReady) / sizeof(melodyVarioReady[0]), 1, context.volume.effect/*, PLAY_PREEMPTIVE*/);
-	beeper.setMelody(NOTE_C4, 400, 50, 3, context.volume.effect);
+	beeper.setMelody(NOTE_C4, 400, 50, 3, context.volume.effect, PLAY_PREEMPTIVE);
 	
 	// now ready to fly~~~
 	deviceMode = DEVICE_MODE_VARIO_AND_GPS;
@@ -588,7 +588,7 @@ void startFlight()
 	
 	// play take-off melody
 	//beeper.setMelody(&melodyTakeOff[0], sizeof(melodyTakeOff) / sizeof(melodyTakeOff[0]), 1, context.volume.effect/*, PLAY_PREEMPTIVE*/);
-	beeper.setMelody(NOTE_C4, 1000, 80, 1, context.volume.effect);
+	beeper.setMelody(NOTE_C4, 1000, 80, 1, context.volume.effect, PLAY_PREEMPTIVE);
 
 	//
 	if (context.deviceDefault.enableNmeaLogging)
@@ -748,7 +748,7 @@ void stopFlight()
 	
 	// play landing melody
 	//beeper.setMelody(&melodyLanding[0], sizeof(melodyLanding) / sizeof(melodyLanding[0]), 1, context.volume.effect/*, PLAY_PREEMPTIVE*/);
-	beeper.setMelody(NOTE_C3, 1000, 80, 1, context.volume.effect);
+	beeper.setMelody(NOTE_C3, 1000, 80, 1, context.volume.effect, PLAY_PREEMPTIVE);
 
 	//
 	btMan.stopLogging();
@@ -839,7 +839,7 @@ void goDeepSleep()
 	// close logging-file
 	logger.end(nmeaParser.getDateTime());
 	//
-	//beeper.setMelody(NOTE_B2, 400, 50, 3, context.volume.effect);
+	//beeper.setMelody(NOTE_B2, 400, 50, 3, context.volume.effect, PLAY_PREEMPTIVE);
 
 	//
 	TaskWatchdog::remove(NULL);
@@ -1077,7 +1077,7 @@ void toggleVarioSound()
 	else
 	{
 		// beep beep
-		beeper.setMelody(NOTE_C4, 600, 60, 2, context.volume.effect);
+		beeper.setMelody(NOTE_C4, 600, 60, 2, context.volume.effect, PLAY_PREEMPTIVE);
 	}
 }
 
