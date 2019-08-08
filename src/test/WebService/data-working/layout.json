@@ -87,7 +87,7 @@
                 "type": "string",
                 "name": "Model",
                 "key": "glider_model",
-                "maxlength ": 16
+                "maxlength": 16
             }
         ]
     },
@@ -196,8 +196,14 @@
             {
                 "type": "boolean",
                 "name": "Vario Sound",
-                "desc": "Turn on at Device Start",
-                "key": "device_enable_sound"
+                "desc": "Enable Vario Sound",
+                "key": "volume_enable_vario"
+            },
+            {
+                "type": "boolean",
+                "name": "Effect Sound",
+                "desc": "Enable Effect Sound",
+                "key": "volume_enable_effect"
             },
             {
                 "type": "boolean",
@@ -240,19 +246,19 @@
                 "type": "string",
                 "name": "BT Name",
                 "key": "device_bt_name",
-                "max": 16
+                "maxlength": 16
             },
             {
                 "type": "string",
                 "name": "WiFi SSID",
                 "key": "wifi_ssid",
-                "max": 16
+                "maxlength": 16
             },
             {
                 "type": "string",
                 "name": "WiFi Password",
                 "key": "wifi_password",
-                "max": 16
+                "maxlength": 16
             }
         ]
     }

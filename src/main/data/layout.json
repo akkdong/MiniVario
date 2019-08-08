@@ -87,7 +87,7 @@
                 "type": "string",
                 "name": "Model",
                 "key": "glider_model",
-                "maxlength ": 16
+                "maxlength": 16
             }
         ]
     },
@@ -246,19 +246,19 @@
                 "type": "string",
                 "name": "BT Name",
                 "key": "device_bt_name",
-                "max": 16
+                "maxlength": 16
             },
             {
                 "type": "string",
                 "name": "WiFi SSID",
                 "key": "wifi_ssid",
-                "max": 16
+                "maxlength": 16
             },
             {
                 "type": "string",
                 "name": "WiFi Password",
                 "key": "wifi_password",
-                "max": 16
+                "maxlength": 16
             }
         ]
     }

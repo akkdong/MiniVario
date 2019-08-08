@@ -59,24 +59,45 @@ function editItem (item) {
     $('#id-popup-title').text(_context.name);
 
     if (_context.type === 'number') {
-        var _input = $('<input>').attr('id', 'id-popup-input').attr('type', 'number').addClass('popup-input');
-        var _hr = $('<hr>').addClass('popup-input-line');
+        var _input = $('<input>', {
+            id: 'id-popup-input',
+            class: 'popup-input',
+            type: 'number',
+            min: _context.min,
+            max: _context.max,
+            step: _context.step
+        }).change(function () {
+            var _v = $(this).val();
+            if (_v < _context.min)
+                $(this).val(_context.min);
+            if (_v > _context.max)
+                $(this).val(_context.max);
+        });
 
-        _input.val(_value);
-        
         _body.empty();
-        _body.append(_input);
-        _body.append(_hr);
+        _body.append(_input.val(_value));
+        _body.append($('<hr>', { class: 'popup-input-line' }));
     } else if (_context.type === 'string') {
-        var _input = $('<input>').attr('id', 'id-popup-input').attr('type', 'string').addClass('popup-input');
-        var _hr = $('<hr>').addClass('popup-input-line');
-        
-        _input.val(_value);
-        _input.attr('maxlength', _context.maxlength);
+        var _input = $('<input>', {
+            id: 'id-popup-input',
+            class: 'popup-input',
+            type: 'text',
+            maxlength: _context.maxlength
+        }).change(function () {
+
+        }).keypress(function (e) {
+            var regex = new RegExp("^[0-9a-zA-Z_-]+$");
+            var str = String.fromCharCode(!e.charCode ? e.which : e.charCode);
+            if (regex.test(str)) {
+                return true;
+            }
+            e.preventDefault();
+            return false;            
+        });
         
         _body.empty();
-        _body.append(_input);
-        _body.append(_hr);
+        _body.append(_input.val(_value));
+        _body.append($('<hr>', { class: 'popup-input-line' }));
     } else if (_context.type === 'select') {
         var _group = $('<div>').attr('id', 'id-select-group');
     
@@ -265,8 +286,6 @@ function makePrefGroup (title, items) {
 function makePreference () {
     if (pref_layout != "" && pref_config != "") {
        console.log("makePreference: ", pref_layout);       
-       // empty
-       $("#vario_pref").empty();
        // append each groups
        $.each(pref_layout, function(key, value) {
             $("#vario_pref").append(makePrefGroup (value.title, value.items));
@@ -274,13 +293,18 @@ function makePreference () {
     }
 }
 
-
 function fetch_PrefData() {
     $.getJSON("config.json", function (data) {
         pref_config = data; // JSON.parse(data);
 		console.log("config.json: ", data);
 		
         makePreference();
+        addImageButtons();
+        setEventHandlers();
+        showLoadingAnimation(false);
+    }).fail(function () {
+        alert("File Not Found: config.json");
+        showLoadingAnimation(false);
     });	    
 }
 
@@ -290,16 +314,34 @@ function fetch_PrefLayout() {
         console.log("laytout.json: ", data);
 		
 		fetch_PrefData();
+    }).fail(function () {
+        alert("File Not Found: layout.json");
+        showLoadingAnimation(false);
     });	
 }
 
-function initPref() {
+function showLoadingAnimation(show) {
+    if (show) {
+        $('#loading-bar').show();
+    } else {
+        $('#loading-bar').hide();
+    }
+}
+
+function addImageButtons() {
     //
-    pref_layout = "";
-	pref_config = "";
+    $('#id-download').append($('<img>', {
+        class: "pref-image-button",
+        src: image_download
+    }));
 
-	fetch_PrefLayout();
+    $('#id-reload').append($('<img>', {
+        class: "pref-image-button",
+        src: image_upload
+    }));
+}
 
+function setEventHandlers() {
     //
     $("#id-download").click(function () {
 		if (confirm("Save Preferences?") == true) {
@@ -309,19 +351,12 @@ function initPref() {
 
     $("#id-reload").click(function () {
 		if (confirm("Reload Preferences?") == true) {
-			$("#id-download").off("click");
-			$("#id-reload").off("click");
-			$(document).off("keydown");
-			
 			initPref();
 		}
     });
 
-    $("#id-download img").attr("src", image_download );
-    $("#id-reload img").attr("src", image_upload );
-
     //
-    $(document).on( "keydown", function (evt) {
+    $(document).on("keydown", function(evt) {
         if (evt.keyCode == 13) {
             if ($('#id-popup-editor').css('display') === 'block') {
                 onClickAccept();
@@ -331,7 +366,26 @@ function initPref() {
                 onClickCancel();
             }
         }
-    });    
+    });
+}
+
+function initPref() {
+    // clean-up & show loading animation
+    $("#id-download").off("click");
+    $("#id-reload").off("click");
+    $(document).off("keydown");
+
+    $('#id-download').empty();
+    $('#id-reload').empty();
+    $("#vario_pref").empty();
+
+    showLoadingAnimation(true);
+
+    // reset & fetch preference data
+    pref_layout = "";
+	pref_config = "";
+
+	fetch_PrefLayout();
 }
 
 function savePref () {

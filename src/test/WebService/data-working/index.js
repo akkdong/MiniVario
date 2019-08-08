@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
+const sleep = require('system-sleep');
 
 const app = express()
 const port = 8080
@@ -27,6 +28,7 @@ app.get('/TrackLogs/list', (req, res) => {
 	var list = [];
 
 	console.log('TrackLogs List...');
+	sleep(2000);
 	fs.readdir(dir, function (err, files) {
 		if (err) {
 			console.log('Unable to scan directory: ' + err);
@@ -76,6 +78,7 @@ app.delete('/TrackLogs/:file', (req, res) => {
 /* serves all the static files */
 app.get(/^(.+)$/, function(req, res){ 
 	console.log('File Request : ' + JSON.stringify(req.params));
+	sleep(1000);
 	res.sendFile( __dirname + req.params[0]); 
 });
 

@@ -30,7 +30,6 @@
 	}
 
 	function onLoad_JQuery() {
-		//loadScript("https://kit.fontawesome.com/be430f8e49.js", onLoad_FontAwesome);
 		loadScript("preferences.js", onLoad_Preferences);
 	}
 
@@ -42,13 +41,25 @@
 	<div class="page_title">
 		<span>Device Settings</span>
 		<span id="title-buttons">
-			<span id="id-download"><img class="pref-image-button" src=""></span>
-			<span id="id-reload"><img class="pref-image-button" src=""></span>
+			<span id="id-download"></span>
+			<span id="id-reload"></span>
 		</span>
 	</div>
 
 	<!-- Preference Contents -->
 	<div id="vario_pref"></div>
+
+	<!-- Loading Animation -->
+	<div id="loading-bar" class="loading bar">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+   </div>	
 
 	<!-- Popups -->
 	<div id="id-popup-editor" class="popup-modal" context="{{pref_context}}">

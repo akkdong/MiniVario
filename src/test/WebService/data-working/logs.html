@@ -165,8 +165,21 @@
 						}
 					});
 				}
-			});		
+			});	
+			
+			showLoadingAnimation(false);
+		}).fail(function () {
+			showLoadingAnimation(false);
+			alert('TrackLog fetch Failed!');
 		});	
+	}
+
+	function showLoadingAnimation(show) {
+		if (show) {
+			$('#loading-bar').show();
+		} else {
+			$('#loading-bar').hide();
+		}
 	}
 
 	loadScript("jquery-3.4.1.min.js", onLoad_JQuery)
@@ -188,5 +201,18 @@
 		</div>
 		-->
 	</div>
+
+	<!-- Loading Animation -->
+	<div id="loading-bar" class="loading bar">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+   </div>	
+	
 </body>
 </html>
