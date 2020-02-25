@@ -9,6 +9,9 @@ ESP32+BARO+GPS+E-INK
   <p>
     <img src="doc/screenshot/actual-photo.png" width="720">
   </p>
+  <p>
+    <img src="https://github.com/akkdong/MiniVario/blob/master/gerber/mini-vario-pcb.png" width="720">
+  </p>
 </center>
  
   
