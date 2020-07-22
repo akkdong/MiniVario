@@ -905,7 +905,7 @@ void processKey(int key)
 			break;
 		case CMD_SHOW_TOP_MENU :
 			// enter menu
-			if (context.flightState.flightMode == FMODE_READY)
+			//if (context.flightState.flightMode == FMODE_READY)
 				display.showPopup(&popupTopMenu);
 			break;
 
