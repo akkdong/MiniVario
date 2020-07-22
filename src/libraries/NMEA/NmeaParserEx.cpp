@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 
+#define NMEA_TALKER_SIZE	(2)
 #define NMEA_TAG_SIZE 		(5)
 
 #define CLEAR_STATE()		mParseState = 0
@@ -111,7 +112,12 @@ void NmeaParserEx::update(/*float baroAlt*/)
 			if (mParseStep <= NMEA_TAG_SIZE + 1)
 				mParity ^= c;
 
-			if (mParseStep < NMEA_TAG_SIZE) // 0 ~ 4, sentence identifier
+			if (mParseStep < NMEA_TALKER_SIZE) // 0 ~ 1, Talker ID
+			{
+				// continue: skip all Talker ID
+				mParseStep += 1;
+			}
+			else if (mParseStep < NMEA_TAG_SIZE) // 2 ~ 4, Sentence identifier
 			{
 				//if (c != pgm_read_byte_near(tagRMC + mParseStep))
 				if (c != tagRMC[mParseStep])
