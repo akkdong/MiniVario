@@ -86,6 +86,8 @@ private:
 	//uint32_t			mTime;
 	
 	struct tm 			mTmStruct;
+	struct tm 			mTmRMC;
+	struct tm 			mTmGGA;
 	time_t				mDateTime;
 	
 	float				mLatitude;

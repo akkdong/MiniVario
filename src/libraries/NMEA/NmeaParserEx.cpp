@@ -44,6 +44,18 @@ float nmeaToDecimal(float nmea)
 	return (float)dd + ss / 60.0;
 }
 
+int compareTime(struct tm* t1, struct tm* t2)
+{
+	int time1 = t1->tm_hour * 3600 + t1->tm_min * 60 + t1->tm_sec;
+	int time2 = t2->tm_hour * 3600 + t2->tm_min * 60 + t2->tm_sec;
+
+	if (time1 == time2)
+		return 0;
+	if (time1 < time2)
+		return -1;
+	return 1;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // class NmeaParserEx
@@ -94,12 +106,11 @@ void NmeaParserEx::update(/*float baroAlt*/)
 		if (c == '$')
 		{
 			mParseStep 	= 0;
-			mParseState	= 0;
+			//mParseState	= 0;
 			mParity		= '*';	// '*' removed by twice xor
 
-			UNSET_STATE(PARSE_RMC|PARSE_GGA|RMC_VALID|GGA_VALID);
-			SET_STATE(SEARCH_RMC_TAG);
-			SET_STATE(SEARCH_GGA_TAG);
+			SET_STATE(SEARCH_RMC_TAG|SEARCH_GGA_TAG);
+			UNSET_STATE(PARSE_RMC|PARSE_GGA/*|RMC_VALID|GGA_VALID*/);
 
 			//Serial.println("start sentence");
 		}
@@ -272,6 +283,44 @@ void NmeaParserEx::update(/*float baroAlt*/)
 					//
 					if (IS_SET(PARSE_GGA))
 					{
+						// compare gga & last time --> reset valid flag, if it is not same time
+						if (IS_SET(GGA_VALID) && compareTime(&mTmStruct, &mTmGGA) != 0)
+							UNSET_STATE(GGA_VALID);
+
+						// save gga to last time
+						mTmStruct.tm_hour = mTmGGA.tm_hour;
+						mTmStruct.tm_min = mTmGGA.tm_min;
+						mTmStruct.tm_sec = mTmGGA.tm_sec;
+					}
+					if (IS_SET(PARSE_RMC))
+					{
+						// compare rmc & last time --> reset valid flag, if it is not same time
+						if (IS_SET(RMC_VALID) && compareTime(&mTmStruct, &mTmRMC) != 0)
+							UNSET_STATE(GGA_VALID);
+
+						// save rmc to last time
+						mTmStruct.tm_hour = mTmRMC.tm_hour;
+						mTmStruct.tm_min = mTmRMC.tm_min;
+						mTmStruct.tm_sec = mTmRMC.tm_sec;
+					}
+
+					//
+					#if 1
+					if (IS_SET(GGA_VALID) && IS_SET(RMC_VALID))
+					{
+						if (! IS_SET(IGC_SENTENCE_LOCKED))
+						{
+							// IGC sentence is available
+							mIGCSize = MAX_IGC_SENTENCE;
+							mIGCNext = 0;
+						}
+
+						mFixed = true;
+						mDataReady = true;
+					}
+					#else
+					if (IS_SET(PARSE_GGA))
+					{
 						if (IS_SET(GGA_VALID) && ! IS_SET(IGC_SENTENCE_LOCKED))
 						{
 							// IGC sentence is available
@@ -282,6 +331,7 @@ void NmeaParserEx::update(/*float baroAlt*/)
 						mFixed = IS_SET(GGA_VALID) ? true : false;
 						mDataReady = true;
 					}
+					#endif
 					
 					// unset parse state
 					UNSET_STATE(PARSE_GGA|PARSE_RMC);
@@ -415,16 +465,19 @@ void dateStr2TmStruct(struct tm * _tm, const char * str)
 
 void NmeaParserEx::parseField(int fieldIndex, int startPos)
 {
-	if (IS_SET(SEARCH_RMC_TAG))
+	if (IS_SET(PARSE_RMC)) // if (IS_SET(SEARCH_RMC_TAG))
 	{
 		switch(fieldIndex)
 		{
 		case 0 : // Time (HHMMSS.sss UTC)
-			timeStr2TmStruct(&mTmStruct, &mBuffer[startPos]);
+			// save RMC time
+			timeStr2TmStruct(&mTmRMC, &mBuffer[startPos]);
 			break;
 		case 1 : // Navigation receiver warning A = OK, V = warning
 			if (mBuffer[startPos] == 'A')
 				SET_STATE(RMC_VALID);
+			else
+				UNSET_STATE(RMC_VALID);
 			break;
 		case 2 : // Latitude (DDMM.mmm)
 			break;
@@ -451,11 +504,13 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			break;
 		}
 	}
-	else if (IS_SET(SEARCH_GGA_TAG))
+	else if (IS_SET(PARSE_GGA)) // if (IS_SET(SEARCH_GGA_TAG))
 	{
 		switch(fieldIndex)
 		{
 		case 0 : // Time (HHMMSS.sss UTC)
+			// save GGA_time
+			timeStr2TmStruct(&mTmGGA, &mBuffer[startPos]);
 			// update IGC sentence if it's unlocked
 			if (! IS_SET(IGC_SENTENCE_LOCKED))
 			{
@@ -556,8 +611,10 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			}
 			break;
 		case 5 : // GPS Fix Quality (0 = Invalid, 1 = GPS fix, 2 = DGPS fix)
-			if (mBuffer[startPos] == '1' || mBuffer[startPos] == '2')
+			if (mBuffer[startPos] != '0') // or if (mBuffer[startPos] == '1' || mBuffer[startPos] == '2')
 				SET_STATE(GGA_VALID);
+			else
+				UNSET_STATE(GGA_VALID);
 			break;
 		case 6 : // Number of Satellites
 			break;
