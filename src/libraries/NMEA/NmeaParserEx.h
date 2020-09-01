@@ -28,8 +28,10 @@ public:
 	int					availableIGC();
 	int					readIGC();
 
-	bool				dataReady() { return mDataReady; }
-	void				resetReady() { mDataReady = false; }
+	bool				isDataReady() { return mDataReady; }
+	void				resetDataReady() { mDataReady = false; }
+
+	bool				isFixed()	{ return mFixed; }
 
 	void				reset();
 	
@@ -44,8 +46,6 @@ public:
 	float				getAltitude();
 	int16_t				getSpeed();
 	int16_t				getHeading();
-
-	bool				isFixed()	{ return mFixed; }
 
 	void				enableSimulation(bool enable);
 	
@@ -86,10 +86,10 @@ private:
 	//uint32_t			mTime;
 	
 	struct tm 			mTmStruct;
-	struct tm 			mTmRMC;
-	struct tm 			mTmGGA;
-	time_t				mDateTime;
-	
+	time_t				mTimeCurr; // time of latest parsing sentence
+	time_t				mTimeLast; // time of last parsing sentence
+	time_t				mDateTime; // current date & time
+
 	float				mLatitude;
 	float				mLongitude;
 	float				mAltitude;

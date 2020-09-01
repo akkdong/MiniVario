@@ -9,15 +9,24 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 
+#define DEBUG_PARSING		1
+
 #define NMEA_TALKER_SIZE	(2)
 #define NMEA_TAG_SIZE 		(5)
 
+#if 0
 #define CLEAR_STATE()		mParseState = 0
 #define SET_STATE(bit)		mParseState |= (bit)
 #define UNSET_STATE(bit)	mParseState &= ~(bit)
 
 #define IS_SET(bit)			(mParseState & (bit))
+#else
+#define CLEAR_STATE(x)		x = 0
+#define SET_STATE(x,bit)	x |= (bit)
+#define UNSET_STATE(x,bit)	x &= ~(bit)
 
+#define IS_SET(x,bit)		(x & (bit))
+#endif
 
 #define SEARCH_RMC_TAG		(1 << 0)
 #define SEARCH_GGA_TAG		(1 << 1)
@@ -95,7 +104,10 @@ void NmeaParserEx::update(/*float baroAlt*/)
 		
 		if (mParseStep < 0 && c != '$')
 		{
-			//Serial.print('<'); Serial.print((char)c); Serial.println('>'); 
+			#if DEBUG_PARSING
+			Serial.print('<'); Serial.print((char)c); Serial.println('>'); 
+			#endif
+
 			continue; // skip bad characters(find first sentence character)
 		}
 		
@@ -109,10 +121,13 @@ void NmeaParserEx::update(/*float baroAlt*/)
 			//mParseState	= 0;
 			mParity		= '*';	// '*' removed by twice xor
 
-			SET_STATE(SEARCH_RMC_TAG|SEARCH_GGA_TAG);
-			UNSET_STATE(PARSE_RMC|PARSE_GGA/*|RMC_VALID|GGA_VALID*/);
+			SET_STATE(mParseState, SEARCH_RMC_TAG|SEARCH_GGA_TAG);
+			UNSET_STATE(mParseState, PARSE_RMC|PARSE_GGA/*|RMC_VALID|GGA_VALID*/);
 
-			//Serial.println("start sentence");
+			#if DEBUG_PARSING
+			Serial.println("start sentence");
+			Serial.printf("ParseState: %04X\n", mParseState);
+			#endif
 		}
 		else
 		{
@@ -132,21 +147,22 @@ void NmeaParserEx::update(/*float baroAlt*/)
 			{
 				//if (c != pgm_read_byte_near(tagRMC + mParseStep))
 				if (c != tagRMC[mParseStep])
-					UNSET_STATE(SEARCH_RMC_TAG);
+					UNSET_STATE(mParseState, SEARCH_RMC_TAG);
 				//if (c != pgm_read_byte_near(tagGGA + mParseStep))
 				if (c != tagGGA[mParseStep])
-					UNSET_STATE(SEARCH_GGA_TAG);
+					UNSET_STATE(mParseState, SEARCH_GGA_TAG);
 
-				if (! IS_SET(SEARCH_RMC_TAG) && ! IS_SET(SEARCH_GGA_TAG))
+				if (! IS_SET(mParseState, SEARCH_RMC_TAG) && ! IS_SET(mParseState, SEARCH_GGA_TAG))
 				{
-					//
-					//Serial.println("[unsupport sentence");
-					//for(int i = mHead; i != mWrite; )
-					//{
-					//	Serial.write(mBuffer[i]);
-					//	i = (i + 1) % MAX_NMEA_PARSER_BUFFER;
-					//}
-					//Serial.println("]");
+					#if DEBUG_PARSING
+					Serial.println("[unsupport sentence");
+					for(int i = mHead; i != mWrite; )
+					{
+						Serial.write(mBuffer[i]);
+						i = (i + 1) % MAX_NMEA_PARSER_BUFFER;
+					}
+					Serial.println("]");
+					#endif
 
 					// It's not valid(known) TAG!!!
 					mParseStep = -1;
@@ -158,21 +174,25 @@ void NmeaParserEx::update(/*float baroAlt*/)
 					mParseStep += 1;
 				}
 				
-				//Serial.print("mParseStep = "); Serial.println((int)mParseStep);
-				//Serial.print("mParseState = "); Serial.println((int)mParseState);
+				#if DEBUG_PARSING
+				Serial.print("mParseStep = "); Serial.println((int)mParseStep);
+				Serial.print("mParseState = "); Serial.println((int)mParseState);
+				#endif
 			}
 			else if (mParseStep == NMEA_TAG_SIZE) // 5, start of data
 			{
-				if (c != ',' || (! IS_SET(SEARCH_RMC_TAG) && ! IS_SET(SEARCH_GGA_TAG)))
+				if (c != ',' || (! IS_SET(mParseState, SEARCH_RMC_TAG) && ! IS_SET(mParseState, SEARCH_GGA_TAG)))
 				{
 					// bad sentence : reset parsing state
-					//Serial.println("[unknown tag");
-					//for(int i = mHead; i != mWrite; )
-					//{
-					//	Serial.write(mBuffer[i]);
-					//	i = (i + 1) % MAX_NMEA_PARSER_BUFFER;
-					//}
-					//Serial.println("]");
+					#if DEBUG_PARSING
+					Serial.println("[unknown tag");
+					for(int i = mHead; i != mWrite; )
+					{
+						Serial.write(mBuffer[i]);
+						i = (i + 1) % MAX_NMEA_PARSER_BUFFER;
+					}
+					Serial.println("]");
+					#endif
 					
 					mParseStep = -1;
 					mWrite = mHead;
@@ -183,19 +203,21 @@ void NmeaParserEx::update(/*float baroAlt*/)
 					mFieldIndex = 0;
 					
 					mParseStep += 1;
-					//Serial.println("start data field");
+					#if DEBUG_PARSING
+					Serial.println("start data field");
+					#endif
 					
 					// new entry : set to invalid 
-					if (IS_SET(SEARCH_RMC_TAG))
+					if (IS_SET(mParseState, SEARCH_RMC_TAG))
 					{
-						SET_STATE(PARSE_RMC);
+						SET_STATE(mParseState, PARSE_RMC);
 					}
-					else //if (IS_SET(SEARCH_GGA_TAG))
+					else //if (IS_SET(mParseState, SEARCH_GGA_TAG))
 					{
-						SET_STATE(PARSE_GGA);
+						SET_STATE(mParseState, PARSE_GGA);
 						
 						// make unavailable the IGC sentence, if It's unlocked
-						if (! IS_SET(IGC_SENTENCE_LOCKED))
+						if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
 						{
 							mIGCSize = 0;
 							mIGCNext = 0;
@@ -268,79 +290,89 @@ void NmeaParserEx::update(/*float baroAlt*/)
 				}
 				else
 				{
-					//Serial.println("[complete a setence");
-					//for(int i = mHead; i != mWrite; )
-					//{
-					//	Serial.write(mBuffer[i]);
-					//	i = (i + 1) % MAX_NMEA_PARSER_BUFFER;
-					//}
-					//Serial.println("]");
+					#if DEBUG_PARSING
+					Serial.println("[complete a setence");
+					for(int i = mHead; i != mWrite; )
+					{
+						Serial.write(mBuffer[i]);
+						i = (i + 1) % MAX_NMEA_PARSER_BUFFER;
+					}
+					Serial.println("]");
+					#endif
 					
 					// complete a sentence
 					mParseStep = -1;
 					mHead = mWrite;
 
 					//
-					if (IS_SET(PARSE_GGA))
+					if (IS_SET(mParseState, PARSE_RMC))
 					{
-						// compare gga & last time --> reset valid flag, if it is not same time
-						if (IS_SET(GGA_VALID) && compareTime(&mTmStruct, &mTmGGA) != 0)
-							UNSET_STATE(GGA_VALID);
-
-						// save gga to last time
-						mTmStruct.tm_hour = mTmGGA.tm_hour;
-						mTmStruct.tm_min = mTmGGA.tm_min;
-						mTmStruct.tm_sec = mTmGGA.tm_sec;
-					}
-					if (IS_SET(PARSE_RMC))
-					{
-						// compare rmc & last time --> reset valid flag, if it is not same time
-						if (IS_SET(RMC_VALID) && compareTime(&mTmStruct, &mTmRMC) != 0)
-							UNSET_STATE(GGA_VALID);
+						// compare current(rmc) with last time --> reset valid flag, if it is not same time
+						if (IS_SET(mParseState, GGA_VALID) && mTimeCurr != mTimeLast)
+							UNSET_STATE(mParseState, GGA_VALID);
 
 						// save rmc to last time
-						mTmStruct.tm_hour = mTmRMC.tm_hour;
-						mTmStruct.tm_min = mTmRMC.tm_min;
-						mTmStruct.tm_sec = mTmRMC.tm_sec;
+						mTimeLast = mTimeCurr;
+					}
+					if (IS_SET(mParseState, PARSE_GGA))
+					{
+						// compare gga & last time --> reset valid flag, if it is not same time
+						if (IS_SET(mParseState, RMC_VALID) && mTimeCurr != mTimeLast)
+							UNSET_STATE(mParseState, RMC_VALID);
+
+						// save gga to last time
+						mTimeLast = mTimeCurr;
 					}
 
 					//
 					#if 1
-					if (IS_SET(GGA_VALID) && IS_SET(RMC_VALID))
+					if (IS_SET(mParseState, GGA_VALID) && IS_SET(mParseState, RMC_VALID))
 					{
-						if (! IS_SET(IGC_SENTENCE_LOCKED))
+						if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
 						{
 							// IGC sentence is available
 							mIGCSize = MAX_IGC_SENTENCE;
 							mIGCNext = 0;
 						}
 
+						mDateTime = mktime(&mTmStruct); // mDateTime is UTC: mktime convert GMTx to UTC
 						mFixed = true;
 						mDataReady = true;
+
+						// unset valid state
+						UNSET_STATE(mParseState, GGA_VALID|RMC_VALID);						
+					}
+					else
+					{
+						// ?????
+						//if (IS_SET(mParseState, GGA_VALID))
+						//	mDataReady = true;
+
+						mFixed = false;
 					}
 					#else
-					if (IS_SET(PARSE_GGA))
+					if (IS_SET(mParseState, PARSE_GGA))
 					{
-						if (IS_SET(GGA_VALID) && ! IS_SET(IGC_SENTENCE_LOCKED))
+						if (IS_SET(mParseState, GGA_VALID) && ! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
 						{
 							// IGC sentence is available
 							mIGCSize = MAX_IGC_SENTENCE;
 							mIGCNext = 0;
 						}
 
-						mFixed = IS_SET(GGA_VALID) ? true : false;
+						mFixed = IS_SET(mParseState, GGA_VALID) ? true : false;
 						mDataReady = true;
 					}
 					#endif
 					
 					// unset parse state
-					UNSET_STATE(PARSE_GGA|PARSE_RMC);
+					UNSET_STATE(mParseState, PARSE_GGA|PARSE_RMC);
 					
 					// the logger(readIGC) does not unlock state while the parser does parsing.
 					// so the parser must unlocked it
-					if (IS_SET(IGC_SENTENCE_LOCKED) && mIGCSize == mIGCNext)
+					if (IS_SET(mParseState, IGC_SENTENCE_LOCKED) && mIGCSize == mIGCNext)
 					{
-						UNSET_STATE(IGC_SENTENCE_LOCKED);
+						UNSET_STATE(mParseState, IGC_SENTENCE_LOCKED);
 						
 						mIGCSize = 0;
 						mIGCNext = 0;
@@ -378,16 +410,16 @@ int NmeaParserEx::readIGC()
 	{
 		// start reading... : lock state
 		if (mIGCNext == 0)
-			SET_STATE(IGC_SENTENCE_LOCKED);
+			SET_STATE(mParseState, IGC_SENTENCE_LOCKED);
 		
 		int ch = mIGCSentence[mIGCNext++];
 
 		// if it reaches end of sentence, state & buffer must be cleared.
 		// however, if it's parsing state, let the parser clear it.
-		if (mIGCNext == MAX_IGC_SENTENCE && ! IS_SET(PARSE_GGA)) // end of sentence
+		if (mIGCNext == MAX_IGC_SENTENCE && ! IS_SET(mParseState, PARSE_GGA)) // end of sentence
 		{
 			// unlock
-			UNSET_STATE(IGC_SENTENCE_LOCKED);
+			UNSET_STATE(mParseState, IGC_SENTENCE_LOCKED);
 			
 			// empty
 			mIGCSize = 0;
@@ -407,9 +439,9 @@ void NmeaParserEx::reset()
 	
 	//
 	mDataReady = false;	
+	mTimeCurr = (time_t)-1;
+	mTimeLast = (time_t)-1;
 	mDateTime = 0;
-	//mDate = 0;
-	//mTime = 0;
 	mLatitude = 0.0;
 	mLongitude = 0.0;	
 	mSpeed = 0;
@@ -425,13 +457,13 @@ void NmeaParserEx::reset()
 	mIGCNext = 0;
 }
 
-void timeStr2TmStruct(struct tm * _tm, const char * str)
+int timeStr2TmStruct(struct tm * _tm, const char * str)
 {
 	// validation
 	for (int i = 0; i < 6; i++)
 	{
 		if (str[i] < '0' || '9' < str[i])
-			return;
+			return -1;
 	}
 
 	//
@@ -441,15 +473,17 @@ void timeStr2TmStruct(struct tm * _tm, const char * str)
 	_tm->tm_isdst = 0;
 
 	_tm->tm_min = _tm->tm_min + (int)(__DeviceContext.logger.timezone * 60);
+
+	return 0;
 }
 
-void dateStr2TmStruct(struct tm * _tm, const char * str)
+int dateStr2TmStruct(struct tm * _tm, const char * str)
 {
 	// validation
 	for (int i = 0; i < 6; i++)
 	{
 		if (str[i] < '0' || '9' < str[i])
-			return;
+			return -1;
 	}
 	
 	// nmea date(year) -> since 2000
@@ -461,23 +495,28 @@ void dateStr2TmStruct(struct tm * _tm, const char * str)
 	_tm->tm_mday = ((str[0] - '0') * 10) + (str[1] - '0');			// tm_mday : 1 ~ 31
 	_tm->tm_mon  = ((str[2] - '0') * 10) + (str[3] - '0') - 1;		// tm_mon  : 0 ~ 11
 	_tm->tm_year = ((str[4] - '0') * 10) + (str[5] - '0') + 100;	// tm_year : 0 -> 1900, nm_year : 0 -> 2000
+
+	return 0;
 }
 
 void NmeaParserEx::parseField(int fieldIndex, int startPos)
 {
-	if (IS_SET(PARSE_RMC)) // if (IS_SET(SEARCH_RMC_TAG))
+	if (IS_SET(mParseState, PARSE_RMC)) // if (IS_SET(mParseState, SEARCH_RMC_TAG))
 	{
 		switch(fieldIndex)
 		{
 		case 0 : // Time (HHMMSS.sss UTC)
 			// save RMC time
-			timeStr2TmStruct(&mTmRMC, &mBuffer[startPos]);
+			if (timeStr2TmStruct(&mTmStruct, &mBuffer[startPos]) == 0)
+				mTimeCurr = mTmStruct.tm_hour * 3600 + mTmStruct.tm_min * 60 + mTmStruct.tm_sec;
+			else
+				mTimeCurr = (time_t)-1;
 			break;
 		case 1 : // Navigation receiver warning A = OK, V = warning
 			if (mBuffer[startPos] == 'A')
-				SET_STATE(RMC_VALID);
+				SET_STATE(mParseState, RMC_VALID);
 			else
-				UNSET_STATE(RMC_VALID);
+				UNSET_STATE(mParseState, RMC_VALID);
 			break;
 		case 2 : // Latitude (DDMM.mmm)
 			break;
@@ -496,23 +535,29 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 		case 8 : // Date of fix  (DDMMYY)
 			dateStr2TmStruct(&mTmStruct, &mBuffer[startPos]);
 			
-			if (IS_SET(RMC_VALID))
+			#if 0 // move to end of sentence
+			if (IS_SET(mParseState, RMC_VALID))
 				mDateTime = mktime(&mTmStruct); // mDateTime is UTC: mktime convert GMTx to UTC
 			//else
 			//	mDateTime = 0;
 			//mDate = strToNum(startPos);
+			#endif
 			break;
 		}
 	}
-	else if (IS_SET(PARSE_GGA)) // if (IS_SET(SEARCH_GGA_TAG))
+	else if (IS_SET(mParseState, PARSE_GGA)) // if (IS_SET(mParseState, SEARCH_GGA_TAG))
 	{
 		switch(fieldIndex)
 		{
 		case 0 : // Time (HHMMSS.sss UTC)
 			// save GGA_time
-			timeStr2TmStruct(&mTmGGA, &mBuffer[startPos]);
+			if (timeStr2TmStruct(&mTmStruct, &mBuffer[startPos]) == 0)
+				mTimeCurr = mTmStruct.tm_hour * 3600 + mTmStruct.tm_min * 60 + mTmStruct.tm_sec;
+			else
+				mTimeCurr = (time_t)-1;
+
 			// update IGC sentence if it's unlocked
-			if (! IS_SET(IGC_SENTENCE_LOCKED))
+			if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
 			{
 				for(int i = 0; i < IGC_SIZE_TIME; i++)
 				{
@@ -533,7 +578,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 				mLatitude = nmeaToDecimal(nmeaLatitude);
 				
 				// update IGC sentence if it's unlocked
-				if (! IS_SET(IGC_SENTENCE_LOCKED))
+				if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
 				{
 					#if 0
 					for(int i = 0, j = 0; i < IGC_SIZE_LATITUDE; i++, j++)
@@ -561,7 +606,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 				mLatitude = -mLatitude; // south latitude is negative
 			
 			// update IGC sentence if it's unlocked
-			if (! IS_SET(IGC_SENTENCE_LOCKED))
+			if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
 			{
 				//if (mBuffer[startPos] != 'N' && mBuffer[startPos] != 'S')
 				//		break;
@@ -575,7 +620,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 				mLongitude = nmeaToDecimal(nmeaLongitude);
 				
 				// update IGC sentence if it's unlocked
-				if (! IS_SET(IGC_SENTENCE_LOCKED))
+				if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
 				{
 					#if 0
 					for(int i = 0, j = 0; i < IGC_SIZE_LONGITUDE; i++, j++)
@@ -603,7 +648,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 				mLongitude = -mLongitude; // west longitude is negative
 			
 			// update IGC sentence if it's unlocked
-			if (! IS_SET(IGC_SENTENCE_LOCKED))
+			if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
 			{
 				//if (mBuffer[startPos] != 'W' && mBuffer[startPos] != 'E')
 				//		break;
@@ -612,9 +657,9 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			break;
 		case 5 : // GPS Fix Quality (0 = Invalid, 1 = GPS fix, 2 = DGPS fix)
 			if (mBuffer[startPos] != '0') // or if (mBuffer[startPos] == '1' || mBuffer[startPos] == '2')
-				SET_STATE(GGA_VALID);
+				SET_STATE(mParseState, GGA_VALID);
 			else
-				UNSET_STATE(GGA_VALID);
+				UNSET_STATE(mParseState, GGA_VALID);
 			break;
 		case 6 : // Number of Satellites
 			break;
@@ -625,7 +670,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			mAltitude = strToFloat(startPos);
 			
 			// update IGC sentence if it's unlocked
-			if (! IS_SET(IGC_SENTENCE_LOCKED))
+			if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
 			{
 				#if 0
 				int i, j;

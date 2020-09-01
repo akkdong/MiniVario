@@ -457,7 +457,7 @@ void loop()
 	nmeaParser.update();
 
 	// GPS may be 1Hz : execute every second
-	if (nmeaParser.dataReady())
+	if (nmeaParser.isDataReady())
 	{
 		//
 		context.deviceState.statusGPS = nmeaParser.isFixed() ? 1 : 0;
@@ -533,7 +533,7 @@ void loop()
 			}
 		}
 
-		nmeaParser.resetReady();
+		nmeaParser.resetDataReady();
 	}
 
 	// send any prepared sentence to BT
