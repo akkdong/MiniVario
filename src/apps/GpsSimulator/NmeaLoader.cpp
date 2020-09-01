@@ -76,6 +76,20 @@ double NmeaCoordi2Decimal(const char * angle, const char * dir)
 	return sign * (dd + ss / 60.0);
 }
 
+int compareNmeaTag(const char * name, const char * tag, bool ignoreTalker)
+{
+	int len1 = strlen(name);
+	int len2 = strlen(tag);
+
+	if (len1 != len2 || len1 != 5)
+		return -1;
+
+	const char* ptr1 = ignoreTalker ? &name[2] : &name[0];
+	const char* ptr2 = ignoreTalker ? &tag[2] : &tag[0];
+
+	return strcmp(ptr1, ptr2);	
+}
+
 int LoadNmea(LPCTSTR lpszFile, CPositionList & list)
 {
 	FILE * fp;
@@ -85,7 +99,7 @@ int LoadNmea(LPCTSTR lpszFile, CPositionList & list)
 	{
 		CString rmc, gga;
 		time_t last = (time_t)-1;
-
+		double lat = 0, lon = 0, alt = 0, speed = 0, track = 0;
 
 		// reset list
 		list.RemoveAll();
@@ -94,10 +108,11 @@ int LoadNmea(LPCTSTR lpszFile, CPositionList & list)
 		{
 			//
 			char line[256], temp[256];
-			double lat, lon, alt, speed, track;
 
 			memset(line, 0, sizeof(line));
 			fgets(line, sizeof(line), fp);
+			if (line[0] != '$')
+				continue;
 			TrimRight(line);
 			strcat_s(line, sizeof(line), "\r\n");
 
@@ -128,40 +143,59 @@ int LoadNmea(LPCTSTR lpszFile, CPositionList & list)
 
 			if (count >= 10)
 			{
-				if (strcmp(tok[0], "$GPRMC") == 0 && strcmp(tok[2], "A") == 0) // fixed RMC only
+				if (compareNmeaTag(&tok[0][1], "GPRMC", true) == 0 && strcmp(tok[2], "A") == 0) // fixed RMC only
 				{
 					time_t secs = TimeString2Seconds(tok[1]);
 
+					if (!gga.IsEmpty() && last != secs)
+						gga = _T("");
+
+					/*
 					if (gga.IsEmpty() || last == secs)
 					{
 						rmc = line;
-						last = secs;
 						speed = atof(tok[7]) * 1.852;
 						track = atof(tok[8]);
 					}
 					else // mismatch with time of rmc
 					{
 						gga = _T("");
-						rmc = _T("");
+						//rmc = _T("");
 					}
+					*/
+
+					rmc = line;
+					speed = atof(tok[7]) * 1.852;
+					track = atof(tok[8]);
+					last = secs;
 				}
-				else if (strcmp(tok[0], "$GPGGA") == 0 && strcmp(tok[6], "0") != 0)
+				else if (compareNmeaTag(&tok[0][1], "GPGGA", true) == 0 && strcmp(tok[6], "0") != 0)
 				{
 					time_t secs = TimeString2Seconds(tok[1]);
 
+					if (!rmc.IsEmpty() && last != secs)
+						rmc = _T("");
+
+					/*
 					if (rmc.IsEmpty() || last == secs)
 					{
 						gga = line;
-						last = secs;
 						lat = NmeaCoordi2Decimal(tok[2], tok[3]);
 						lon = NmeaCoordi2Decimal(tok[4], tok[5]);
 						alt = atof(tok[9]);
 					}
 					else // mismatch with time of rmc
 					{
-						gga = _T("");
+						//gga = _T("");
 						rmc = _T("");
 					}
+					*/
+
+					gga = line;
+					lat = NmeaCoordi2Decimal(tok[2], tok[3]);
+					lon = NmeaCoordi2Decimal(tok[4], tok[5]);
+					alt = atof(tok[9]);
+					last = secs;
 				}
 
 				if (!gga.IsEmpty() && !rmc.IsEmpty())

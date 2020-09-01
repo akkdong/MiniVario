@@ -563,7 +563,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			break;
 		case 7 : // Horizontal Dilution of Precision
 			break;
-		case 8 : // Altitude(above measn sea level)
+		case 8 : // Altitude(above means sea level)
 			// save GPS altitude
 			mAltitude = strToFloat(startPos);
 			
