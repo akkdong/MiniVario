@@ -26,7 +26,7 @@
 #define RMC_VALID			(1 << 4)
 #define GGA_VALID			(1 << 5)
 
-#define IGC_LOCKED			(1 << 6)
+#define IGC_SENTENCE_LOCKED	(1 << 6)
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -184,7 +184,7 @@ void NmeaParserEx::update(/*float baroAlt*/)
 						SET_STATE(PARSE_GGA);
 						
 						// make unavailable the IGC sentence, if It's unlocked
-						if (! IS_SET(IGC_LOCKED))
+						if (! IS_SET(IGC_SENTENCE_LOCKED))
 						{
 							mIGCSize = 0;
 							mIGCNext = 0;
@@ -272,7 +272,7 @@ void NmeaParserEx::update(/*float baroAlt*/)
 					//
 					if (IS_SET(PARSE_GGA))
 					{
-						if (IS_SET(GGA_VALID) && ! IS_SET(IGC_LOCKED))
+						if (IS_SET(GGA_VALID) && ! IS_SET(IGC_SENTENCE_LOCKED))
 						{
 							// IGC sentence is available
 							mIGCSize = MAX_IGC_SENTENCE;
@@ -288,9 +288,9 @@ void NmeaParserEx::update(/*float baroAlt*/)
 					
 					// the logger(readIGC) does not unlock state while the parser does parsing.
 					// so the parser must unlocked it
-					if (IS_SET(IGC_LOCKED) && mIGCSize == mIGCNext)
+					if (IS_SET(IGC_SENTENCE_LOCKED) && mIGCSize == mIGCNext)
 					{
-						UNSET_STATE(IGC_LOCKED);
+						UNSET_STATE(IGC_SENTENCE_LOCKED);
 						
 						mIGCSize = 0;
 						mIGCNext = 0;
@@ -328,7 +328,7 @@ int NmeaParserEx::readIGC()
 	{
 		// start reading... : lock state
 		if (mIGCNext == 0)
-			SET_STATE(IGC_LOCKED);
+			SET_STATE(IGC_SENTENCE_LOCKED);
 		
 		int ch = mIGCSentence[mIGCNext++];
 
@@ -337,7 +337,7 @@ int NmeaParserEx::readIGC()
 		if (mIGCNext == MAX_IGC_SENTENCE && ! IS_SET(PARSE_GGA)) // end of sentence
 		{
 			// unlock
-			UNSET_STATE(IGC_LOCKED);
+			UNSET_STATE(IGC_SENTENCE_LOCKED);
 			
 			// empty
 			mIGCSize = 0;
@@ -457,7 +457,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 		{
 		case 0 : // Time (HHMMSS.sss UTC)
 			// update IGC sentence if it's unlocked
-			if (! IS_SET(IGC_LOCKED))
+			if (! IS_SET(IGC_SENTENCE_LOCKED))
 			{
 				for(int i = 0; i < IGC_SIZE_TIME; i++)
 				{
@@ -478,7 +478,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 				mLatitude = nmeaToDecimal(nmeaLatitude);
 				
 				// update IGC sentence if it's unlocked
-				if (! IS_SET(IGC_LOCKED))
+				if (! IS_SET(IGC_SENTENCE_LOCKED))
 				{
 					#if 0
 					for(int i = 0, j = 0; i < IGC_SIZE_LATITUDE; i++, j++)
@@ -506,7 +506,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 				mLatitude = -mLatitude; // south latitude is negative
 			
 			// update IGC sentence if it's unlocked
-			if (! IS_SET(IGC_LOCKED))
+			if (! IS_SET(IGC_SENTENCE_LOCKED))
 			{
 				//if (mBuffer[startPos] != 'N' && mBuffer[startPos] != 'S')
 				//		break;
@@ -520,7 +520,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 				mLongitude = nmeaToDecimal(nmeaLongitude);
 				
 				// update IGC sentence if it's unlocked
-				if (! IS_SET(IGC_LOCKED))
+				if (! IS_SET(IGC_SENTENCE_LOCKED))
 				{
 					#if 0
 					for(int i = 0, j = 0; i < IGC_SIZE_LONGITUDE; i++, j++)
@@ -548,7 +548,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 				mLongitude = -mLongitude; // west longitude is negative
 			
 			// update IGC sentence if it's unlocked
-			if (! IS_SET(IGC_LOCKED))
+			if (! IS_SET(IGC_SENTENCE_LOCKED))
 			{
 				//if (mBuffer[startPos] != 'W' && mBuffer[startPos] != 'E')
 				//		break;
@@ -568,7 +568,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			mAltitude = strToFloat(startPos);
 			
 			// update IGC sentence if it's unlocked
-			if (! IS_SET(IGC_LOCKED))
+			if (! IS_SET(IGC_SENTENCE_LOCKED))
 			{
 				#if 0
 				int i, j;
