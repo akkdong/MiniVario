@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 
-#define DEBUG_PARSING		1
+#define DEBUG_PARSING		0
 
 #define NMEA_TALKER_SIZE	(2)
 #define NMEA_TAG_SIZE 		(5)
@@ -103,13 +103,7 @@ void NmeaParserEx::update(/*float baroAlt*/)
 			break;
 		
 		if (mParseStep < 0 && c != '$')
-		{
-			#if DEBUG_PARSING
-			Serial.print('<'); Serial.print((char)c); Serial.println('>'); 
-			#endif
-
 			continue; // skip bad characters(find first sentence character)
-		}
 		
 		mBuffer[mWrite] = c;
 		mWrite = (mWrite + 1) % MAX_NMEA_PARSER_BUFFER;
@@ -119,14 +113,13 @@ void NmeaParserEx::update(/*float baroAlt*/)
 		{
 			mParseStep 	= 0;
 			//mParseState	= 0;
-			mParity		= '*';	// '*' removed by twice xor
+			mParity		= 0;
 
 			SET_STATE(mParseState, SEARCH_RMC_TAG|SEARCH_GGA_TAG);
 			UNSET_STATE(mParseState, PARSE_RMC|PARSE_GGA/*|RMC_VALID|GGA_VALID*/);
 
 			#if DEBUG_PARSING
 			Serial.println("start sentence");
-			Serial.printf("ParseState: %04X\n", mParseState);
 			#endif
 		}
 		else
@@ -173,14 +166,13 @@ void NmeaParserEx::update(/*float baroAlt*/)
 					// continue
 					mParseStep += 1;
 				}
-				
-				#if DEBUG_PARSING
-				Serial.print("mParseStep = "); Serial.println((int)mParseStep);
-				Serial.print("mParseState = "); Serial.println((int)mParseState);
-				#endif
 			}
 			else if (mParseStep == NMEA_TAG_SIZE) // 5, start of data
 			{
+				#if DEBUG_PARSING
+				Serial.print("** mParseState = "); Serial.print((int)mParseState, 16); Serial.println("h");
+				#endif
+
 				if (c != ',' || (! IS_SET(mParseState, SEARCH_RMC_TAG) && ! IS_SET(mParseState, SEARCH_GGA_TAG)))
 				{
 					// bad sentence : reset parsing state
@@ -239,7 +231,19 @@ void NmeaParserEx::update(/*float baroAlt*/)
 				if (c == '*') // start of checksum
 				{
 					mParseStep += 1;
+					mParity ^= '*';	// '*' removed by twice xor
+
+					#if DEBUG_PARSING
+					Serial.print("Checksum: "); Serial.print(mParity, 16); Serial.println("h");
+					#endif
 				}
+
+				#if DEBUG_PARSING && 0
+				if (IS_SET(mParseState, PARSE_GGA))
+				{
+					Serial.print((char)c); Serial.print(" : "); Serial.print(mParity, 16); Serial.println("h");
+				}
+				#endif
 			}
 			else if (mParseStep == NMEA_TAG_SIZE + 2) // checksum high-nibble
 			{
@@ -249,6 +253,11 @@ void NmeaParserEx::update(/*float baroAlt*/)
 				{
 					mParseStep = -1;
 					mWrite = mHead;
+
+					#if DEBUG_PARSING
+					Serial.print("Bad checksum #1: "); Serial.print(mParity, 16);
+					Serial.print("h compared with "); Serial.println((char)c);
+					#endif
 				}
 				else
 				{
@@ -263,6 +272,11 @@ void NmeaParserEx::update(/*float baroAlt*/)
 				{
 					mParseStep = -1;
 					mWrite = mHead;
+
+					#if DEBUG_PARSING
+					Serial.print("Bad checksum #2: "); Serial.print(mParity, 16);
+					Serial.print("h compared with "); Serial.println((char)c);
+					#endif
 				}
 				else
 				{
@@ -275,6 +289,10 @@ void NmeaParserEx::update(/*float baroAlt*/)
 				{
 					mParseStep = -1;
 					mWrite = mHead;
+
+					#if DEBUG_PARSING
+					Serial.println("Bad carrage return");
+					#endif
 				}
 				else
 				{
@@ -287,6 +305,10 @@ void NmeaParserEx::update(/*float baroAlt*/)
 				{
 					mParseStep = -1;
 					mWrite = mHead;
+
+					#if DEBUG_PARSING
+					Serial.println("Bad newline");
+					#endif
 				}
 				else
 				{
@@ -298,6 +320,7 @@ void NmeaParserEx::update(/*float baroAlt*/)
 						i = (i + 1) % MAX_NMEA_PARSER_BUFFER;
 					}
 					Serial.println("]");
+					Serial.print("== mParseState = "); Serial.print(mParseState, 16); Serial.println("h");
 					#endif
 					
 					// complete a sentence
@@ -309,7 +332,12 @@ void NmeaParserEx::update(/*float baroAlt*/)
 					{
 						// compare current(rmc) with last time --> reset valid flag, if it is not same time
 						if (IS_SET(mParseState, GGA_VALID) && mTimeCurr != mTimeLast)
+						{
+							#if DEBUG_PARSING
+							Serial.println("Unmatched RMC: throw previous GGA");
+							#endif
 							UNSET_STATE(mParseState, GGA_VALID);
+						}
 
 						// save rmc to last time
 						mTimeLast = mTimeCurr;
@@ -318,7 +346,13 @@ void NmeaParserEx::update(/*float baroAlt*/)
 					{
 						// compare gga & last time --> reset valid flag, if it is not same time
 						if (IS_SET(mParseState, RMC_VALID) && mTimeCurr != mTimeLast)
+						{
+							#if DEBUG_PARSING
+							Serial.println("Unmatched GGA: throw previous RMC");
+							#endif
+
 							UNSET_STATE(mParseState, RMC_VALID);
+						}
 
 						// save gga to last time
 						mTimeLast = mTimeCurr;
@@ -377,6 +411,10 @@ void NmeaParserEx::update(/*float baroAlt*/)
 						mIGCSize = 0;
 						mIGCNext = 0;
 					}
+
+					#if DEBUG_PARSING
+					Serial.print("<< mParseState = "); Serial.print(mParseState, 16); Serial.println("h");
+					#endif
 				}
 			}			
 		}
@@ -512,6 +550,9 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			else
 				mTimeCurr = (time_t)-1;
 			break;
+			#if DEBUG_PARSING
+			Serial.print("Time RMC = "); Serial.print(mTimeCurr, 16); Serial.println("h");
+			#endif
 		case 1 : // Navigation receiver warning A = OK, V = warning
 			if (mBuffer[startPos] == 'A')
 				SET_STATE(mParseState, RMC_VALID);
@@ -528,6 +569,9 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			break;
 		case 6 : // Speed over ground, Knots
 			mSpeed = (int16_t)(strToFloat(startPos) * 1.852); // convert Knot to Km/h
+			#if DEBUG_PARSING
+			Serial.print("Speed = "); Serial.println(mSpeed, 10);
+			#endif
 			break;
 		case 7 : // Track Angle in degrees, True
 			mHeading = (int16_t)(strToFloat(startPos) + 0.5);
@@ -555,6 +599,9 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 				mTimeCurr = mTmStruct.tm_hour * 3600 + mTmStruct.tm_min * 60 + mTmStruct.tm_sec;
 			else
 				mTimeCurr = (time_t)-1;
+			#if DEBUG_PARSING
+			Serial.print("Time GGA = "); Serial.print(mTimeCurr, 16); Serial.println("h");
+			#endif
 
 			// update IGC sentence if it's unlocked
 			if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
@@ -668,6 +715,9 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 		case 8 : // Altitude(above means sea level)
 			// save GPS altitude
 			mAltitude = strToFloat(startPos);
+			#if DEBUG_PARSING
+			Serial.print("Altitude = "); Serial.println(mAltitude);
+			#endif
 			
 			// update IGC sentence if it's unlocked
 			if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))

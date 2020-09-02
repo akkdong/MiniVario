@@ -119,6 +119,24 @@ int LoadNmea(LPCTSTR lpszFile, CPositionList & list)
 			memset(temp, 0, sizeof(temp));
 			strcpy_s(temp, sizeof(temp), line);
 
+			// test checksum
+			if (0)
+			{
+				int checksum = 0;
+
+				const char* ptr = &temp[1];
+				while (*ptr)
+				{
+					checksum ^= ptr[0];
+
+					if (ptr[0] == '*')
+						break;
+
+					ptr++;
+				}
+				TRACE("%s => %02X\n", line, checksum ^ '*');
+			}
+
 			//
 #if 0
 			char * tok[32], * context;

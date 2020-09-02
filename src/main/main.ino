@@ -180,7 +180,7 @@ BluetoothSerialEx  	serialBluetooth;
 //
 //
 
-#if 0
+#if USE_OLD_METHOD
 SineGenerator toneGen;
 TonePlayer tonePlayer(toneGen);
 VarioBeeper varioBeeper(tonePlayer);
@@ -206,7 +206,7 @@ VarioLogger logger;
 //
 //
 
-#if 0 // Normal Bluetooth manager
+#if USE_NORMAL_BTMAN // Normal Bluetooth manager
 BluetoothMan btMan(serialBluetooth, nmeaParser, varioNmea);
 #else // Logging raw NMEA sentence
 BluetoothManEx btMan(serialBluetooth, nmeaParser, varioNmea);
@@ -456,14 +456,11 @@ void loop()
 	// read & prase gps sentence
 	nmeaParser.update();
 
-	// GPS may be 1Hz : execute every second
-	if (nmeaParser.isDataReady())
+	// update device-context
+	if ((context.deviceState.statusGPS = nmeaParser.isFixed() ? 1 : 0))
 	{
-		//
-		context.deviceState.statusGPS = nmeaParser.isFixed() ? 1 : 0;
-
-		// update device-context
-		if (nmeaParser.isFixed())
+		// GPS may be 1Hz : execute every second
+		if (nmeaParser.isDataReady())
 		{
 			updateVarioState();
 
@@ -500,40 +497,43 @@ void loop()
 					deviceTick = millis();
 				}
 			}
-		}
-		else
-		{
-			if (deviceMode == DEVICE_MODE_VARIO_AND_GPS)
+
+			// check logging state
+			if (logger.isLogging())
 			{
-				if (context.flightState.flightMode != FMODE_READY)
+				// nmeaParser parses GPS sentence and converts it to IGC sentence
+				
+				//static unsigned long tick = millis();
+				//static int index = 0;
+				
+				//if ((millis()-tick) > time_interval)
 				{
-					stopFlight();
+					//
+					float altitude = vario.getAltitude(); // getCalibratedAltitude or getAltitude
+					logger.updateBaroAltitude(altitude);
+
+					while (nmeaParser.availableIGC())
+						logger.write(nmeaParser.readIGC());
 				}
-
-				deviceMode = DEVICE_MODE_VARIO;
 			}
-		}
 
-		// check logging state
-		if (logger.isLogging())
+			nmeaParser.resetDataReady();
+		}			
+	}
+	else
+	{
+		// I wish it would be unfixed temporary. Wait unitil it is fixed
+		#if _BLOCK_
+		if (deviceMode == DEVICE_MODE_VARIO_AND_GPS)
 		{
-			// nmeaParser parses GPS sentence and converts it to IGC sentence
-			
-			//static unsigned long tick = millis();
-			//static int index = 0;
-			
-			//if ((millis()-tick) > time_interval)
+			if (context.flightState.flightMode != FMODE_READY)
 			{
-				//
-				float altitude = vario.getAltitude(); // getCalibratedAltitude or getAltitude
-				logger.updateBaroAltitude(altitude);
-
-				while (nmeaParser.availableIGC())
-					logger.write(nmeaParser.readIGC());
+				stopFlight();
 			}
-		}
 
-		nmeaParser.resetDataReady();
+			deviceMode = DEVICE_MODE_VARIO;
+		}
+		#endif
 	}
 
 	// send any prepared sentence to BT
@@ -1003,7 +1003,7 @@ void startVario()
 
 void loadPreferences()
 {
-	#if 0
+	#if USE_OLD_METHOD
 	Preferences pref;
 	pref.begin("vario", false);
 	context.load(pref);
@@ -1029,7 +1029,7 @@ void loadPreferences()
 
 void savePreferences()
 {
-	#if 0
+	#if USE_OLD_METHOD
 	Preferences pref;
 	pref.begin("vario", false);
 	context.save(pref);

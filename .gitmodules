@@ -34,3 +34,6 @@
 [submodule "src/libraries/ESPAsyncWebServer"]
 	path = src/libraries/ESPAsyncWebServer
 	url = https://github.com/me-no-dev/ESPAsyncWebServer.git
+[submodule "ref/EspExceptionDecoder"]
+	path = ref/EspExceptionDecoder
+	url = https://github.com/me-no-dev/EspExceptionDecoder.git
