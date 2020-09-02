@@ -194,6 +194,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ActionTrigger.h" />
+    <ClInclude Include="SerialMonitor.h" />
     <ClInclude Include="TrackWnd.h" />
     <ClInclude Include="GpsSimulator.h" />
     <ClInclude Include="GpsSimulatorDlg.h" />
@@ -206,6 +207,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ActionTrigger.cpp" />
+    <ClCompile Include="SerialMonitor.cpp" />
     <ClCompile Include="TrackWnd.cpp" />
     <ClCompile Include="GpsSimulator.cpp" />
     <ClCompile Include="GpsSimulatorDlg.cpp" />
