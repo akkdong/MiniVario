@@ -377,6 +377,9 @@ void setup()
 		startVario();
 
 	//
+	context.volume.vario = context.volume.varioDefault;
+	context.volume.effect = context.volume.effectDefault;
+
 	beeper.setMelody(NOTE_C4, 600, 60, 2, context.volume.effect, PLAY_PREEMPTIVE);
 	deviceTick = millis();
 }
@@ -578,7 +581,7 @@ void readyFlight()
 
 void startFlight()
 {
-	//
+	// trun on source if auto is set
 	if (context.volume.autoTurnOn)
 		context.volume.effect = context.volume.vario = 100;
 	
@@ -759,6 +762,13 @@ void stopFlight()
 	//
 	//display.attachScreen(scrnMan.getStatisticScreen());	
 	scrnMan.showStatisticScreen(display);
+
+	// restore volume if it is turn on start flying
+	if (context.volume.autoTurnOn)
+	{
+		context.volume.vario = context.volume.varioDefault;
+		context.volume.effect = context.volume.effectDefault;
+	}
 }
 
 void startCircling()
@@ -1063,7 +1073,7 @@ void startWebService()
 
 void toggleVarioSound()
 {
-	context.volume.effect = context.volume.vario = context.volume.vario ? 0 : 100;
+	context.volume.effectDefault = context.volume.varioDefault = context.volume.effect = context.volume.vario = context.volume.vario ? 0 : 100;
 
 	if (! context.volume.vario)
 	{

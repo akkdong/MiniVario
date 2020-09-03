@@ -128,6 +128,9 @@ struct VarioTone
 
 struct VolumeSettings
 {
+	uint8_t			varioDefault;
+	uint8_t			effectDefault;
+
 	uint8_t			vario;
 	uint8_t			effect;
 

@@ -109,8 +109,8 @@ void DeviceContext::reset()
 	memcpy(&toneTable[0], &defaultTone[0], sizeof(defaultTone));
 	
 	//
-	volume.vario = VARIOMETER_BEEP_VOLUME;
-	volume.effect = VARIOMETER_EFFECT_VOLUME;
+	volume.varioDefault = volume.vario = VARIOMETER_BEEP_VOLUME;
+	volume.effectDefault = volume.effect = VARIOMETER_EFFECT_VOLUME;
 	volume.autoTurnOn = 1;
 	
 	//
@@ -232,9 +232,9 @@ void DeviceContext::set(JsonDocument & doc)
 	if (! doc["igc_timezone"].isNull())
 		logger.timezone = doc["igc_timezone"]; // 9
 	if (! doc["volume_enable_vario"].isNull())
-		volume.vario = doc["volume_enable_vario"] ? 100 : 0; // false
+		volume.varioDefault = volume.vario = doc["volume_enable_vario"] ? 100 : 0; // false
 	if (! doc["volume_enable_effect"].isNull())
-		volume.effect = doc["volume_enable_effect"] ? 100 : 0; // false
+		volume.effectDefault = volume.effect = doc["volume_enable_effect"] ? 100 : 0; // false
 	if (! doc["volume_auto_turnon"].isNull())
 		volume.autoTurnOn = doc["volume_auto_turnon"]; // true
 	if (! doc["threshold_low_battery"].isNull())

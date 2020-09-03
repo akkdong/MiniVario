@@ -306,7 +306,7 @@ void Beeper::findTone(float velocity, int & freq, int & period, int & duty)
     //Serial.printf("findTone: %d, %d, %d\n", freq, period, duty);
 }
 
-#define MUTE_TEMPORARY 1
+#define MUTE_TEMPORARY 0
 
 void Beeper::playTone(int freq, int volume)
 {
