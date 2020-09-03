@@ -66,6 +66,7 @@ void WebServiceClass::start()
     DeviceContext & context = __DeviceContext;
 
     //
+    WiFi.persistent(false);
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(IPAddress(192, 168, 1, 1), IPAddress(192, 168, 1, 1), IPAddress(255, 255, 255, 0));
     WiFi.softAP(context.deviceDefault.wifiSSID, context.deviceDefault.wifiPassword);

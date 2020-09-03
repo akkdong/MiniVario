@@ -15,6 +15,7 @@ CSerialMonitor::CSerialMonitor(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_MONITOR, pParent)
 {
 	m_bAutoScroll = TRUE;
+	m_strContent = _T("");
 }
 
 CSerialMonitor::~CSerialMonitor()
@@ -26,6 +27,7 @@ void CSerialMonitor::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 
 	DDX_Control(pDX, IDC_MESSAGE, m_wndMessage);
+	DDX_Control(pDX, IDC_CONTENT, m_wndEdit);
 	DDX_Check(pDX, IDC_AUTO_SCROLL, m_bAutoScroll);
 }
 
@@ -50,6 +52,9 @@ void CSerialMonitor::OnOK()
 {
 	// CLEAR MESSAGEs
 	m_wndMessage.ResetContent();
+
+	m_strContent = _T("");
+	m_wndEdit.SetWindowTextW(m_strContent);
 }
 
 
@@ -64,8 +69,15 @@ void CSerialMonitor::OnClickAutoScroll()
 
 void CSerialMonitor::AddMessage(LPCTSTR message)
 {
+#if 1
 	m_wndMessage.AddString(message);
 
 	if (m_bAutoScroll)
 		m_wndMessage.SetCurSel(m_wndMessage.GetCount() - 1);
+#else
+
+	m_strContent += message;
+	m_wndEdit.SetWindowTextW(m_strContent);
+
+#endif
 }

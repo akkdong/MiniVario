@@ -12,6 +12,43 @@
 
 
 /////////////////////////////////////////////////////////////////////////////
+// class DataQueue
+
+class DataQueue
+{
+public:
+	DataQueue();
+
+public:
+	void				push(int ch);
+	int					pop();
+
+	int					front() { return mFront; }
+
+	int					isFull() 	{ return ((mFront + 1) % MAX_NMEA_PARSER_BUFFER) == mTail; }
+	int					isEmpty()	{ return mHead == mTail; }	
+
+	int					get(int index);
+	int					copy(char* dst, int startPos, int count);
+
+	void				acceptReserve();
+	void				rejectReserve();
+
+
+	// debugging stubs
+	void				dumpReserve();
+
+
+protected:
+	char				mBuffer[MAX_NMEA_PARSER_BUFFER];
+	volatile int		mHead;
+	volatile int		mTail;
+	volatile int		mFront;
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////////
 // class NmeaParserEx
 
 class NmeaParserEx
@@ -36,10 +73,6 @@ public:
 	void				reset();
 	
 	//
-	#if 0
-	uint32_t			getDate();  	// DDMMYY
-	uint32_t			getTime();		// HHMMSS
-	#endif
 	time_t				getDateTime();
 	float				getLatitude();
 	float				getLongitude();
@@ -50,13 +83,13 @@ public:
 	void				enableSimulation(bool enable);
 	
 private:
-	int					isFull() 	{ return ((mWrite + 1) % MAX_NMEA_PARSER_BUFFER) == mTail; }
-	int					isEmpty()	{ return mHead == mTail; }
+	int 				timeStr2TmStruct(struct tm * _tm, int startPos);
+	int	 				dateStr2TmStruct(struct tm * _tm, int startPos);
 	
 	void				parseField(int fieldIndex, int startPos);
 	
-	float				strToFloat(int startPos);
-	long				strToNum(int startPos);
+	float				strToFloat(int startPos, int limit = -1);
+	long				strToNum(int startPos, int limit = -1);
 	
 	long				floatToCoordi(float value);
 	
@@ -67,10 +100,7 @@ private:
 
 	bool				mSimulMode;
 
-	char				mBuffer[MAX_NMEA_PARSER_BUFFER];
-	volatile int		mHead;
-	volatile int		mTail;
-	volatile int		mWrite;
+	DataQueue			mDataQueue;
 	volatile int		mFieldStart;
 	volatile int		mFieldIndex;
 	
@@ -110,14 +140,6 @@ private:
 // inline functions
 //
 
-#if 0
-inline uint32_t NmeaParserEx::getDate()
-	{ return mDate; }
-	
-inline uint32_t	NmeaParserEx::getTime()
-	{ return mTime; }
-#endif
-	
 inline time_t	NmeaParserEx::getDateTime()
 	{ return mDateTime; }
 	

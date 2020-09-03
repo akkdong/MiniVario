@@ -453,87 +453,83 @@ void loop()
 		vario.flush();
 	}
 	
-	// read & prase gps sentence
+	// read & parse gps sentence
 	nmeaParser.update();
 
-	// update device-context
-	if ((context.deviceState.statusGPS = nmeaParser.isFixed() ? 1 : 0))
-	{
-		// GPS may be 1Hz : execute every second
-		if (nmeaParser.isDataReady())
-		{
-			updateVarioState();
+	// update GPS fixed status
+	context.deviceState.statusGPS = nmeaParser.isFixed() ? 1 : 0;
 
-			if (deviceMode == DEVICE_MODE_VARIO)
+	// update vario state, if gps data is available
+	if (nmeaParser.isDataReady())
+	{
+		updateVarioState();
+
+		if (deviceMode == DEVICE_MODE_VARIO)
+		{
+			readyFlight();
+		}
+		else if (deviceMode == DEVICE_MODE_VARIO_AND_GPS)
+		{
+			if (context.flightState.flightMode == FMODE_READY)
 			{
-				readyFlight();
-			}
-			else if (deviceMode == DEVICE_MODE_VARIO_AND_GPS)
-			{
-				if (context.flightState.flightMode == FMODE_READY)
+				if (nmeaParser.getSpeed() > context.logger.takeoffSpeed) // FLIGHT_START_MIN_SPEED)
 				{
-					if (nmeaParser.getSpeed() > context.logger.takeoffSpeed) // FLIGHT_START_MIN_SPEED)
+					startFlight();
+				}
+			}
+			else
+			{
+				updateFlightState();
+
+				if (nmeaParser.getSpeed() < context.logger.landingSpeed) // FLIGHT_START_MIN_SPEED)
+				{
+					if ((millis() - modeTick) > context.logger.landingTimeout) // FLIGHT_LANDING_THRESHOLD)
 					{
-						startFlight();
+						stopFlight();
 					}
 				}
 				else
 				{
-					updateFlightState();
-
-					if (nmeaParser.getSpeed() < context.logger.landingSpeed) // FLIGHT_START_MIN_SPEED)
-					{
-						if ((millis() - modeTick) > context.logger.landingTimeout) // FLIGHT_LANDING_THRESHOLD)
-						{
-							stopFlight();
-						}
-					}
-					else
-					{
-						// reset modeTick
-						modeTick = millis();
-					}
-					
-					deviceTick = millis();
+					// reset modeTick
+					modeTick = millis();
 				}
-			}
-
-			// check logging state
-			if (logger.isLogging())
-			{
-				// nmeaParser parses GPS sentence and converts it to IGC sentence
 				
-				//static unsigned long tick = millis();
-				//static int index = 0;
-				
-				//if ((millis()-tick) > time_interval)
-				{
-					//
-					float altitude = vario.getAltitude(); // getCalibratedAltitude or getAltitude
-					logger.updateBaroAltitude(altitude);
-
-					while (nmeaParser.availableIGC())
-						logger.write(nmeaParser.readIGC());
-				}
+				deviceTick = millis();
 			}
-
-			nmeaParser.resetDataReady();
-		}			
-	}
-	else
-	{
-		// I wish it would be unfixed temporary. Wait unitil it is fixed
-		#if _BLOCK_
-		if (deviceMode == DEVICE_MODE_VARIO_AND_GPS)
-		{
-			if (context.flightState.flightMode != FMODE_READY)
-			{
-				stopFlight();
-			}
-
-			deviceMode = DEVICE_MODE_VARIO;
 		}
-		#endif
+
+		nmeaParser.resetDataReady();
+	}			
+	
+	#if _BLOCKED_ 
+	// I wish it would be unfixed temporary. So I didn't reset mode. Wait unitil it is fixed
+	if (deviceMode == DEVICE_MODE_VARIO_AND_GPS && !nmeaParser.isFixed())
+	{
+		
+		if (context.flightState.flightMode != FMODE_READY)
+			stopFlight();
+
+		deviceMode = DEVICE_MODE_VARIO;
+	}
+	#endif
+
+	// check logging state
+	if (logger.isLogging() && nmeaParser.availableIGC())
+	{
+		// nmeaParser parses GPS sentence and converts it to IGC sentence
+		
+		//static unsigned long tick = millis();
+		//static int index = 0;
+		
+		//if ((millis()-tick) > time_interval)
+		{
+			//
+			float altitude = vario.getAltitude(); // getCalibratedAltitude or getAltitude
+			logger.updateBaroAltitude(altitude);
+
+			while (nmeaParser.availableIGC())
+				logger.write(nmeaParser.readIGC());
+		}
 	}
 
 	// send any prepared sentence to BT

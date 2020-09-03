@@ -24,7 +24,10 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 	CListBox	m_wndMessage;
+	CEdit		m_wndEdit;
 	BOOL		m_bAutoScroll;
+
+	CString		m_strContent;
 
 	DECLARE_MESSAGE_MAP()
 

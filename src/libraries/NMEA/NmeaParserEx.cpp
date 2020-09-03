@@ -14,19 +14,11 @@
 #define NMEA_TALKER_SIZE	(2)
 #define NMEA_TAG_SIZE 		(5)
 
-#if 0
-#define CLEAR_STATE()		mParseState = 0
-#define SET_STATE(bit)		mParseState |= (bit)
-#define UNSET_STATE(bit)	mParseState &= ~(bit)
-
-#define IS_SET(bit)			(mParseState & (bit))
-#else
 #define CLEAR_STATE(x)		x = 0
 #define SET_STATE(x,bit)	x |= (bit)
 #define UNSET_STATE(x,bit)	x &= ~(bit)
 
 #define IS_SET(x,bit)		(x & (bit))
-#endif
 
 #define SEARCH_RMC_TAG		(1 << 0)
 #define SEARCH_GGA_TAG		(1 << 1)
@@ -67,6 +59,68 @@ int compareTime(struct tm* t1, struct tm* t2)
 
 
 /////////////////////////////////////////////////////////////////////////////
+// class DataQueue
+
+DataQueue::DataQueue()
+{
+	mHead = mTail = mFront;
+}
+
+void DataQueue::push(int ch)
+{
+	mBuffer[mFront] = ch;
+	mFront = (mFront + 1) % MAX_NMEA_PARSER_BUFFER;
+}
+
+int DataQueue::pop()
+{
+	if (mHead == mTail)
+		return -1;
+
+	int ch = mBuffer[mTail];
+	mTail = (mTail + 1) % MAX_NMEA_PARSER_BUFFER;
+
+	return ch;
+}
+
+int DataQueue::get(int index)
+{
+	return mBuffer[index % MAX_NMEA_PARSER_BUFFER];
+}
+
+int DataQueue::copy(char* dst, int startPos, int count)
+{
+	for (int i = 0; i < count; i++)
+		dst[i] = mBuffer[(startPos + i) % MAX_NMEA_PARSER_BUFFER];
+
+	return count;
+}
+
+void DataQueue::acceptReserve()
+{
+	mHead = mFront;
+}
+
+void DataQueue::rejectReserve()
+{
+	mFront = mHead;
+}
+
+void DataQueue::dumpReserve()
+{
+	for(int i = mHead; i != mFront; )
+	{
+		int ch = mBuffer[i];
+		if (ch == '\r' || ch == '\n')
+			ch = '.';
+		Serial.write((char)ch);
+
+		i = (i + 1) % MAX_NMEA_PARSER_BUFFER;
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
 // class NmeaParserEx
 
 NmeaParserEx::NmeaParserEx(Stream & stm, Stream & dgb) : mStream(stm), mStreamDbg(dgb), mSimulMode(false)
@@ -95,18 +149,26 @@ void NmeaParserEx::update(/*float baroAlt*/)
 	{
 		//
 		int c = strm.read();
+		#if DEBUG_PARSING
+		Serial.print((char)c);
+		#endif
+			
 
 		//if (mSimulMode)
 		//	mStreamDbg.write(c);
 		
-		if (isFull())
+		if (mDataQueue.isFull())
+		{
+			#if DEBUG_PARSING
+			Serial.println("Full DataQueue!!");
+			#endif
 			break;
+		}
 		
 		if (mParseStep < 0 && c != '$')
 			continue; // skip bad characters(find first sentence character)
 		
-		mBuffer[mWrite] = c;
-		mWrite = (mWrite + 1) % MAX_NMEA_PARSER_BUFFER;
+		mDataQueue.push(c);
 
 		//
 		if (c == '$')
@@ -116,7 +178,7 @@ void NmeaParserEx::update(/*float baroAlt*/)
 			mParity		= 0;
 
 			SET_STATE(mParseState, SEARCH_RMC_TAG|SEARCH_GGA_TAG);
-			UNSET_STATE(mParseState, PARSE_RMC|PARSE_GGA/*|RMC_VALID|GGA_VALID*/);
+			UNSET_STATE(mParseState, PARSE_RMC|PARSE_GGA);
 
 			#if DEBUG_PARSING
 			Serial.println("start sentence");
@@ -148,18 +210,14 @@ void NmeaParserEx::update(/*float baroAlt*/)
 				if (! IS_SET(mParseState, SEARCH_RMC_TAG) && ! IS_SET(mParseState, SEARCH_GGA_TAG))
 				{
 					#if DEBUG_PARSING
-					Serial.println("[unsupport sentence");
-					for(int i = mHead; i != mWrite; )
-					{
-						Serial.write(mBuffer[i]);
-						i = (i + 1) % MAX_NMEA_PARSER_BUFFER;
-					}
+					Serial.print("[unsupport sentence: ");
+					mDataQueue.dumpReserve();
 					Serial.println("]");
 					#endif
 
 					// It's not valid(known) TAG!!!
 					mParseStep = -1;
-					mWrite = mHead;
+					mDataQueue.rejectReserve();
 				}
 				else
 				{
@@ -177,21 +235,17 @@ void NmeaParserEx::update(/*float baroAlt*/)
 				{
 					// bad sentence : reset parsing state
 					#if DEBUG_PARSING
-					Serial.println("[unknown tag");
-					for(int i = mHead; i != mWrite; )
-					{
-						Serial.write(mBuffer[i]);
-						i = (i + 1) % MAX_NMEA_PARSER_BUFFER;
-					}
+					Serial.print("[unknown tag: ");
+					mDataQueue.dumpReserve();
 					Serial.println("]");
 					#endif
 					
 					mParseStep = -1;
-					mWrite = mHead;
+					mDataQueue.rejectReserve();
 				}
 				else
 				{
-					mFieldStart = mWrite;
+					mFieldStart = mDataQueue.front();
 					mFieldIndex = 0;
 					
 					mParseStep += 1;
@@ -224,7 +278,7 @@ void NmeaParserEx::update(/*float baroAlt*/)
 					// parse field
 					parseField(mFieldIndex, mFieldStart);
 					
-					mFieldStart = mWrite;
+					mFieldStart = mDataQueue.front();
 					mFieldIndex = mFieldIndex + 1;
 				}
 				
@@ -252,7 +306,7 @@ void NmeaParserEx::update(/*float baroAlt*/)
 				if (n != ((mParity & 0xF0) >> 4)) // bad checksum
 				{
 					mParseStep = -1;
-					mWrite = mHead;
+					mDataQueue.rejectReserve();
 
 					#if DEBUG_PARSING
 					Serial.print("Bad checksum #1: "); Serial.print(mParity, 16);
@@ -271,7 +325,7 @@ void NmeaParserEx::update(/*float baroAlt*/)
 				if (n != (mParity & 0x0F)) // bad checksum
 				{
 					mParseStep = -1;
-					mWrite = mHead;
+					mDataQueue.rejectReserve();
 
 					#if DEBUG_PARSING
 					Serial.print("Bad checksum #2: "); Serial.print(mParity, 16);
@@ -288,7 +342,7 @@ void NmeaParserEx::update(/*float baroAlt*/)
 				if (c != '\r')
 				{
 					mParseStep = -1;
-					mWrite = mHead;
+					mDataQueue.rejectReserve();
 
 					#if DEBUG_PARSING
 					Serial.println("Bad carrage return");
@@ -304,7 +358,7 @@ void NmeaParserEx::update(/*float baroAlt*/)
 				if (c != '\n')
 				{
 					mParseStep = -1;
-					mWrite = mHead;
+					mDataQueue.rejectReserve();
 
 					#if DEBUG_PARSING
 					Serial.println("Bad newline");
@@ -313,24 +367,20 @@ void NmeaParserEx::update(/*float baroAlt*/)
 				else
 				{
 					#if DEBUG_PARSING
-					Serial.println("[complete a setence");
-					for(int i = mHead; i != mWrite; )
-					{
-						Serial.write(mBuffer[i]);
-						i = (i + 1) % MAX_NMEA_PARSER_BUFFER;
-					}
+					Serial.print("[complete a setence: ");
+					mDataQueue.dumpReserve();
 					Serial.println("]");
 					Serial.print("== mParseState = "); Serial.print(mParseState, 16); Serial.println("h");
 					#endif
 					
 					// complete a sentence
 					mParseStep = -1;
-					mHead = mWrite;
+					mDataQueue.acceptReserve();
 
 					//
 					if (IS_SET(mParseState, PARSE_RMC))
 					{
-						// compare current(rmc) with last time --> reset valid flag, if it is not same time
+						// compare current(rmc) time with last one --> reset valid flag, if it is not same time
 						if (IS_SET(mParseState, GGA_VALID) && mTimeCurr != mTimeLast)
 						{
 							#if DEBUG_PARSING
@@ -338,13 +388,10 @@ void NmeaParserEx::update(/*float baroAlt*/)
 							#endif
 							UNSET_STATE(mParseState, GGA_VALID);
 						}
-
-						// save rmc to last time
-						mTimeLast = mTimeCurr;
 					}
 					if (IS_SET(mParseState, PARSE_GGA))
 					{
-						// compare gga & last time --> reset valid flag, if it is not same time
+						// compare current(gga) time with last one --> reset valid flag, if it is not same time
 						if (IS_SET(mParseState, RMC_VALID) && mTimeCurr != mTimeLast)
 						{
 							#if DEBUG_PARSING
@@ -353,22 +400,27 @@ void NmeaParserEx::update(/*float baroAlt*/)
 
 							UNSET_STATE(mParseState, RMC_VALID);
 						}
-
-						// save gga to last time
-						mTimeLast = mTimeCurr;
 					}
 
-					//
-					#if 1
+					// save to last time
+					mTimeLast = mTimeCurr;
+
+					// check IGC sentence ready condition
+					if (IS_SET(mParseState, GGA_VALID) && !IS_SET(mParseState, IGC_SENTENCE_LOCKED))
+					{
+						// IGC sentence is available
+						mIGCSize = MAX_IGC_SENTENCE;
+						mIGCNext = 0;
+
+						#if DEBUG_PARSING
+						for (int i = 0; i < mIGCSize; i++)
+							Serial.print((char)mIGCSentence[i]);
+						#endif
+					}
+
+					// check GPS data ready condition
 					if (IS_SET(mParseState, GGA_VALID) && IS_SET(mParseState, RMC_VALID))
 					{
-						if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
-						{
-							// IGC sentence is available
-							mIGCSize = MAX_IGC_SENTENCE;
-							mIGCNext = 0;
-						}
-
 						mDateTime = mktime(&mTmStruct); // mDateTime is UTC: mktime convert GMTx to UTC
 						mFixed = true;
 						mDataReady = true;
@@ -378,31 +430,14 @@ void NmeaParserEx::update(/*float baroAlt*/)
 					}
 					else
 					{
-						// ?????
-						//if (IS_SET(mParseState, GGA_VALID))
-						//	mDataReady = true;
-
+						// unfixed
 						mFixed = false;
 					}
-					#else
-					if (IS_SET(mParseState, PARSE_GGA))
-					{
-						if (IS_SET(mParseState, GGA_VALID) && ! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
-						{
-							// IGC sentence is available
-							mIGCSize = MAX_IGC_SENTENCE;
-							mIGCNext = 0;
-						}
-
-						mFixed = IS_SET(mParseState, GGA_VALID) ? true : false;
-						mDataReady = true;
-					}
-					#endif
 					
 					// unset parse state
 					UNSET_STATE(mParseState, PARSE_GGA|PARSE_RMC);
 					
-					// the logger(readIGC) does not unlock state while the parser does parsing.
+					// the logger(readIGC) does not unlock state while the parser does parsing(GGA).
 					// so the parser must unlocked it
 					if (IS_SET(mParseState, IGC_SENTENCE_LOCKED) && mIGCSize == mIGCNext)
 					{
@@ -423,18 +458,12 @@ void NmeaParserEx::update(/*float baroAlt*/)
 
 int NmeaParserEx::available()
 {
-	return (! isEmpty());
+	return (! mDataQueue.isEmpty());
 }
 
 int NmeaParserEx::read()
 {
-	if (isEmpty())
-		return -1;
-	
-	int c = mBuffer[mTail];
-	mTail = (mTail + 1) % MAX_NMEA_PARSER_BUFFER;
-	
-	return c;
+	return mDataQueue.pop();
 }
 
 int NmeaParserEx::availableIGC()
@@ -473,7 +502,7 @@ int NmeaParserEx::readIGC()
 void NmeaParserEx::reset()
 {
 	//
-	mHead = mTail = mWrite = 0;
+	//mDataQueue.init();
 	
 	//
 	mDataReady = false;	
@@ -495,13 +524,18 @@ void NmeaParserEx::reset()
 	mIGCNext = 0;
 }
 
-int timeStr2TmStruct(struct tm * _tm, const char * str)
+int NmeaParserEx::timeStr2TmStruct(struct tm * _tm, int startPos)
 {
-	// validation
+	//
+	char str[6];
+
 	for (int i = 0; i < 6; i++)
 	{
-		if (str[i] < '0' || '9' < str[i])
+		int ch = mDataQueue.get(startPos + i);
+		if (ch < '0' || '9' < ch)
 			return -1;
+
+		str[i] = ch;
 	}
 
 	//
@@ -515,13 +549,18 @@ int timeStr2TmStruct(struct tm * _tm, const char * str)
 	return 0;
 }
 
-int dateStr2TmStruct(struct tm * _tm, const char * str)
+int NmeaParserEx::dateStr2TmStruct(struct tm * _tm, int startPos)
 {
-	// validation
+	//
+	char str[6];
+
 	for (int i = 0; i < 6; i++)
 	{
-		if (str[i] < '0' || '9' < str[i])
+		int ch = mDataQueue.get(startPos + i);
+		if (ch < '0' || '9' < ch)
 			return -1;
+
+		str[i] = ch;
 	}
 	
 	// nmea date(year) -> since 2000
@@ -545,7 +584,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 		{
 		case 0 : // Time (HHMMSS.sss UTC)
 			// save RMC time
-			if (timeStr2TmStruct(&mTmStruct, &mBuffer[startPos]) == 0)
+			if (timeStr2TmStruct(&mTmStruct, startPos) == 0)
 				mTimeCurr = mTmStruct.tm_hour * 3600 + mTmStruct.tm_min * 60 + mTmStruct.tm_sec;
 			else
 				mTimeCurr = (time_t)-1;
@@ -554,7 +593,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			Serial.print("Time RMC = "); Serial.print(mTimeCurr, 16); Serial.println("h");
 			#endif
 		case 1 : // Navigation receiver warning A = OK, V = warning
-			if (mBuffer[startPos] == 'A')
+			if (mDataQueue.get(startPos) == 'A')
 				SET_STATE(mParseState, RMC_VALID);
 			else
 				UNSET_STATE(mParseState, RMC_VALID);
@@ -577,9 +616,9 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			mHeading = (int16_t)(strToFloat(startPos) + 0.5);
 			break;
 		case 8 : // Date of fix  (DDMMYY)
-			dateStr2TmStruct(&mTmStruct, &mBuffer[startPos]);
+			dateStr2TmStruct(&mTmStruct, startPos);
 			
-			#if 0 // move to end of sentence
+			#if _MOVED_ // move to end of sentence
 			if (IS_SET(mParseState, RMC_VALID))
 				mDateTime = mktime(&mTmStruct); // mDateTime is UTC: mktime convert GMTx to UTC
 			//else
@@ -595,7 +634,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 		{
 		case 0 : // Time (HHMMSS.sss UTC)
 			// save GGA_time
-			if (timeStr2TmStruct(&mTmStruct, &mBuffer[startPos]) == 0)
+			if (timeStr2TmStruct(&mTmStruct, startPos) == 0)
 				mTimeCurr = mTmStruct.tm_hour * 3600 + mTmStruct.tm_min * 60 + mTmStruct.tm_sec;
 			else
 				mTimeCurr = (time_t)-1;
@@ -605,18 +644,7 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 
 			// update IGC sentence if it's unlocked
 			if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
-			{
-				for(int i = 0; i < IGC_SIZE_TIME; i++)
-				{
-					if ('0' > mBuffer[startPos+i] || mBuffer[startPos+i] > '9')
-						break;
-					
-					mIGCSentence[IGC_OFFSET_TIME+i] = mBuffer[startPos+i];
-				}
-			}
-			
-			// save current time
-			//mTime = strToNum(startPos);
+				mDataQueue.copy(&mIGCSentence[IGC_OFFSET_TIME], startPos, IGC_SIZE_TIME);
 			break;
 		case 1 : // Latitude (DDMM.mmm)
 			// save latitude
@@ -627,38 +655,22 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 				// update IGC sentence if it's unlocked
 				if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
 				{
-					#if 0
-					for(int i = 0, j = 0; i < IGC_SIZE_LATITUDE; i++, j++)
-					{
-						if ('0' <= mBuffer[startPos+j] && mBuffer[startPos+j] <= '9')
-							mIGCSentence[IGC_OFFSET_LATITUDE+i] = mBuffer[startPos+j];
-						else if (mBuffer[startPos+j] == '.')
-							i -= 1;
-						else
-							break;
-					}
-					#else
 					FixedLenDigit digit;
 				
 					digit.begin(floatToCoordi(nmeaLatitude), IGC_SIZE_LATITUDE);
 					for (int i = 0; i < IGC_SIZE_LATITUDE /*digit.available()*/; i++)
 						mIGCSentence[IGC_OFFSET_LATITUDE+i] = digit.read();
-					#endif
 				}
 			}
 			break;
 		case 2 : // Latitude (N or S)
 			// save latitude
-			if (mBuffer[startPos] != 'N')
+			if (mDataQueue.get(startPos) != 'N')
 				mLatitude = -mLatitude; // south latitude is negative
 			
 			// update IGC sentence if it's unlocked
 			if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
-			{
-				//if (mBuffer[startPos] != 'N' && mBuffer[startPos] != 'S')
-				//		break;
-				mIGCSentence[IGC_OFFSET_LATITUDE_] = mBuffer[startPos];
-			}
+				mIGCSentence[IGC_OFFSET_LATITUDE_] = mDataQueue.get(startPos);
 			break;
 		case 3 : // Longitude (DDDMM.mmmm)
 			// save longitude
@@ -669,41 +681,25 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 				// update IGC sentence if it's unlocked
 				if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
 				{
-					#if 0
-					for(int i = 0, j = 0; i < IGC_SIZE_LONGITUDE; i++, j++)
-					{
-						if ('0' <= mBuffer[startPos+j] && mBuffer[startPos+j] <= '9')
-							mIGCSentence[IGC_OFFSET_LONGITUDE+i] = mBuffer[startPos+j];
-						else if (mBuffer[startPos+j] == '.')
-							i -= 1;
-						else
-							break;
-					}
-					#else
 					FixedLenDigit digit;
 				
 					digit.begin(floatToCoordi(nmeaLongitude), IGC_SIZE_LONGITUDE);
 					for (int i = 0; i < IGC_SIZE_LONGITUDE /*digit.available()*/; i++)
 						mIGCSentence[IGC_OFFSET_LONGITUDE+i] = digit.read();
-					#endif
 				}
 			}			
 			break;
 		case 4 : // Longitude (E or W)
 			// save longitude
-			if (mBuffer[startPos] != 'E')
+			if (mDataQueue.get(startPos) != 'E')
 				mLongitude = -mLongitude; // west longitude is negative
 			
 			// update IGC sentence if it's unlocked
 			if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
-			{
-				//if (mBuffer[startPos] != 'W' && mBuffer[startPos] != 'E')
-				//		break;
-				mIGCSentence[IGC_OFFSET_LONGITUDE_] = mBuffer[startPos];
-			}
+				mIGCSentence[IGC_OFFSET_LONGITUDE_] = mDataQueue.get(startPos);
 			break;
 		case 5 : // GPS Fix Quality (0 = Invalid, 1 = GPS fix, 2 = DGPS fix)
-			if (mBuffer[startPos] != '0') // or if (mBuffer[startPos] == '1' || mBuffer[startPos] == '2')
+			if (mDataQueue.get(startPos) != '0')
 				SET_STATE(mParseState, GGA_VALID);
 			else
 				UNSET_STATE(mParseState, GGA_VALID);
@@ -722,22 +718,6 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 			// update IGC sentence if it's unlocked
 			if (! IS_SET(mParseState, IGC_SENTENCE_LOCKED))
 			{
-				#if 0
-				int i, j;
-				
-				for(i = 0; i < IGC_SIZE_GPS_ALT; i++)
-				{
-					if (! ('0' <= mBuffer[startPos+i] && mBuffer[startPos+i] <= '9') && mBuffer[startPos+i] != '-')
-						break;
-					
-					mIGCSentence[IGC_OFFSET_GPS_ALT+i] = mBuffer[startPos+i];
-				}
-				
-				for (j = IGC_SIZE_GPS_ALT - 1, i -= 1; i >= 0; i--, j--)
-					mIGCSentence[IGC_OFFSET_GPS_ALT+j] = mIGCSentence[IGC_OFFSET_GPS_ALT+i];
-				for ( ; j >= 0; j--)
-					mIGCSentence[IGC_OFFSET_GPS_ALT+j] =  '0';
-				#else
 				FixedLenDigit digit;
 			
 				//
@@ -749,7 +729,6 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 				digit.begin(mAltitude, IGC_SIZE_GPS_ALT);
 				for (int i = 0; i < IGC_SIZE_GPS_ALT /*digit.available()*/; i++)
 					mIGCSentence[IGC_OFFSET_GPS_ALT+i] = digit.read();
-				#endif
 			}			
 			break;
 		case 9 : // Altitude unit (M: meter)
@@ -758,20 +737,25 @@ void NmeaParserEx::parseField(int fieldIndex, int startPos)
 	}
 }
 
-float NmeaParserEx::strToFloat(int startPos)
+float NmeaParserEx::strToFloat(int startPos, int limit)
 {
 	float value = 0.0, div = 0;
 	
-	for (int i = startPos; ;)
+	for (int i = startPos; ; i++)
 	{
-		if (mBuffer[i] == '.')
+		if (limit > 0 && limit <= i - startPos)
+			break;
+
+		int ch = mDataQueue.get(i);
+
+		if (ch == '.')
 		{
 			div = 1;
 		}
-		else if ('0' <= mBuffer[i] && mBuffer[i] <= '9')
+		else if ('0' <= ch && ch <= '9')
 		{
 			value *= 10;
-			value += mBuffer[i] - '0';
+			value += ch - '0';
 
 			if (div)
 				div *= 10;
@@ -781,8 +765,6 @@ float NmeaParserEx::strToFloat(int startPos)
 			// end of converting
 			break;
 		}
-		
-		i = (i + 1) % MAX_NMEA_PARSER_BUFFER;
 	}
 	
 	if (div)
@@ -791,29 +773,32 @@ float NmeaParserEx::strToFloat(int startPos)
 	return value;
 }
 
-long NmeaParserEx::strToNum(int startPos)
+long NmeaParserEx::strToNum(int startPos, int limit)
 {
 	long value = 0;
 	unsigned char sign = 1;
 	
-	for (int i = startPos; ;)
+	for (int i = startPos; ; i++)
 	{
-		if (i == startPos && mBuffer[i] == '-')
+		if (limit > 0 && limit <= i - startPos)
+			break;
+
+		int ch = mDataQueue.get(i);
+
+		if (i == startPos && ch == '-')
 		{
 			sign = -1;
 		}
-		else if ('0' <= mBuffer[i] && mBuffer[i] <= '9')
+		else if ('0' <= ch && ch <= '9')
 		{
 			value *= 10;
-			value += mBuffer[i] - '0';
+			value += ch - '0';
 		}
 		else
 		{
 			// end of converting
 			break;
 		}
-		
-		i = (i + 1) % MAX_NMEA_PARSER_BUFFER;
 	}
 	
 	return value * sign;
@@ -822,7 +807,7 @@ long NmeaParserEx::strToNum(int startPos)
 long NmeaParserEx::floatToCoordi(float value)
 {
 	// DDDMM.mmmm -> DDDMMmmm (with round up)
-	#if 0
+	#if _SIMPLIFY_
 	long coordi = (long)value;
 	float temp = (value - coordi) * 1000.0f;
 	
