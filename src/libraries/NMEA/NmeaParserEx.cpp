@@ -406,6 +406,7 @@ void NmeaParserEx::update(/*float baroAlt*/)
 					mTimeLast = mTimeCurr;
 
 					// check IGC sentence ready condition
+					/*
 					if (IS_SET(mParseState, GGA_VALID) && !IS_SET(mParseState, IGC_SENTENCE_LOCKED))
 					{
 						// IGC sentence is available
@@ -417,6 +418,7 @@ void NmeaParserEx::update(/*float baroAlt*/)
 							Serial.print((char)mIGCSentence[i]);
 						#endif
 					}
+					*/
 
 					// check GPS data ready condition
 					if (IS_SET(mParseState, GGA_VALID) && IS_SET(mParseState, RMC_VALID))
@@ -425,13 +427,26 @@ void NmeaParserEx::update(/*float baroAlt*/)
 						mFixed = true;
 						mDataReady = true;
 
+						if (!IS_SET(mParseState, IGC_SENTENCE_LOCKED))
+						{
+							// IGC sentence is available
+							mIGCSize = MAX_IGC_SENTENCE;
+							mIGCNext = 0;
+
+							#if DEBUG_PARSING
+							for (int i = 0; i < mIGCSize; i++)
+								Serial.print((char)mIGCSentence[i]);
+							#endif
+						}
+
 						// unset valid state
 						UNSET_STATE(mParseState, GGA_VALID|RMC_VALID);						
 					}
 					else
 					{
-						// unfixed
-						mFixed = false;
+						// check unfixed
+						if (!IS_SET(mParseState, GGA_VALID) && !IS_SET(mParseState, RMC_VALID))
+							mFixed = false;
 					}
 					
 					// unset parse state
