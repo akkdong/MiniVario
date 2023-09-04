@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Track Logs</title>
+<link rel="stylesheet" type="text/css" href="style.css"/>
+<style>
+	.file-separator {
+		margin: 0.4em 0.1em;
+		color: rgb(44, 31, 31);
+		border: 0;
+		height: 2px;
+		background: #333;
+		background-image: -webkit-linear-gradient(left, #ccc, #333, #ccc);
+		background-image: -moz-linear-gradient(left, #ccc, #333, #ccc);
+		background-image: -ms-linear-gradient(left, #ccc, #333, #ccc);
+		background-image: -o-linear-gradient(left, #ccc, #333, #ccc);				
+	}
+
+	.file-title {
+		color: rgb(4, 53, 4);
+		font-size: 2em;
+		margin: 0.4em 0em 0.4em 0.1em;
+		cursor: pointer;
+	}
+
+	.file-delete {
+		position: absolute;
+		right: 0.2em; 
+		width: 2em; 
+		height: 2em;
+		margin: 0.1em;
+		cursor: pointer;
+	}
+
+	.file-info {
+		padding-left: 0.1em;
+		font-size: 1.4em;
+		color: rgb(102, 101, 101);
+	}
+
+	.delete-image {
+		width: 100%;
+		height: 100%;
+	}
+</style>
+<script>
+	function loadScript(url, callback) {
+		// Adding the script tag to the head as suggested before
+		var head = document.head;
+		var script = document.createElement('script');
+		script.type = 'text/javascript';
+		script.src = url;
+
+		// Then bind the event to the callback function.
+		// There are several events for cross browser compatibility.
+		script.onreadystatechange = callback;
+		script.onload = callback;
+
+		// Fire the loading
+		head.appendChild(script);
+	}
+
+	function appendEmpty(node) {
+		var _div = $('<div>')
+					.append($('<hr>').addClass('file-separator'))
+					.append($('<span>', { class: 'file-title' }).html("No Files"));
+
+		node.append(_div);
+	}
+
+	function numberWithCommas(x) {
+	    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	}
+	
+	function makeLogList(data) {
+		//
+		var logs = $("#logs");			
+		logs.empty();
+
+		if (data.length == 0) {
+			// empty!!
+			appendEmpty(logs);
+		} else {
+			// sort
+			data.sort(function (a, b) {
+				return a.name < b.name ? 1 : -1; // descending
+			});
+
+			// enumerate each file
+			$.each(data, function (idx, file) {
+				var _name = file.name;
+				var _date = new Date(file.date); // Date.parse(file.date);
+				var _size = numberWithCommas(file.size) + " bytes";				
+				var _div = $('<div>', { 'href': _name });
+
+				_div.append($('<hr>').addClass('file-separator'));
+				_div.append($('<div>')
+						.append($('<lable>').addClass('file-title').html(_name.substring(0, _name.length - 4)))
+						.append($('<lable>').addClass('file-delete').append($('<img>').addClass('delete-image').attr('src','delete-button.png'))));
+				_div.append($('<div>', { class: "file-info" })
+						.append($('<span>').text(_date.toLocaleTimeString()))
+						.append("&nbsp;&nbsp;")
+						.append($('<span>').text(_size)));
+						
+				logs.append(_div);
+			});
+		}
+	}
+
+	function onLoad_JQuery() {
+		$.getJSON("/TrackLogs/list", function (data) {
+			//
+			console.log("/TrackLogs: ", data);
+			makeLogList(data);
+			
+			//
+			$('.file-title').click(function (e){
+				e.preventDefault();
+				var _this = $(this);
+				var log = _this.parent().parent().attr("href");
+
+				if (confirm("Download " + log + " ?") == true) {
+					/*
+					$.ajax({
+						url: '/TrackLogs/' + log,
+						type: 'GET',
+						success: function(data, status, xhr) {
+							//...
+							console.log(data);
+						},
+						error: function (xhr, status, err) {
+							console.error(err);
+						}
+					});
+					*/
+
+					window.location.href = '/TrackLogs/' + log;
+				}
+			});
+			
+			//
+			$('.file-delete').click(function (e){
+				e.preventDefault();
+				var _this = $(this);
+				var log = _this.parent().parent().attr("href");
+
+				if (confirm("Delete " + log + " ?") == true) {
+					$.ajax({
+						url: '/TrackLogs/' + log,
+						type: 'DELETE',
+						success: function(data, status, xhr) {
+							// show result
+							alert('Deletion Success: ', JSON.stringify(data));
+
+							// remove element
+							_this.parent().parent().remove();
+
+							if ($('#logs').children().length == 0) {
+								appendEmpty($('#logs'));
+							}
+						},
+						error: function (xhr, status, err) {
+							// oops!
+							alert('Deletion Failed: ' + JSON.stringify(err));
+						}
+					});
+				}
+			});		
+			showLoadingAnimation(false);
+		}).fail(function () {
+			showLoadingAnimation(false);
+			alert('TrackLog fetch Failed!');
+		});	
+	}
+
+	function showLoadingAnimation(show) {
+		if (show) {
+			$('#loading-bar').show();
+		} else {
+			$('#loading-bar').hide();
+		}
+	}
+	loadScript("jquery-3.4.1.min.js", onLoad_JQuery)
+</script>
+</head>
+<body>
+    <div class="page_title">Track Logs...</div>
+	<div id="logs">
+		<!--
+		<div href="2019-07-04-MIN-XXX-01.igc">
+			<hr class="pref-separator">
+			<div>
+				<label class="file-title">2019-07-04-MIN-XXX-01</lable>
+				<label class="file-delete"><img class="delete-image" src="delete-button.png"></lable>
+			</div>
+			<div class="file-info"?
+				<span>time</span>,&nbsp<span>xxx bytes</span>
+			</div>
+		</div>
+		-->
+	</div>
+	<!-- Loading Animation -->
+	<div id="loading-bar" class="loading bar">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+   </div>	
+</body>
+</html>

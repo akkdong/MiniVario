@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firmware Update</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <script>
+        function loadScript(url, callback) {
+            // Adding the script tag to the head as suggested before
+            var head = document.head;
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = url;
+
+            // Then bind the event to the callback function.
+            // There are several events for cross browser compatibility.
+            script.onreadystatechange = callback;
+            script.onload = callback;
+
+            // Fire the loading
+            head.appendChild(script);
+        }
+
+        function onLoad_JQuery() {
+            console.log("ok!!!");
+        }
+
+        loadScript("jquery-3.4.1.min.js", onLoad_JQuery)
+    </script>        
+</head>
+<body>
+    <p class="pref" style="text-align: center; padding-top: 0.5em;">Under construct</p>
+</body>
+</html>

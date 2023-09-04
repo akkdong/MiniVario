@@ -1,0 +1,41 @@
+#######################################
+# Syntax Coloring Map for MCP9800 Library
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+MCP9800	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+readTempC16	KEYWORD2
+readTempF10	KEYWORD2
+writeTempC2	KEYWORD2
+readConfig	KEYWORD2
+writeConfig	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+AMBIENT	LITERAL1
+CONFIG_REG	LITERAL1
+HYSTERESIS	LITERAL1
+LIMITSET	LITERAL1
+ONE_SHOT	LITERAL1
+ADC_RES_9BITS	LITERAL1
+ADC_RES_10BITS	LITERAL1
+ADC_RES_11BITS	LITERAL1
+ADC_RES_12BITS	LITERAL1
+FAULT_QUEUE_1	LITERAL1
+FAULT_QUEUE_2	LITERAL1
+FAULT_QUEUE_4	LITERAL1
+FAULT_QUEUE_6	LITERAL1
+ALERT_POLARITY_HIGH	LITERAL1
+INTERRUPT_MODE	LITERAL1
+SHUTDOWN	LITERAL1

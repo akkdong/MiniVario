@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Preference</title>
+<link rel="stylesheet" type="text/css" href="style.css"/>
+<!--<script src="jquery-3.4.1.min.js"></script>-->
+<!--<script src="preferences.js"></script>-->
+<script>
+	function loadScript(url, callback) {
+		// Adding the script tag to the head as suggested before
+		var head = document.head;
+		var script = document.createElement('script');
+		script.type = 'text/javascript';
+		script.src = url;
+
+		// Then bind the event to the callback function.
+		// There are several events for cross browser compatibility.
+		script.onreadystatechange = callback;
+		script.onload = callback;
+
+		// Fire the loading
+		head.appendChild(script);
+	}
+
+	function onLoad_Preferences() {
+		initPref();
+	}
+
+	function onLoad_FontAwesome() {
+	}
+
+	function onLoad_JQuery() {
+		loadScript("preferences.js", onLoad_Preferences);
+	}
+
+	loadScript("jquery-3.4.1.min.js", onLoad_JQuery)
+</script>
+</head>
+<body>
+	<!-- Preference Title -->
+	<div class="page_title">
+		<span>Device Settings</span>
+		<span id="title-buttons">
+			<span id="id-download"></span>
+			<span id="id-reload"></span>
+		</span>
+	</div>
+
+	<!-- Preference Contents -->
+	<div id="vario_pref"></div>
+
+	<!-- Loading Animation -->
+	<div id="loading-bar" class="loading bar">
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+		<div></div>
+   </div>	
+	<!-- Popups -->
+	<div id="id-popup-editor" class="popup-modal" context="{{pref_context}}">
+		<div class="popup-content">
+			<div class="popup-header">
+				<div>
+					<span id="id-popup-title" class="popup-title"></span>
+				</div>		
+			</div>
+			<div id="id-popup-body" class="popup-body"></div>
+			<div class="popup-footer">
+				<div style="text-align: right">
+					<span id="id-popup-accept" class="popup-accept-button">OK</span>
+					<span>&nbsp;&nbsp;</span>
+					<span id="id-popup-close" class="popup-close-button">Cancel</span>
+				</div>
+			</div>
+		</div>
+	</div>
+		
+</body>
+</html>
