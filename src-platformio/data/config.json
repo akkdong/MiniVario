@@ -1,7 +1,7 @@
 {
     "vario_climb_threshold": 0.2,
     "vario_sink_threshold" : -3,
-    "vario_sensitivity": 0.14,
+    "vario_sensitivity": 0.2,
     "vario_ref_altitude_1": 0.0,
     "vario_ref_altitude_2": 0.0,
     "vario_ref_altitude_3": 0.0,
