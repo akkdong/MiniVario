@@ -106,32 +106,50 @@ void VarioBeeper::setVelocity(float velocity)
 	}
 }
 
+#define _count_of(x)		(sizeof(x) / sizeof(x[0]))
+
 void VarioBeeper::findTone(float velocity, int & freq, int & period, int & duty)
 {
-	int index;
+	auto& toneTable = __DeviceContext.toneTable;
+	int index;	
 	
-	for (index = 0; index < (sizeof(__DeviceContext.toneTable) / sizeof(__DeviceContext.toneTable[0])); index++)
+	for (index = 0; index < _count_of(toneTable); index++)
 	{
-		if (velocity <= __DeviceContext.toneTable[index].velocity)
+		if (velocity <= toneTable[index].velocity)
 			break;
 	}
-	
-	if (index == 0 || index == (sizeof(__DeviceContext.toneTable) / sizeof(__DeviceContext.toneTable[0])))
+
+	if (index == 0)
 	{
-		if (index != 0)
-			index -= 1;
-		
-		freq = __DeviceContext.toneTable[index].freq;
-		period = __DeviceContext.toneTable[index].period;
-		duty = __DeviceContext.toneTable[index].duty;
+		freq = toneTable[0].freq;
+		period = toneTable[0].period;
+		duty = toneTable[0].duty;
+	}
+	else if (index == _count_of(toneTable))
+	{
+		freq = toneTable[index - 1].freq;
+		period = toneTable[index - 1].period;
+		duty = toneTable[index - 1].duty;
 	}
 	else
 	{
-		float ratio = __DeviceContext.toneTable[index].velocity / velocity;
+		// [toneTable[index-1].velocity .... velocity .... toneTable[index].velocity]
+		// [toneTable[index-1].freq .... freq ... toneTable[index1].freq]
+		//
+		// [toneTable[index-1].velocity, velocity] : [toneTable[index-1].velocity, [toneTable[index].velocity] = [toneTable[index-1].freq, freq] : [toneTable[index-1].freq, [toneTable[index].freq]
+		// (velocity - toneTable[index-1].velocity) / (toneTable[index].velocity - toneTable[index-1].velocity) = (freq - toneTable[index-1].freq) / (toneTable[index].freq - toneTable[index-1].freq)
+		//
+		// (freq - toneTable[index-1].freq) = (velocity - toneTable[index-1].velocity) / (toneTable[index].velocity - toneTable[index-1].velocity) * (toneTable[index].freq - toneTable[index-1].freq)
+		// freq = (velocity - toneTable[index-1].velocity) / (toneTable[index].velocity - toneTable[index-1].velocity) * (toneTable[index].freq - toneTable[index-1].freq) + toneTable[index-1].freq
+		//
+		// float ratio = (velocity - toneTable[index-1].velocity) / (toneTable[index].velocity - toneTable[index-1].velocity);
+		// freq = (toneTable[index].freq - toneTable[index-1].freq) * ratio + toneTable[index-1].freq
+
+		float ratio = (velocity - toneTable[index-1].velocity) / (toneTable[index].velocity - toneTable[index-1].velocity);
 		
-		freq = (__DeviceContext.toneTable[index].freq - __DeviceContext.toneTable[index-1].freq) / (__DeviceContext.toneTable[index].velocity - __DeviceContext.toneTable[index-1].velocity) * (velocity - __DeviceContext.toneTable[index-1].velocity) + __DeviceContext.toneTable[index-1].freq;
-		period = (__DeviceContext.toneTable[index].period - __DeviceContext.toneTable[index-1].period) / (__DeviceContext.toneTable[index].velocity - __DeviceContext.toneTable[index-1].velocity) * (velocity - __DeviceContext.toneTable[index-1].velocity) + __DeviceContext.toneTable[index-1].period;
-		duty = (__DeviceContext.toneTable[index].duty - __DeviceContext.toneTable[index-1].duty) / (__DeviceContext.toneTable[index].velocity - __DeviceContext.toneTable[index-1].velocity) * (velocity - __DeviceContext.toneTable[index-1].velocity) + __DeviceContext.toneTable[index-1].duty;
+		freq = (toneTable[index].freq - toneTable[index-1].freq) * ratio + toneTable[index-1].freq;
+		period = (toneTable[index].period - toneTable[index-1].period) * ratio + toneTable[index-1].period;
+		duty = (toneTable[index].duty - toneTable[index-1].duty) * ratio + toneTable[index-1].duty;
 	}
 	
 	//period = (int)(period * 1.0);
