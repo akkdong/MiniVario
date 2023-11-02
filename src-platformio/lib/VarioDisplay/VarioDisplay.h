@@ -43,6 +43,20 @@ public:
 	}
 };
 
+template<typename T>
+class TVarioDisplayDriver : public T
+{
+public:
+	TVarioDisplayDriver(PinSetting * pins) : T(pins) {
+	}
+
+	virtual void _delay(int msec) { 
+		const TickType_t xDelay = msec / portTICK_PERIOD_MS;
+		vTaskDelay(xDelay);
+	}
+};
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class VarioDisplay

@@ -198,7 +198,11 @@ VarioBeeper varioBeeper(tonePlayer);
 Beeper beeper;
 #endif
 
-VarioDisplayDriver driver(ePaperPins);
+#if USE_GOOD_DISPLAY
+TVarioDisplayDriver<EPaper_GoodDisplay270> driver(ePaperPins);
+#else
+TVarioDisplayDriver<EPaper_Waveshare270> driver(ePaperPins);
+#endif
 VarioDisplay display(driver, context);
 
 BatteryVoltage battery;

@@ -5,6 +5,7 @@
 
 #include "EPaper_Waveshare270.h"
 #include "EPaper_Waveshare420.h"
+#include "EPaper_GoodDisplay270.h"
 
 #define COLOR_BLACK		0x00
 #define COLOR_WHITE		0xFF
