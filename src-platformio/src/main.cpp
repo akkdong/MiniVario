@@ -96,7 +96,7 @@ static PinSetting ePaperPins[] =
 	// RST
 	{ 32, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
 	// BUSY
-	{ 39, PIN_MODE_INPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
+	{ 39, PIN_MODE_INPUT, PIN_ACTIVE_HIGH, PIN_STATE_INACTIVE },
 };
 
 static PinSetting powerPins[] =
@@ -198,10 +198,14 @@ VarioBeeper varioBeeper(tonePlayer);
 Beeper beeper;
 #endif
 
-#if USE_GOOD_DISPLAY
+#if USE_DRIVER_TEMPLATE
+#if USE_GOOD_DISPLAY || true
 TVarioDisplayDriver<EPaper_GoodDisplay270> driver(ePaperPins);
 #else
 TVarioDisplayDriver<EPaper_Waveshare270> driver(ePaperPins);
+#endif
+#else
+VarioDisplayDriver driver(ePaperPins);
 #endif
 VarioDisplay display(driver, context);
 

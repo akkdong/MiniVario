@@ -70,7 +70,12 @@ VarioDisplay::VarioDisplay(EPaperDriver & _driver, DeviceContext & _context)
 void VarioDisplay::init()
 {
 	EPaperDisplay::init();
-	
+
+#if USE_GOOD_DISPLAY
+	setRotation(2);
+	setMirrorMode(true);
+#endif
+
 	statusBar.setStyle(Widget_StatusBar, 0, WidgetContent_Status_Bar);
 	statusBar.setPosition(0, 0, _width, 24);
 }
@@ -111,7 +116,11 @@ void VarioDisplay::TaskProc()
 		drawConfirmMessage();
 
 		//
+		#if USE_GOOD_DISPLAY
+		refresh((uint32_t)0);
+		#else
 		refresh(false);
+		#endif
 		break;
 	case _UPDATE :
 		break;
@@ -132,24 +141,40 @@ void VarioDisplay::TaskProc()
 
 		case _UPDATE :
 			updateFirmwareUpdate();
+			#if USE_GOOD_DISPLAY
+			refresh(updateCount++);
+			#else
 			refresh(updateCount++ > 0 ? true : false);
+			#endif
 			break;
 
 		case _VARIO :
 			// update & refresh
 			update();
+			#if USE_GOOD_DISPLAY
+			{
+				uint32_t s = millis();
+				refresh(updateCount++);
+				Serial.printf("refresh: %u\n", millis() - s);
+			}
+			#else
 			refresh(updateCount++ > 0 ? true : false);
+			#endif
 
 			// periodic full refresh: update rate : 2.5 times per second ==> 5 min = 300 x 2.5 = 750
+			#if USE_GOOD_DISPLAY
+			if (updateCount >= 50)
+			#else
 			if (updateCount > 750)
-				updateCount = 0; 
+			#endif
+				updateCount = 0;
 			break;
 
 		case _DEEPSLEEP :
 			// draw logo screen: default sleep screen
 			drawLogoScreen();
 			// full refresh
-			refresh(false);
+			refresh((uint32_t)0);
 
 			// sleep display
 			sleep(); 
@@ -158,7 +183,7 @@ void VarioDisplay::TaskProc()
 		}
 		
 		//
-		const TickType_t xDelay = 50 / portTICK_PERIOD_MS;
+		const TickType_t xDelay = /*50*/200 / portTICK_PERIOD_MS;
 		vTaskDelay(xDelay);
 	}
 }
@@ -714,7 +739,6 @@ void VarioDisplay::drawPrefItem(PrefItem * item, int16_t x, int16_t y, int16_t w
 
 void VarioDisplay::drawLogoScreen()
 {
-	setRotation(0);
 	fillScreen(COLOR_WHITE);
 	setFont(__FontStack[WS_FONT_NORMAL_3]);
 	setTextColor(COLOR_BLACK, COLOR_WHITE);

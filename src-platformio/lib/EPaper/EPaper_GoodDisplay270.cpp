@@ -3,6 +3,15 @@
 
 #include "EPaper_GoodDisplay270.h"
 
+#define Y_DEC               0x00
+#define Y_INC               0x02
+#define X_DEC               0x00
+#define X_INC               0x01
+#define AM_X                0x00
+#define AM_Y                0x04
+
+#define DATA_ENTRYMODE      (AM_Y | X_INC | Y_INC)
+
 //
 // setup
 //  init pins: BUSY, RESET, DC, CS
@@ -163,11 +172,11 @@ void EPaper_GoodDisplay270::init()
 {
 	EPaperDriver::init();
 	
-	_reset();
+	//_reset();
 
-    _waitWhileBusy(10);
-    _writeCommand(0x12); // SWRESET
-    _waitWhileBusy(10);
+    //_waitWhileBusy(-1);
+    //_writeCommand(0x12); // SWRESET
+    //_waitWhileBusy(-1);
 }
 
 void EPaper_GoodDisplay270::refresh(bool fast_mode)
@@ -184,24 +193,39 @@ void EPaper_GoodDisplay270::refresh(bool fast_mode)
 	}
 }
 
+void EPaper_GoodDisplay270::refresh(uint32_t update)
+{
+    if (update == 0)
+    {
+        fullUpdate();
+    }
+    else
+    {
+        if ((update % 10) == 0)
+            fastUpdateAlt();
+        else
+            partialUpdate();
+    }
+}
+
 void EPaper_GoodDisplay270::powerOn()
 {
-	if (! (_state & _POWER_ON))
-		_powerOn();	
+	//if (! (_state & _POWER_ON))
+	//	_powerOn();	
 }
 
 void EPaper_GoodDisplay270::powerOff()
 {
-	if (_state & _POWER_ON)
-		_powerOff();	
+	//if (_state & _POWER_ON)
+	//	_powerOff();	
 }
 
 void EPaper_GoodDisplay270::deepSleep()
 {
-	if (! (_state & _DEEP_SLEEP))
+	//if (! (_state & _DEEP_SLEEP))
 	{
 		//
-		powerOff();
+		//powerOff();
 
 		//
 		_deepSleep();
@@ -247,9 +271,12 @@ void EPaper_GoodDisplay270::fullUpdate()
 	setPinState(&_pin_settings[_PIN_RST], PIN_STATE_INACTIVE);
 	_delay(10);
 
-    _waitWhileBusy(10);
+    _waitWhileBusy(-1);
     _writeCommand(0x12);
-    _waitWhileBusy(10);
+    _waitWhileBusy(-1);
+
+    //_writeCommand(0x11);
+    //_writeData(DATA_ENTRYMODE);    
 
     // EPD_WriteScreen_All
     _writeCommand(0x24);
@@ -260,10 +287,10 @@ void EPaper_GoodDisplay270::fullUpdate()
     _writeCommand(0x22);
     _writeData(0xF7);
     _writeCommand(0x20);
-    _waitWhileBusy(2000);
+    _waitWhileBusy(-1);
 
     // EPD_DeepSleep
-    deepSleep();
+    _deepSleep();
 }
 
 void EPaper_GoodDisplay270::fastUpdate()
@@ -274,9 +301,9 @@ void EPaper_GoodDisplay270::fastUpdate()
 	setPinState(&_pin_settings[_PIN_RST], PIN_STATE_INACTIVE);
 	_delay(10);
 
-    _waitWhileBusy(10);
+    _waitWhileBusy(-1);
     _writeCommand(0x12);
-    _waitWhileBusy(10);
+    _waitWhileBusy(-1);
 
     _writeCommand(0x18);
     _writeData(0x80);
@@ -284,7 +311,7 @@ void EPaper_GoodDisplay270::fastUpdate()
     _writeCommand(0x22); // Load temperature value
     _writeData(0xB1);
     _writeCommand(0x20);
-    _waitWhileBusy(10);
+    _waitWhileBusy(-1);
 
     _writeCommand(0x1A); // Write to temperature register
     _writeData(0x64);
@@ -293,7 +320,10 @@ void EPaper_GoodDisplay270::fastUpdate()
     _writeCommand(0x22); // Load temperature value
     _writeData(0x91);
     _writeCommand(0x20); 
-    _waitWhileBusy(10);
+    _waitWhileBusy(-1);
+
+    //_writeCommand(0x11);
+    //_writeData(DATA_ENTRYMODE);    
 
     // EPD_WriteScreen_All_Fast
     _writeCommand(0x24);
@@ -304,10 +334,10 @@ void EPaper_GoodDisplay270::fastUpdate()
     _writeCommand(0x22); //Display Update Control
     _writeData(0xC7);   
     _writeCommand(0x20); //Activate Display Update Sequence
-    _waitWhileBusy(1500);
+    _waitWhileBusy(-1);
 
     // EPD_DeepSleep
-    deepSleep();
+    _deepSleep();
 }
 
 void EPaper_GoodDisplay270::fastUpdateAlt()
@@ -318,9 +348,9 @@ void EPaper_GoodDisplay270::fastUpdateAlt()
 	setPinState(&_pin_settings[_PIN_RST], PIN_STATE_INACTIVE);
 	_delay(10);
 
-    _waitWhileBusy(10);
+    _waitWhileBusy(-1);
     _writeCommand(0x12);
-    _waitWhileBusy(10);
+    _waitWhileBusy(-1);
 
     _writeCommand(0x18); //Read built-in temperature sensor
     _writeData(0x80);  
@@ -328,7 +358,7 @@ void EPaper_GoodDisplay270::fastUpdateAlt()
     _writeCommand(0x22); // Load temperature value
     _writeData(0xB1);
     _writeCommand(0x20);
-    _waitWhileBusy(10);
+    _waitWhileBusy(-1);
 
     _writeCommand(0x1A); // Write to temperature register
     _writeData(0x5A);
@@ -337,7 +367,10 @@ void EPaper_GoodDisplay270::fastUpdateAlt()
     _writeCommand(0x22); // Load temperature value
     _writeData(0x91);
     _writeCommand(0x20);
-    _waitWhileBusy(10);
+    _waitWhileBusy(-1);
+
+    //_writeCommand(0x11);
+    //_writeData(DATA_ENTRYMODE);
 
     // EPD_WhiteScreen_ALL_Fast2
     _writeCommand(0x24);
@@ -352,36 +385,25 @@ void EPaper_GoodDisplay270::fastUpdateAlt()
     _writeCommand(0x22); //Display Update Control
     _writeData(0xC7);   
     _writeCommand(0x20); //Activate Display Update Sequence
-    _waitWhileBusy(1000);
+    _waitWhileBusy(-1);
 
     // EPD_DeepSleep
-    deepSleep();
+    _deepSleep();
 }
 
 void EPaper_GoodDisplay270::partialUpdate()
 {
-    // EPD_HW_Init
+    // EPD_Dis_PartAll
 	setPinState(&_pin_settings[_PIN_RST], PIN_STATE_ACTIVE);
 	_delay(10);
 	setPinState(&_pin_settings[_PIN_RST], PIN_STATE_INACTIVE);
 	_delay(10);
 
-    _waitWhileBusy(10);
-    _writeCommand(0x12);
-    _waitWhileBusy(10);
-
-    // EPD_SetRAMValue_BaseMap
-    // ???
-
-    // EPD_Dis_PartAll
-    // reset again ?
-	//setPinState(&_pin_settings[_PIN_RST], PIN_STATE_ACTIVE);
-	//_delay(10);
-	//setPinState(&_pin_settings[_PIN_RST], PIN_STATE_INACTIVE);
-	//_delay(10);
-
     _writeCommand(0x3C); // Boarder Waveform
     _writeData(0x80);
+
+    //_writeCommand(0x11);
+    //_writeData(DATA_ENTRYMODE);    
 
     _writeCommand(0x24);
     for (int i = 0; i < GOODDISPLAY_270_WIDTH * GOODDISPLAY_270_HEIGHT / 8; i++)
@@ -391,8 +413,8 @@ void EPaper_GoodDisplay270::partialUpdate()
     _writeCommand(0x22);
     _writeData(0xFF);
     _writeCommand(0x20);
-    _waitWhileBusy(500);
+    _waitWhileBusy(-1);
 
     // EPD_DeepSleep
-    deepSleep();
+    _deepSleep();
 }

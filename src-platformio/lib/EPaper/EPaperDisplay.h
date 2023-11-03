@@ -46,11 +46,13 @@ public:
 	
 	void							setRotation(uint8_t r);
 	void							invertDisplay(boolean i);
+	void							setMirrorMode(bool mirror);
 	
 	void							fillScreen(uint16_t color); // 0x00: black, > 0x00 : white
 	void							fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 	
 	void							refresh(bool fast_update = false);
+	void							refresh(uint32_t update);
 	
 	void							sleep();
 	
@@ -68,5 +70,6 @@ protected:
 	EPaperDriver &					_epd;
 	
 	uint8_t *						_buffer;
+	bool							_mirror;
 };
 

@@ -46,6 +46,7 @@ public:
 	virtual uint8_t *		getBuffer() = 0;
 	
 	virtual void			refresh(bool fast_mode) = 0;
+	virtual void			refresh(uint32_t update) {}
 	
 	virtual void			powerOff() = 0; // turns off generation of panel driving voltages, avoids screen fading over time
 	virtual void			deepSleep() = 0; // turns off power & sets controller to deep sleep, ONLY wakeable by RST

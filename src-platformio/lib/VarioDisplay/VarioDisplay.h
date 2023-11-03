@@ -31,6 +31,7 @@ typedef const GFXfont * GFXfontPtr;
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class VarioDisplayDriver
 
+#if 0
 class VarioDisplayDriver : public EPaper_Waveshare270
 {
 public:
@@ -42,6 +43,19 @@ public:
 		vTaskDelay(xDelay);
 	}
 };
+#else
+class VarioDisplayDriver : public EPaper_GoodDisplay270
+{
+public:
+	VarioDisplayDriver(PinSetting * pins) : EPaper_GoodDisplay270(pins) {
+	}
+
+	virtual void _delay(int msec) { 
+		const TickType_t xDelay = msec / portTICK_PERIOD_MS;
+		vTaskDelay(xDelay);
+	}
+};
+#endif
 
 template<typename T>
 class TVarioDisplayDriver : public T

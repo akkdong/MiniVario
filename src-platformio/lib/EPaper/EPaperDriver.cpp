@@ -8,7 +8,7 @@
 //
 
 EPaperDriver::EPaperDriver(PinSetting * pins)
-	: _spi_settings(4000000, MSBFIRST, SPI_MODE0)
+	: _spi_settings(20000000, MSBFIRST, SPI_MODE0)
 	, _pin_settings(pins)
 	, _state(_UNDEFINED)
 {
@@ -91,11 +91,13 @@ void EPaperDriver::_waitWhileBusy(uint16_t timeout)
 			break;
 		}
 		
+		/*
 		if ((millis() - start) > timeout)
 		{
 //			Serial.println("TIMEOUT~~");
 			break;
 		}
+		*/
 	}
 }
 

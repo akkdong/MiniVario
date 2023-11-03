@@ -11,6 +11,7 @@ EPaperDisplay::EPaperDisplay(EPaperDriver & driver)
 		: Adafruit_GFX(driver.getWidth(), driver.getHeight())
 		, _epd(driver)
 		, _buffer(driver.getBuffer())
+    , _mirror(false)
 {
 }
 
@@ -19,8 +20,8 @@ void EPaperDisplay::drawPixel(int16_t x, int16_t y, uint16_t color)
 	if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height)) 
 		return;
 	
-//	if (_mirror)
-//		x = _width - x - 1;
+	if (_mirror)
+		x = _width - x - 1;
 	
 	// check rotation, move pixel around if necessary
 	switch (getRotation())
@@ -82,6 +83,11 @@ void EPaperDisplay::invertDisplay(boolean i)
 	Adafruit_GFX::invertDisplay(i);
 }
 
+void EPaperDisplay::setMirrorMode(bool mirror)
+{
+  _mirror = mirror;
+}
+
 void EPaperDisplay::fillScreen(uint16_t color)
 {
 	uint8_t data = (color == COLOR_BLACK) ? COLOR_BLACK : COLOR_WHITE;
@@ -99,6 +105,12 @@ void EPaperDisplay::refresh(bool fast_update)
 {
 	_epd.refresh(fast_update);
 }
+
+void EPaperDisplay::refresh(uint32_t update)
+{
+  _epd.refresh(update);
+}
+
 
 void EPaperDisplay::sleep()
 {

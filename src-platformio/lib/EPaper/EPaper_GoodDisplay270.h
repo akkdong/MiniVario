@@ -25,6 +25,7 @@ public:
 	uint8_t *					getBuffer() { return &buffer[0];  }
 	
 	void						refresh(bool fast_mode = true);
+	void						refresh(uint32_t update);
 	
 	void						powerOn();
 	void						powerOff(); // turns off generation of panel driving voltages, avoids screen fading over time
