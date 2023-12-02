@@ -227,69 +227,69 @@ bool DeviceContext::save(Preferences & pref)
 
 void DeviceContext::set(JsonDocument & doc)
 {
-	if (! doc["vario_climb_threshold"].isNull())
+	if (! doc["vario_climb_threshold"].isUnbound())
 		varioSetting.climbThreshold = doc["vario_climb_threshold"]; // 0.2
-	if (! doc["vario_sink_threshold"].isNull())
+	if (! doc["vario_sink_threshold"].isUnbound())
 		varioSetting.sinkThreshold = doc["vario_sink_threshold"]; // -3
-	if (! doc["vario_sensitivity"].isNull())
+	if (! doc["vario_sensitivity"].isUnbound())
 		varioSetting.sensitivity = doc["vario_sensitivity"]; // 0.12
-	if (! doc["vario_ref_altitude_1"].isNull())
+	if (! doc["vario_ref_altitude_1"].isUnbound())
 		varioSetting.altitudeRef1 = doc["vario_ref_altitude_1"]; // 0
-	if (! doc["vario_ref_altitude_2"].isNull())
+	if (! doc["vario_ref_altitude_2"].isUnbound())
 		varioSetting.altitudeRef2 = doc["vario_ref_altitude_2"]; // 0
-	if (! doc["vario_ref_altitude_3"].isNull())
+	if (! doc["vario_ref_altitude_3"].isUnbound())
 		varioSetting.altitudeRef3 = doc["vario_ref_altitude_3"]; // 0
-	if (! doc["vario_damping_factor"].isNull())
+	if (! doc["vario_damping_factor"].isUnbound())
 		varioSetting.dampingFactor = doc["vario_damping_factor"]; // 0.05
-	if (! doc["glider_type"].isNull())
+	if (! doc["glider_type"].isUnbound())
 		gliderInfo.type = doc["glider_type"]; // 1
-	if (! doc["glider_manufacture"].isNull())
+	if (! doc["glider_manufacture"].isUnbound())
 		strcpy(gliderInfo.manufacture, (const char *)doc["glider_manufacture"]); // "Ozone"
-	if (! doc["glider_model"].isNull())
+	if (! doc["glider_model"].isUnbound())
 		strcpy(gliderInfo.model, (const char *)doc["glider_model"]); // "Zeno"
-	if (! doc["igc_enable_logging"].isNull())
+	if (! doc["igc_enable_logging"].isUnbound())
 		logger.enable = doc["igc_enable_logging"]; // true
-	if (! doc["igc_takeoff_speed"].isNull())
+	if (! doc["igc_takeoff_speed"].isUnbound())
 		logger.takeoffSpeed = doc["igc_takeoff_speed"]; // 6
-	if (! doc["igc_landing_speed"].isNull())
+	if (! doc["igc_landing_speed"].isUnbound())
 		logger.landingSpeed = doc["igc_landing_speed"]; // 2
-	if (! doc["igc_landing_timeout"].isNull())
+	if (! doc["igc_landing_timeout"].isUnbound())
 		logger.landingTimeout = doc["igc_landing_timeout"]; // 10000
-	if (! doc["igc_logging_interval"].isNull())
+	if (! doc["igc_logging_interval"].isUnbound())
 		logger.loggingInterval = doc["igc_logging_interval"]; // 1000
-	if (! doc["igc_pilot"].isNull())
+	if (! doc["igc_pilot"].isUnbound())
 		strcpy(logger.pilot, (const char *)doc["igc_pilot"]); // "akkdong"
-	if (! doc["igc_timezone"].isNull())
+	if (! doc["igc_timezone"].isUnbound())
 		logger.timezone = doc["igc_timezone"]; // 9
-	if (! doc["volume_enable_vario"].isNull())
+	if (! doc["volume_enable_vario"].isUnbound())
 		volume.varioDefault = volume.vario = doc["volume_enable_vario"] ? 100 : 0; // false
-	if (! doc["volume_enable_effect"].isNull())
+	if (! doc["volume_enable_effect"].isUnbound())
 		volume.effectDefault = volume.effect = doc["volume_enable_effect"] ? 100 : 0; // false
-	if (! doc["volume_auto_turnon"].isNull())
+	if (! doc["volume_auto_turnon"].isUnbound())
 		volume.autoTurnOn = doc["volume_auto_turnon"]; // true
-	if (! doc["threshold_low_battery"].isNull())
+	if (! doc["threshold_low_battery"].isUnbound())
 		threshold.lowBattery = doc["threshold_low_battery"]; // 2.9
-	if (! doc["threshold_auto_shutdown"].isNull())
+	if (! doc["threshold_auto_shutdown"].isUnbound())
 		threshold.autoShutdownVario = doc["threshold_auto_shutdown"]; // 600000
-	if (! doc["kalman_var_zmeas"].isNull())
+	if (! doc["kalman_var_zmeas"].isUnbound())
 		kalman.varZMeas = doc["kalman_var_zmeas"]; // 400
-	if (! doc["kalman_var_zaccel"].isNull())
+	if (! doc["kalman_var_zaccel"].isUnbound())
 		kalman.varZAccel = doc["kalman_var_zaccel"]; // 1000
-	if (! doc["kalman_var_abias"].isNull())
+	if (! doc["kalman_var_abias"].isUnbound())
 		kalman.varAccelBias = doc["kalman_var_abias"]; // 1
-	if (! doc["device_enable_bt"].isNull())
+	if (! doc["device_enable_bt"].isUnbound())
 		deviceDefault.enableBT = doc["device_enable_bt"]; // false
-	if (! doc["device_enable_sound"].isNull())
+	if (! doc["device_enable_sound"].isUnbound())
 		deviceDefault.enableSound = doc["device_enable_sound"]; // false
-	if (! doc["device_bt_name"].isNull())
+	if (! doc["device_bt_name"].isUnbound())
 		strcpy(deviceDefault.btName, (const char *)doc["device_bt_name"]); // "MiniVario"
-	if (! doc["device_enable_simulation"].isNull())
+	if (! doc["device_enable_simulation"].isUnbound())
 		deviceDefault.enableSimulation = doc["device_enable_simulation"]; // false
-	if (! doc["device_enable_nmea_logging"].isNull())
+	if (! doc["device_enable_nmea_logging"].isUnbound())
 		deviceDefault.enableNmeaLogging = doc["device_enable_nmea_logging"]; // false
-	if (! doc["wifi_ssid"].isNull())
+	if (! doc["wifi_ssid"].isUnbound())
 		strcpy(deviceDefault.wifiSSID, (const char *)doc["wifi_ssid"]); // "MiniVario"
-	if (! doc["wifi_password"].isNull())
+	if (! doc["wifi_password"].isUnbound())
 		strcpy(deviceDefault.wifiPassword, (const char *)doc["wifi_password"]); // "123456789"
 }
 

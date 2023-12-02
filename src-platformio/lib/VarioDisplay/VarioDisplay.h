@@ -31,11 +31,11 @@ typedef const GFXfont * GFXfontPtr;
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // class VarioDisplayDriver
 
-#if 0
-class VarioDisplayDriver : public EPaper_Waveshare270
+#if USE_GOOD_DISPLAY
+class VarioDisplayDriver : public EPaper_GoodDisplay270
 {
 public:
-	VarioDisplayDriver(PinSetting * pins) : EPaper_Waveshare270(pins) {
+	VarioDisplayDriver(PinSetting * pins) : EPaper_GoodDisplay270(pins) {
 	}
 
 	virtual void _delay(int msec) { 
@@ -44,10 +44,10 @@ public:
 	}
 };
 #else
-class VarioDisplayDriver : public EPaper_GoodDisplay270
+class VarioDisplayDriver : public EPaper_Waveshare270
 {
 public:
-	VarioDisplayDriver(PinSetting * pins) : EPaper_GoodDisplay270(pins) {
+	VarioDisplayDriver(PinSetting * pins) : EPaper_Waveshare270(pins) {
 	}
 
 	virtual void _delay(int msec) { 

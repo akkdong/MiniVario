@@ -202,7 +202,7 @@ void EPaper_GoodDisplay270::refresh(uint32_t update)
     else
     {
         if ((update % 10) == 0)
-            fastUpdateAlt();
+            fastUpdate(); // or fastUpdateAlt()
         else
             partialUpdate();
     }

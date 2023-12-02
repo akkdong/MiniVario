@@ -96,7 +96,11 @@ static PinSetting ePaperPins[] =
 	// RST
 	{ 32, PIN_MODE_OUTPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
 	// BUSY
+	#if USE_GOOD_DISPLAY
 	{ 39, PIN_MODE_INPUT, PIN_ACTIVE_HIGH, PIN_STATE_INACTIVE },
+	#else
+	{ 39, PIN_MODE_INPUT, PIN_ACTIVE_LOW, PIN_STATE_INACTIVE },
+	#endif
 };
 
 static PinSetting powerPins[] =
@@ -199,7 +203,7 @@ Beeper beeper;
 #endif
 
 #if USE_DRIVER_TEMPLATE
-#if USE_GOOD_DISPLAY || true
+#if USE_GOOD_DISPLAY
 TVarioDisplayDriver<EPaper_GoodDisplay270> driver(ePaperPins);
 #else
 TVarioDisplayDriver<EPaper_Waveshare270> driver(ePaperPins);

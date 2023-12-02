@@ -174,7 +174,11 @@ void VarioDisplay::TaskProc()
 			// draw logo screen: default sleep screen
 			drawLogoScreen();
 			// full refresh
+			#if USE_GOOD_DISPLAY
 			refresh((uint32_t)0);
+			#else
+			refresh(false);
+			#endif
 
 			// sleep display
 			sleep(); 
@@ -183,7 +187,11 @@ void VarioDisplay::TaskProc()
 		}
 		
 		//
+		#if USE_GOOD_DISPLAY
 		const TickType_t xDelay = /*50*/200 / portTICK_PERIOD_MS;
+		#else
+		const TickType_t xDelay = 50 / portTICK_PERIOD_MS;
+		#endif
 		vTaskDelay(xDelay);
 	}
 }

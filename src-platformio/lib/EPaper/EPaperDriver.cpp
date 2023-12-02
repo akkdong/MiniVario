@@ -91,13 +91,13 @@ void EPaperDriver::_waitWhileBusy(uint16_t timeout)
 			break;
 		}
 		
-		/*
+		#if !USE_GOOD_DISPLAY
 		if ((millis() - start) > timeout)
 		{
 //			Serial.println("TIMEOUT~~");
 			break;
 		}
-		*/
+		#endif
 	}
 }
 
