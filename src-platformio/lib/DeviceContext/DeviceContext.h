@@ -159,6 +159,9 @@ struct DeviceState
 	uint8_t			statusGPS;		// 0: no-signal, 1: 
 	uint8_t			statusBT;		// 0: disabled, 1: on-wait-client, 2: connected
 	uint8_t			statusSDCard;	// 0: empty, 1: valid, 2: logging
+
+	char			ipAddr[16]; 	// xxx.xxx.xxx.xxx
+	int				wifiState;		// 0: ready, 1: ap-started, 2: connected
 };
 
 struct DeviceDefault
