@@ -850,7 +850,7 @@ void CaptivePortal::onWiFiEvent(WiFiEvent_t event,arduino_event_info_t info)
     case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
         LOGv( "[WiFi] STA Connected");
         portalState = PORTAL_CONNECTED;
-        #if 
+        #if 0
         contextPtr->deviceState.wifiState = 2;
         Application::getApp()->sendMessage(MSG_WIFI_STATE_CHANGED);
         #else

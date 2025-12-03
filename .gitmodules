@@ -20,19 +20,19 @@
 	path = ref/GxEPD2
 	url = https://github.com/ZinggJM/GxEPD2.git
 [submodule "src/libraries/ArduinoJson"]
-	path = src/libraries/ArduinoJson
+	path = src-arduino/libraries/ArduinoJson
 	url = https://github.com/bblanchon/ArduinoJson.git
 [submodule "src/libraries/PageBuilder"]
-	path = src/libraries/PageBuilder
+	path = src-arduino/libraries/PageBuilder
 	url = https://github.com/Hieromon/PageBuilder.git
 [submodule "src/libraries/AutoConnect"]
-	path = src/libraries/AutoConnect
+	path = src-arduino/libraries/AutoConnect
 	url = https://github.com/Hieromon/AutoConnect.git
 [submodule "src/libraries/AsyncTCP"]
-	path = src/libraries/AsyncTCP
+	path = src-arduino/libraries/AsyncTCP
 	url = https://github.com/me-no-dev/AsyncTCP.git
 [submodule "src/libraries/ESPAsyncWebServer"]
-	path = src/libraries/ESPAsyncWebServer
+	path = src-arduino/libraries/ESPAsyncWebServer
 	url = https://github.com/me-no-dev/ESPAsyncWebServer.git
 [submodule "ref/EspExceptionDecoder"]
 	path = ref/EspExceptionDecoder
